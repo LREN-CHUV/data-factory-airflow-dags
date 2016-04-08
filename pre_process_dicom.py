@@ -12,8 +12,8 @@ from airflow.operators import PythonOperator
 from airflow.models import Variable
 
 # constants
-  
-DAG_NAME = 'pre_processing_dicom'
+
+DAG_NAME = 'pre_process_dicom'
 
 # Define the DAG
 
@@ -34,7 +34,8 @@ dag = DAG(
 	schedule_interval=None)
 
 def run_this_func(ds, **kwargs):
-    print("Remotely received value of {} for key=message".format(kwargs['dag_run'].conf['message']))
+    print("Remotely received value of {} for key=folder".format(kwargs['dag_run'].conf['folder']))
+    print("Remotely received value of {} for key=session_id".format(kwargs['dag_run'].conf['session_id']))
 
 run_this = PythonOperator(
     task_id='run_this',
