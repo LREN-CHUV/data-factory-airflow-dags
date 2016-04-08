@@ -28,15 +28,17 @@ from airflow.models import Variable
 
 # functions
 
-def trigger_preprocessing(context, dagrun):
+def trigger_preprocessing(context, dag_run_obj):
     if True:
-        dagrun.payload = context['params']
-        return True
+        dag_run_obj.payload = context['params']
+        return dag_run_obj
 
 # constants
-  
+
+START = datetime.utcnow()
+START = datetime.combine(START.date(), time(START.hour, START.minute))
 #START = datetime.combine(datetime.today() - timedelta(days=2), datetime.min.time()) + timedelta(hours=10)
-START = datetime.now()
+#START = datetime.now()
 
 DAG_NAME = 'poll_pre_process_incoming'
 
@@ -54,14 +56,13 @@ default_args = {
 
 dag = DAG(dag_id=DAG_NAME,
           default_args=default_args,
-          schedule_interval='1 * * * *')
+          schedule_interval='0 * * * *')
 
 preprocessing_data_folder = Variable.get("preprocessing_data_folder")
 
 scan_ready_dirs = BashOperator(
     task_id='scan_dirs_ready_for_preprocessing',
     bash_command="echo 'Scaning directories ready for processing'",
-    wait_for_downstream=True,
     dag=dag)
 
 if not os.path.exists(preprocessing_data_folder):
@@ -78,7 +79,7 @@ for fname in os.listdir(preprocessing_data_folder):
             preprocessing_ingest = TriggerDagRunOperator(
                 # need to wrap task_id in str() because log_name returns as unicode
                 task_id=str('preprocess_ingest_%s' % fname),
-                trigger_dag_id=preprocess_dicom.DAG_NAME,
+                trigger_dag_id=pre_process_dicom.DAG_NAME,
                 python_callable=trigger_preprocessing,
                 params={'folder': path, 'session_id': fname},
                 dag=dag
