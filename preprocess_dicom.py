@@ -19,6 +19,7 @@ DAG_NAME = 'pre_processing_dicom'
 
 default_args = {
  'owner': 'airflow',
+ 'pool': 'clinical_vertex',
  'depends_on_past': False,
  'start_date': datetime.now(),
  'retries': 1,
