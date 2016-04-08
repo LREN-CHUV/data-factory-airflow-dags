@@ -58,7 +58,10 @@ dag = DAG(dag_id=DAG_NAME,
           default_args=default_args,
           schedule_interval='0 * * * *')
 
-preprocessing_data_folder = Variable.get("preprocessing_data_folder")
+try:
+    preprocessing_data_folder = Variable.get("preprocessing_data_folder")
+except:
+    preprocessing_data_folder = "/tmp/data/incoming"
 
 scan_ready_dirs = BashOperator(
     task_id='scan_dirs_ready_for_preprocessing',

@@ -34,8 +34,8 @@ dag = DAG(
 	schedule_interval=None)
 
 def run_this_func(ds, **kwargs):
-    print("Remotely received value of {} for key=folder".format(kwargs['dag_run'].conf['folder']))
-    print("Remotely received value of {} for key=session_id".format(kwargs['dag_run'].conf['session_id']))
+    logging.info("Remotely received value of {} for key=folder".format(kwargs['dag_run'].conf['folder']))
+    logging.info("Remotely received value of {} for key=session_id".format(kwargs['dag_run'].conf['session_id']))
 
 run_this = PythonOperator(
     task_id='run_this',
