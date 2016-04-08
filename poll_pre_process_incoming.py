@@ -36,7 +36,7 @@ def trigger_preprocessing(context, dag_run_obj):
 # constants
 
 START = datetime.utcnow()
-START = datetime.combine(START.date(), time(START.hour, START.minute))
+START = datetime.combine(START.date(), time(START.hour, 0))
 #START = datetime.combine(datetime.today() - timedelta(days=2), datetime.min.time()) + timedelta(hours=10)
 #START = datetime.now()
 
