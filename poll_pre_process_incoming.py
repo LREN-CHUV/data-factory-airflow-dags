@@ -31,6 +31,7 @@ from airflow.models import Variable
 def trigger_preprocessing(context, dag_run_obj):
     if True:
         dag_run_obj.payload = context['params']
+        dag_run_obj.run_id = str(context['params']['session_id'] + '_%s' % datetime.now())
         return dag_run_obj
 
 # constants
