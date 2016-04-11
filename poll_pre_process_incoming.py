@@ -33,7 +33,7 @@ def trigger_preprocessing(context, dag_run_obj):
         session_id = context['params']['session_id']
         logging.info('Trigger preprocessing for : %s', str(session_id))
         dag_run_obj.payload = context['params']
-        dag_run_obj.run_id = str(session_id + '_%s' % datetime.now().strftime("%Y%m%d_%H%M%s"))
+        dag_run_obj.run_id = str(session_id + '__%s' % datetime.now().strftime("%Y-%m-%dT%H:%M:%s"))
         return dag_run_obj
 
 # constants
@@ -70,6 +70,15 @@ scan_ready_dirs = BashOperator(
     task_id='scan_dirs_ready_for_preprocessing',
     bash_command="echo 'Scaning directories ready for processing'",
     dag=dag)
+
+scan_ready_dirs.doc_md = """\
+# Scan directories ready for processing
+
+Scan the session folders starting from the root folder defined by variable __preprocessing_data_folder__.
+
+It looks for the presence of a .ready marker file to mark that session folder as ready for processing, but it
+will skip it if contains the marker file .processing indicating that processing has already started.
+"""
 
 if not os.path.exists(preprocessing_data_folder):
     os.makedirs(preprocessing_data_folder)
