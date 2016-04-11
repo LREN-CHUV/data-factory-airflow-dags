@@ -6,10 +6,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm.scoping import scoped_session
 from sqlalchemy.pool import NullPool
 
-DB_URL = os.environ.get('DB_URL')
+AIRFLOW_CONN_MYSQL_TRACKER = os.environ.get('AIRFLOW_CONN_MYSQL_TRACKER')
 
-if not DB_URL:
-    raise ValueError("DB_URL not present in the environment")
+if not AIRFLOW_CONN_MYSQL_TRACKER:
+    raise ValueError("AIRFLOW_CONN_MYSQL_TRACKER not present in the environment")
 
 Base = automap_base()
 engine = create_engine(DB_URL, poolclass=NullPool)
