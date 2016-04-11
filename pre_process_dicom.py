@@ -15,6 +15,11 @@ from airflow.models import Variable
 
 DAG_NAME = 'pre_process_dicom'
 
+try:
+    shared_data_folder = Variable.get("shared_data_folder")
+except:
+    shared_data_folder = "/tmp/data/shared"
+
 # functions
 
 def extractDicomInfo(**kwargs):
@@ -55,7 +60,7 @@ mark_start_of_processing_cmd = """
 """
 
 copy_session_folder_cmd = """
-    cp -R {{ dag_run.conf["folder"] }} {{ TODO }}
+    cp -R {{ dag_run.conf["folder"] }} {{ params.dest }}
 """
 
 mark_start_of_processing = BashOperator(
@@ -90,6 +95,7 @@ copy_session_folder = BashOperator(
     execution_timeout=timedelta(hours=3),
     pool='data_transfers',
     provide_context=True,
+    params={'dest':shared_data_folder},
     dag=dag)
 copy_session_folder.set_upstream(extract_dicom_info)
 
