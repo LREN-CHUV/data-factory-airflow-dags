@@ -8,7 +8,7 @@ import logging
   
 from datetime import datetime, timedelta, time
 from airflow import DAG
-from airflow.operators import PythonOperator
+from airflow.operators import BashOperator, PythonOperator
 from airflow.models import Variable
 
 # constants
@@ -37,8 +37,16 @@ def run_this_func(ds, **kwargs):
     logging.info("Remotely received value of {} for key=folder".format(kwargs['dag_run'].conf['folder']))
     logging.info("Remotely received value of {} for key=session_id".format(kwargs['dag_run'].conf['session_id']))
 
-run_this = PythonOperator(
-    task_id='run_this',
+MARK_START_OF_PROCESSING_CMD = """
+
+{% if dag_run: %}
+  touch {{ dag_run.conf["folder"] }}/.processing
+{% endif %}
+
+"""
+
+run_this = BashOperator(
+    task_id='mark_start_of_preprocessing',
+    bash_command=MARK_START_OF_PROCESSING_CMD,
     provide_context=True,
-    python_callable=run_this_func,
     dag=dag)

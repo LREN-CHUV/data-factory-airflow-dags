@@ -30,8 +30,10 @@ from airflow.models import Variable
 
 def trigger_preprocessing(context, dag_run_obj):
     if True:
+        session_id = context['params']['session_id']
+        logging.info('Trigger preprocessing for : %s', str(session_id))
         dag_run_obj.payload = context['params']
-        dag_run_obj.run_id = str(context['params']['session_id'] + '_%s' % datetime.now())
+        dag_run_obj.run_id = str(session_id + '_%s' % datetime.now().strftime("%Y%m%d_%H%M%s"))
         return dag_run_obj
 
 # constants
@@ -76,9 +78,9 @@ for fname in os.listdir(preprocessing_data_folder):
     path = os.path.join(preprocessing_data_folder, fname)
     if os.path.isdir(path):
         ready_file_marker = os.path.join(path, '.ready')
-        if os.access(ready_file_marker, os.R_OK):
-
-            logging.info('Executing: %s', str(fname))
+        proccessing_file_marker = os.path.join(path, '.processing')
+        if os.access(ready_file_marker, os.R_OK) and not os.access(proccessing_file_marker, os.R_OK):
+            logging.info('Prepare trigger for preprocessing : %s', str(fname))
 
             preprocessing_ingest = TriggerDagRunOperator(
                 # need to wrap task_id in str() because log_name returns as unicode
