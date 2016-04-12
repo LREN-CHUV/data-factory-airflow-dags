@@ -26,9 +26,13 @@ def extractDicomInfo(**kwargs):
     ti = kwargs['task_instance']
     #lastRun = ti.xcom_pull(task_ids='format_last_run_date')
 
-    logging.info('-------------------------------------------------')
+    dr = kwargs['dag_run']
+    folder = dr.conf['folder']
+    session_id = dr.conf['session_id']
 
-    # TODO
+    logging.info('folder %s, session_id %s' % (folder, session_id))
+
+    # ti.xcom_push({'patient':patient})
 
     return ""
 
@@ -47,13 +51,9 @@ default_args = {
 }
  
 dag = DAG(
-	dag_id=DAG_NAME,
-	default_args=default_args,
-	schedule_interval=None)
-
-def run_this_func(ds, **kwargs):
-    logging.info("Remotely received value of {} for key=folder".format(kwargs['dag_run'].conf['folder']))
-    logging.info("Remotely received value of {} for key=session_id".format(kwargs['dag_run'].conf['session_id']))
+    dag_id=DAG_NAME,
+    default_args=default_args,
+    schedule_interval=None)
 
 mark_start_of_processing_cmd = """
     touch {{ dag_run.conf["folder"] }}/.processing
