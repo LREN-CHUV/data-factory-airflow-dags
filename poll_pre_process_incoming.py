@@ -80,6 +80,20 @@ It looks for the presence of a .ready marker file to mark that session folder as
 will skip it if contains the marker file .processing indicating that processing has already started.
 """
 
+poll_complete = BashOperator(
+    task_id='poll_complete',
+    bash_command="echo 'Poll complete'",
+    dag=dag)
+
+scan_ready_dirs.doc_md = """\
+# Scan directories ready for processing
+
+Scan the session folders starting from the root folder defined by variable __preprocessing_data_folder__.
+
+It looks for the presence of a .ready marker file to mark that session folder as ready for processing, but it
+will skip it if contains the marker file .processing indicating that processing has already started.
+"""
+
 if not os.path.exists(preprocessing_data_folder):
     os.makedirs(preprocessing_data_folder)
 
@@ -101,3 +115,4 @@ for fname in os.listdir(preprocessing_data_folder):
             )
 
             preprocessing_ingest.set_upstream(scan_ready_dirs)
+            preprocessing_ingest.set_downstream(poll_complete)
