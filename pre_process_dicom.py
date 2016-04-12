@@ -11,6 +11,8 @@ from airflow import DAG
 from airflow.operators import BashOperator, PythonOperator
 from airflow.models import Variable
 
+from util import dicom_import
+
 # constants
 
 DAG_NAME = 'pre_process_dicom'
@@ -33,6 +35,9 @@ def extractDicomInfo(**kwargs):
     logging.info('folder %s, session_id %s' % (folder, session_id))
 
     # ti.xcom_push({'patient':patient})
+
+    # TODO: fix the following line
+    # dicom_import.dicom2db(folder, "amqp://airflow:airflow@rabbitmq:5672/airflow")
 
     return ""
 

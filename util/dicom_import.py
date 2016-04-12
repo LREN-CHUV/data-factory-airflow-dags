@@ -5,7 +5,7 @@
 import glob
 import traceback
 import sys
-import pydicom
+import dicom
 import datetime
 
 from sqlalchemy import create_engine
@@ -31,9 +31,6 @@ DEFAULT_COMMENT = ''
 
 def dicom2db(folder, db_path):
 
-    print("[START]")
-
-    print("Connecting to DB")
     db = init_db(db_path)
     session = db["session"]
     participant_class = db["participant_class"]
@@ -41,18 +38,14 @@ def dicom2db(folder, db_path):
     image_class = db["image_class"]
 
     for filename in glob.iglob(folder+'/*/*'):
-        print("Processing '"+filename+"'")
-        ds = pydicom.read_file(filename)
+        ds = dicom.read_file(filename)
         try:
             participant_id = extract_participant(participant_class, ds, session, DEFAULT_HANDEDNESS)
             scan_id = extract_scan(scan_class, ds, session, participant_id, DEFAULT_ROLE, DEFAULT_COMMENT)
             extract_image(image_class, ds, session, scan_id, filename)
         except (err.IntegrityError, exc.IntegrityError):
             traceback.print_exc(file=sys.stdout)
-            print_db_except()
             session.rollback()
-
-    print("[DONE]")
 
 
 ########################################################################################################################
@@ -70,12 +63,6 @@ def format_gender(gender):
         return 'female'
     else:
         return 'unknown'
-
-
-def print_db_except():
-    print("A problem occurred while trying to insert into data into DB.")
-    print("This can be caused by a duplicate entry on a unique field.")
-    print("A rollback will be performed !")
 
 
 ########################################################################################################################
