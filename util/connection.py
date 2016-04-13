@@ -12,7 +12,7 @@ if not AIRFLOW_CONN_MYSQL_TRACKER:
     raise ValueError("AIRFLOW_CONN_MYSQL_TRACKER not present in the environment")
 
 Base = automap_base()
-engine = create_engine(DB_URL, poolclass=NullPool)
+engine = create_engine(AIRFLOW_CONN_MYSQL_TRACKER, poolclass=NullPool)
 Base.prepare(engine, reflect=True)
 
 session_factory = sessionmaker(bind=engine, expire_on_commit=False)
