@@ -1,19 +1,29 @@
 import os
 
-from sqlalchemy.ext.automap import automap_base
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from sqlalchemy.orm.scoping import scoped_session
-from sqlalchemy.pool import NullPool
+from sqlalchemy.ext.automap import automap_base
+from sqlalchemy import orm
 
-AIRFLOW_CONN_MYSQL_TRACKER = os.environ.get('AIRFLOW_CONN_MYSQL_TRACKER')
 
-if not AIRFLOW_CONN_MYSQL_TRACKER:
-    raise ValueError("AIRFLOW_CONN_MYSQL_TRACKER not present in the environment")
+AIRFLOW_CONN_MYSQL_TRACKER = "mysql+pymysql://airflow:airflow@mysql/airflow"
+
+
+# TODO: use AIRFLOW_CONN_MYSQL_TRACKER instead of hard-coded DB path
+# AIRFLOW_CONN_MYSQL_TRACKER = os.environ.get('AIRFLOW_CONN_MYSQL_TRACKER')
+
+# if not AIRFLOW_CONN_MYSQL_TRACKER:
+#    raise ValueError("AIRFLOW_CONN_MYSQL_TRACKER not present in the environment")
+
 
 Base = automap_base()
-engine = create_engine(AIRFLOW_CONN_MYSQL_TRACKER, poolclass=NullPool)
+engine = create_engine(AIRFLOW_CONN_MYSQL_TRACKER)
 Base.prepare(engine, reflect=True)
 
-session_factory = sessionmaker(bind=engine, expire_on_commit=False)
-Session = scoped_session(session_factory)
+Participant = Base.classes.participant
+Scan = Base.classes.scan
+Dicom = Base.classes.dicom
+Session = Base.classes.session
+Sequence = Base.classes.sequence
+Repetition = Base.classes.repetition
+
+db_session = orm.Session(engine)

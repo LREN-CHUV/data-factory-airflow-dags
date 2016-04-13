@@ -17,13 +17,14 @@ We are looking for the presence of the .ready marker file indicating that pre-pr
 """
 
 import logging
+
 import pre_process_dicom
-import pprint
-import os, sys
+import os
 
 from datetime import datetime, timedelta, time
 from airflow import DAG
-from airflow.operators import BashOperator, PythonOperator, TriggerDagRunOperator
+from airflow.operators.bash_operator import BashOperator
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.models import Variable
 
 # functions
@@ -40,8 +41,8 @@ def trigger_preprocessing(context, dag_run_obj):
 
 START = datetime.utcnow()
 START = datetime.combine(START.date(), time(START.hour, 0))
-#START = datetime.combine(datetime.today() - timedelta(days=2), datetime.min.time()) + timedelta(hours=10)
-#START = datetime.now()
+# START = datetime.combine(datetime.today() - timedelta(days=2), datetime.min.time()) + timedelta(hours=10)
+# START = datetime.now()
 
 DAG_NAME = 'poll_pre_process_incoming'
 

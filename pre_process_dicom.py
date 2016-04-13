@@ -6,9 +6,10 @@ Pre-process DICOM files in a study folder
 
 import logging
   
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators import BashOperator, PythonOperator
+from airflow.operators.python_operator import PythonOperator
+from airflow.operators.bash_operator import BashOperator
 from airflow.models import Variable
 
 from util import dicom_import
@@ -36,8 +37,7 @@ def extractDicomInfo(**kwargs):
 
     # ti.xcom_push({'patient':patient})
 
-    # TODO: fix the following line
-    # dicom_import.dicom2db(folder, "amqp://airflow:airflow@rabbitmq:5672/airflow")
+    dicom_import.dicom2db(folder)
 
     return ""
 
