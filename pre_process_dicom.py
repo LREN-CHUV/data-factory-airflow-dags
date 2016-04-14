@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.bash_operator import BashOperator
+from airflow.operators import SpmOperator
 from airflow.models import Variable
 
 from util import dicom_import
@@ -41,6 +42,8 @@ def extractDicomInfo(**kwargs):
 
     return ""
 
+def spmTest(engine):
+    engine.sqrt(4.)
 
 # Define the DAG
 
@@ -64,7 +67,7 @@ mark_start_of_processing_cmd = """
     touch {{ dag_run.conf["folder"] }}/.processing
 """
 
-copy_session_folder_cmd = """
+copy_to_shared_folder_cmd = """
     cp -R {{ dag_run.conf["folder"] }} {{ params.dest }}
 """
 
@@ -94,18 +97,25 @@ extract_dicom_info.doc_md = """\
 Read DICOM information from the files stored in the session folder and store that information in the database.
 """
 
-copy_session_folder = BashOperator(
-    task_id='copy_session_folder',
-    bash_command=copy_session_folder_cmd,
+copy_to_shared_folder = BashOperator(
+    task_id='copy_to_shared_folder',
+    bash_command=copy_to_shared_folder_cmd,
     execution_timeout=timedelta(hours=3),
     pool='data_transfers',
     provide_context=True,
     params={'dest':shared_data_folder},
     dag=dag)
-copy_session_folder.set_upstream(extract_dicom_info)
+copy_to_shared_folder.set_upstream(extract_dicom_info)
 
-copy_session_folder.doc_md = """\
-# Copy session folder
+copy_to_shared_folder.doc_md = """\
+# Copy data to shared folder
 
-TODO.
 """
+
+test_spm = SpmOperator(
+    task_id='test_spm',
+    python_callable=spmTest,
+    dag=dag
+    )
+
+test_spm.set_upstream(copy_to_shared_folder)
