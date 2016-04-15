@@ -75,24 +75,21 @@ scan_ready_dirs = BashOperator(
 scan_ready_dirs.doc_md = """\
 # Scan directories ready for processing
 
-Scan the session folders starting from the root folder defined by variable __preprocessing_data_folder__.
+Scan the session folders starting from the root folder %s (defined by variable __preprocessing_data_folder__).
 
 It looks for the presence of a .ready marker file to mark that session folder as ready for processing, but it
 will skip it if contains the marker file .processing indicating that processing has already started.
-"""
+""" % preprocessing_data_folder
 
 poll_complete = BashOperator(
     task_id='poll_complete',
     bash_command="echo 'Poll complete'",
     dag=dag)
 
-scan_ready_dirs.doc_md = """\
-# Scan directories ready for processing
+poll_complete.doc_md = """\
+# Mark polling as complete
 
-Scan the session folders starting from the root folder defined by variable __preprocessing_data_folder__.
-
-It looks for the presence of a .ready marker file to mark that session folder as ready for processing, but it
-will skip it if contains the marker file .processing indicating that processing has already started.
+Indicates that polling has completed successfully and wait for all preprocessing triggers to fire their tasks.
 """
 
 if not os.path.exists(preprocessing_data_folder):
