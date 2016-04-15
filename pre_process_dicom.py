@@ -42,8 +42,18 @@ def extractDicomInfo(**kwargs):
 
     return ""
 
-def spmTest(engine):
-    engine.sqrt(4.)
+def spmTest(engine, kwargs):
+    SubjID='PR01693_NO310167'
+    InputDataFolder='/home/ludovic/tmp/For_Ludovic/Automatic_Computation_under_Organization/Sample_Data/For_Neuromorphics_Pipeline'
+    LocalFolder='/home/ludovic/tmp/test'
+    AtlasingOutputFolder='/home/ludovic/tmp/results'
+    ProtocolsFile='Protocols_definition.txt'
+    TableFormat='csv'
+    success = engine.NeuroMorphometric_pipeline(SubjID,InputDataFolder,LocalFolder,AtlasingOutputFolder,ProtocolsFile,TableFormat)
+    logging.info("SPM returned %s", success)
+    if success == 0:
+        raise RuntimeError('NeuroMorphometric pipeline failed')
+    return success
 
 # Define the DAG
 
@@ -88,6 +98,7 @@ extract_dicom_info = PythonOperator(
     python_callable=extractDicomInfo,
     execution_timeout=timedelta(hours=3),
     provide_context=True,
+    matlab_paths=['/home/ludovic/tmp/For_Ludovic/Automatic_Computation_under_Organization/Pipelines/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'],
     dag=dag)
 extract_dicom_info.set_upstream(mark_start_of_processing)
 
