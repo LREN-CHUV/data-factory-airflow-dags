@@ -102,24 +102,8 @@ dag = DAG(
     default_args=default_args,
     schedule_interval=None)
 
-mark_start_of_processing_cmd = """
-    touch {{ dag_run.conf["folder"] }}/.processing
-"""
-
 copy_to_shared_folder_cmd = """
     cp -R {{ dag_run.conf["folder"] }} {{ params.dest }}
-"""
-
-mark_start_of_processing = BashOperator(
-    task_id='mark_start_of_preprocessing',
-    bash_command=mark_start_of_processing_cmd,
-    provide_context=True,
-    dag=dag)
-
-mark_start_of_processing.doc_md = """\
-# Mark start of processing on a session folder
-
-Create a marker file .processing inside the session folder to indicate that processing has started on that folder.
 """
 
 extract_dicom_info = PythonOperator(

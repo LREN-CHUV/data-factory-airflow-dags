@@ -20,10 +20,11 @@ import logging
 
 import pre_process_dicom
 import os
+import copy
 
 from datetime import datetime, timedelta, time
 from airflow import DAG
-from airflow.operators.bash_operator import BashOperator
+from airflow.operators.python_operator import PythonOperator
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.models import Variable
 
@@ -33,9 +34,41 @@ def trigger_preprocessing(context, dag_run_obj):
     if True:
         session_id = context['params']['session_id']
         logging.info('Trigger preprocessing for : %s', str(session_id))
+        # The payload will be available in target dag context as kwargs['dag_run'].conf
         dag_run_obj.payload = context['params']
         dag_run_obj.run_id = str(session_id + '__%s' % datetime.now().strftime("%Y-%m-%dT%H:%M:%s"))
         return dag_run_obj
+
+def scan_dirs_for_preprocessing(folder, **kwargs):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    for fname in os.listdir(folder):
+        path = os.path.join(folder, fname)
+        if os.path.isdir(path):
+            ready_file_marker = os.path.join(path, '.ready')
+            proccessing_file_marker = os.path.join(path, '.processing')
+            if os.access(ready_file_marker, os.R_OK) and not os.access(proccessing_file_marker, os.R_OK):
+                logging.info('Prepare trigger for preprocessing : %s', str(fname))
+
+                context = copy.copy(kwargs)
+                context_params = context['params']
+                context_params['folder'] = path
+                context_params['session_id'] = fname
+
+                preprocessing_ingest = TriggerDagRunOperator(
+                    # need to wrap task_id in str() because log_name returns as unicode
+                    task_id=str('preprocess_ingest_%s' % fname),
+                    trigger_dag_id=pre_process_dicom.DAG_NAME,
+                    python_callable=trigger_preprocessing,
+                    params={'folder': path, 'session_id': fname},
+                    dag=dag
+                )
+
+                preprocessing_ingest.execute(context)
+
+                # Create .processing marker file in the folder marked for processing to avoid duplicate processing
+                open(proccessing_file_marker, 'a').close()
 
 # constants
 
@@ -67,9 +100,11 @@ try:
 except:
     preprocessing_data_folder = "/tmp/data/incoming"
 
-scan_ready_dirs = BashOperator(
+scan_ready_dirs = PythonOperator(
     task_id='scan_dirs_ready_for_preprocessing',
-    bash_command="echo 'Scaning directories ready for processing'",
+    python_callable=scan_dirs_for_preprocessing,
+    op_args=[preprocessing_data_folder],
+    provide_context=True,
     dag=dag)
 
 scan_ready_dirs.doc_md = """\
@@ -80,37 +115,3 @@ Scan the session folders starting from the root folder %s (defined by variable _
 It looks for the presence of a .ready marker file to mark that session folder as ready for processing, but it
 will skip it if contains the marker file .processing indicating that processing has already started.
 """ % preprocessing_data_folder
-
-poll_complete = BashOperator(
-    task_id='poll_complete',
-    bash_command="echo 'Poll complete'",
-    dag=dag)
-
-poll_complete.doc_md = """\
-# Mark polling as complete
-
-Indicates that polling has completed successfully and wait for all preprocessing triggers to fire their tasks.
-"""
-
-if not os.path.exists(preprocessing_data_folder):
-    os.makedirs(preprocessing_data_folder)
-
-for fname in os.listdir(preprocessing_data_folder):
-    path = os.path.join(preprocessing_data_folder, fname)
-    if os.path.isdir(path):
-        ready_file_marker = os.path.join(path, '.ready')
-        proccessing_file_marker = os.path.join(path, '.processing')
-        if os.access(ready_file_marker, os.R_OK) and not os.access(proccessing_file_marker, os.R_OK):
-            logging.info('Prepare trigger for preprocessing : %s', str(fname))
-
-            preprocessing_ingest = TriggerDagRunOperator(
-                # need to wrap task_id in str() because log_name returns as unicode
-                task_id=str('preprocess_ingest_%s' % fname),
-                trigger_dag_id=pre_process_dicom.DAG_NAME,
-                python_callable=trigger_preprocessing,
-                params={'folder': path, 'session_id': fname},
-                dag=dag
-            )
-
-            preprocessing_ingest.set_upstream(scan_ready_dirs)
-            preprocessing_ingest.set_downstream(poll_complete)
