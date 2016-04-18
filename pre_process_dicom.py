@@ -42,7 +42,8 @@ def extractDicomInfo(**kwargs):
 
     return ""
 
-def spmTest(engine, kwargs):
+def spmTest(**kwargs):
+    engine = kwargs['engine']
     SubjID='PR01693_NO310167'
     InputDataFolder='/home/ludovic/tmp/For_Ludovic/Automatic_Computation_under_Organization/Sample_Data/For_Neuromorphics_Pipeline'
     LocalFolder='/home/ludovic/tmp/test'
