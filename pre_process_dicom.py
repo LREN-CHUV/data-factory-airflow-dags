@@ -36,6 +36,16 @@ try:
 except:
     atlasing_output_folder = "/home/ludovic/tmp/results"
 
+try:
+    pipelines_path = Variable.get("pipelines_path")
+except:
+    pipelines_path = "/home/ludovic/tmp/For_Ludovic/Automatic_Computation_under_Organization/Pipelines"
+
+try:
+    neuro_morphometric_pipeline_path = Variable.get('neuro_morphometric_pipeline_path')
+except:
+    neuro_morphometric_pipeline_path = pipelines_path + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
+
 # functions
 
 def extractDicomInfo(**kwargs):
@@ -118,7 +128,6 @@ extract_dicom_info = PythonOperator(
     execution_timeout=timedelta(hours=3),
     provide_context=True,
     dag=dag)
-extract_dicom_info.set_upstream(mark_start_of_processing)
 
 extract_dicom_info.doc_md = """\
 # Extract DICOM information
@@ -145,7 +154,7 @@ neuro_morphometric_pipeline = SpmOperator(
     task_id='neuro_morphometric_pipeline',
     python_callable=neuroMorphometricPipeline,
     provide_context=True,
-    matlab_paths=['/home/ludovic/tmp/For_Ludovic/Automatic_Computation_under_Organization/Pipelines/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'],
+    matlab_paths=[neuro_morphometric_pipeline_path],
     dag=dag
     )
 
