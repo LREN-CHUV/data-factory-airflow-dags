@@ -5,7 +5,8 @@ Pre-process DICOM files in a study folder
 """
 
 import logging
-  
+import os
+
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -18,11 +19,22 @@ from util import dicom_import
 # constants
 
 DAG_NAME = 'pre_process_dicom'
+PROTOCOLS_FILE='Protocols_definition.txt'
 
 try:
     shared_data_folder = Variable.get("shared_data_folder")
 except:
     shared_data_folder = "/tmp/data/shared"
+
+try:
+    local_computation_folder = Variable.get("local_computation_folder")
+except:
+    local_computation_folder = "/home/ludovic/tmp/test"
+
+try:
+    atlasing_output_folder = Variable.get("atlasing_output_folder")
+except:
+    atlasing_output_folder = "/home/ludovic/tmp/results"
 
 # functions
 
@@ -42,15 +54,21 @@ def extractDicomInfo(**kwargs):
 
     return ""
 
-def spmTest(**kwargs):
+def neuroMorphometricPipeline(**kwargs):
     engine = kwargs['engine']
-    SubjID='PR01693_NO310167'
-    InputDataFolder='/home/ludovic/tmp/For_Ludovic/Automatic_Computation_under_Organization/Sample_Data/For_Neuromorphics_Pipeline'
-    LocalFolder='/home/ludovic/tmp/test'
-    AtlasingOutputFolder='/home/ludovic/tmp/results'
-    ProtocolsFile='Protocols_definition.txt'
-    TableFormat='csv'
-    success = engine.NeuroMorphometric_pipeline(SubjID,InputDataFolder,LocalFolder,AtlasingOutputFolder,ProtocolsFile,TableFormat)
+    #ti = kwargs['task_instance']
+    dr = kwargs['dag_run']
+    input_data_folder = dr.conf['folder']
+    input_data_folder = os.sep.join(input_data_folder.split(os.sep)[:-1])
+    subj_id = dr.conf['session_id']
+    table_format='csv'
+    success = engine.NeuroMorphometric_pipeline(subj_id,
+        input_data_folder,
+        local_computation_folder,
+        atlasing_output_folder,
+        PROTOCOLS_FILE,
+        table_format)
+
     logging.info("SPM returned %s", success)
     if success == 0:
         raise RuntimeError('NeuroMorphometric pipeline failed')
@@ -99,7 +117,6 @@ extract_dicom_info = PythonOperator(
     python_callable=extractDicomInfo,
     execution_timeout=timedelta(hours=3),
     provide_context=True,
-    matlab_paths=['/home/ludovic/tmp/For_Ludovic/Automatic_Computation_under_Organization/Pipelines/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'],
     dag=dag)
 extract_dicom_info.set_upstream(mark_start_of_processing)
 
@@ -109,25 +126,39 @@ extract_dicom_info.doc_md = """\
 Read DICOM information from the files stored in the session folder and store that information in the database.
 """
 
-copy_to_shared_folder = BashOperator(
-    task_id='copy_to_shared_folder',
-    bash_command=copy_to_shared_folder_cmd,
-    execution_timeout=timedelta(hours=3),
-    pool='data_transfers',
+#copy_to_shared_folder = BashOperator(
+#    task_id='copy_to_shared_folder',
+#    bash_command=copy_to_shared_folder_cmd,
+#    execution_timeout=timedelta(hours=3),
+#    pool='data_transfers',
+#    provide_context=True,
+#    params={'dest':shared_data_folder},
+#    dag=dag)
+#copy_to_shared_folder.set_upstream(extract_dicom_info)
+#
+#copy_to_shared_folder.doc_md = """\
+## Copy data to shared folder
+#
+#"""
+
+neuro_morphometric_pipeline = SpmOperator(
+    task_id='neuro_morphometric_pipeline',
+    python_callable=neuroMorphometricPipeline,
     provide_context=True,
-    params={'dest':shared_data_folder},
-    dag=dag)
-copy_to_shared_folder.set_upstream(extract_dicom_info)
-
-copy_to_shared_folder.doc_md = """\
-# Copy data to shared folder
-
-"""
-
-test_spm = SpmOperator(
-    task_id='test_spm',
-    python_callable=spmTest,
+    matlab_paths=['/home/ludovic/tmp/For_Ludovic/Automatic_Computation_under_Organization/Pipelines/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'],
     dag=dag
     )
 
-test_spm.set_upstream(copy_to_shared_folder)
+neuro_morphometric_pipeline.set_upstream(extract_dicom_info)
+
+neuro_morphometric_pipeline.doc_md = """\
+# NeuroMorphometric Pipeline
+
+This function computes an individual Atlas based on the NeuroMorphometrics Atlas. This is based on the NeuroMorphometrics Toolbox.
+This delivers three files:
+
+1. Atlas File (*.nii);
+2. Volumes of the Morphometric Atlas structures (*.txt);
+3. Excel File (.xls) containing the volume, globals, and Multiparametric Maps (R2*, R1, MT, PD) for each structure defined in the Subject Atlas.
+
+"""
