@@ -5,18 +5,8 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import orm
 
 
-AIRFLOW_CONN_MYSQL_TRACKER = "mysql+pymysql://mri:mri@lab02186:13306/mri"
-
-
-# TODO: use AIRFLOW_CONN_MYSQL_TRACKER instead of hard-coded DB path
-# AIRFLOW_CONN_MYSQL_TRACKER = os.environ.get('AIRFLOW_CONN_MYSQL_TRACKER')
-
-# if not AIRFLOW_CONN_MYSQL_TRACKER:
-#    raise ValueError("AIRFLOW_CONN_MYSQL_TRACKER not present in the environment")
-
-
 Base = automap_base()
-engine = create_engine(AIRFLOW_CONN_MYSQL_TRACKER)
+engine = create_engine(configuration.get('mri', 'SQL_ALCHEMY_CONN'))
 Base.prepare(engine, reflect=True)
 
 Participant = Base.classes.participant
