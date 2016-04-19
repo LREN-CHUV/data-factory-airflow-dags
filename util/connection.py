@@ -5,7 +5,7 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import orm
 
 
-AIRFLOW_CONN_MYSQL_TRACKER = "mysql+pymysql://tracker:tracker@lab02186:13306/tracker"
+AIRFLOW_CONN_MYSQL_TRACKER = "mysql+pymysql://mri:mri@lab02186:13306/mri"
 
 
 # TODO: use AIRFLOW_CONN_MYSQL_TRACKER instead of hard-coded DB path
