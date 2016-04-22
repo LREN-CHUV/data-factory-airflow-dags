@@ -36,7 +36,7 @@ def trigger_preprocessing(context, dag_run_obj):
         logging.info('Trigger preprocessing for : %s', str(session_id))
         # The payload will be available in target dag context as kwargs['dag_run'].conf
         dag_run_obj.payload = context['params']
-        dag_run_obj.run_id = str(session_id + '__%s' % datetime.now().strftime("%Y-%m-%dT%H:%M:%s"))
+        dag_run_obj.run_id = session_id
         return dag_run_obj
 
 def scan_dirs_for_preprocessing(folder, **kwargs):

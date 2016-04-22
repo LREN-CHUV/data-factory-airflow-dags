@@ -19,32 +19,50 @@ from util import dicom_import
 # constants
 
 DAG_NAME = 'pre_process_dicom'
-PROTOCOLS_FILE='Protocols_definition.txt'
 
 try:
     shared_data_folder = Variable.get("shared_data_folder")
 except:
-    shared_data_folder = "/tmp/data/shared"
+    shared_data_folder = "/data/shared"
 
 try:
     local_computation_folder = Variable.get("local_computation_folder")
 except:
-    local_computation_folder = "/home/ludovic/tmp/test"
+    local_computation_folder = "/tmp/pipelines"
 
 try:
     atlasing_output_folder = Variable.get("atlasing_output_folder")
 except:
-    atlasing_output_folder = "/home/ludovic/tmp/results"
+    atlasing_output_folder = "/data/results"
+
+try:
+    mpms_output_folder = Variable.get("mpms_output_folder")
+except:
+    mpms_output_folder = "/data/results"
 
 try:
     pipelines_path = Variable.get("pipelines_path")
 except:
-    pipelines_path = "/home/ludovic/tmp/For_Ludovic/Automatic_Computation_under_Organization/Pipelines"
+    pipelines_path = "/home/ludovic/Projects/LREN/automated-pipeline/Pipelines"
+
+try:
+    protocols_file = Variable.get("protocols_file")
+except:
+    protocols_file = "/home/ludovic/Projects/LREN/automated-pipeline/Protocols_definition.txt"
+
+logging.info("protocols_file: %s" % protocols_file)
 
 try:
     neuro_morphometric_pipeline_path = Variable.get('neuro_morphometric_pipeline_path')
 except:
     neuro_morphometric_pipeline_path = pipelines_path + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
+
+try:
+    mpm_maps_pipeline_path = Variable.get('mpm_maps_pipeline_path')
+except:
+    mpm_maps_pipeline_path = pipelines_path + '/MPMs_Pipeline'
+
+logging.info("mpm_maps_pipeline_path: %s" % mpm_maps_pipeline_path)
 
 # functions
 
@@ -76,12 +94,33 @@ def neuroMorphometricPipeline(**kwargs):
         input_data_folder,
         local_computation_folder,
         atlasing_output_folder,
-        PROTOCOLS_FILE,
+        protocols_file,
         table_format)
 
     logging.info("SPM returned %s", success)
-    if success == 0:
+    if success != 1.0:
         raise RuntimeError('NeuroMorphometric pipeline failed')
+    return success
+
+def mpmMapsPipeline(**kwargs):
+    engine = kwargs['engine']
+    #ti = kwargs['task_instance']
+    dr = kwargs['dag_run']
+    input_data_folder = dr.conf['folder']
+    input_data_folder = os.sep.join(input_data_folder.split(os.sep)[:-1])
+    subj_id = dr.conf['session_id']
+    pipeline_params_config_file = 'Preproc_mpm_maps_pipeline_config.txt'
+    success = engine.Preproc_mpm_maps(
+        input_data_folder,
+        subj_id,
+        local_computation_folder,
+        protocols_file,
+        pipeline_params_config_file,
+        mpms_output_folder)
+
+    logging.info("SPM returned %s", success)
+    if success != 1.0:
+        raise RuntimeError('MPM Maps pipeline failed')
     return success
 
 # Define the DAG
@@ -134,24 +173,42 @@ Read DICOM information from the files stored in the session folder and store tha
 #
 #"""
 
-neuro_morphometric_pipeline = SpmOperator(
-    task_id='neuro_morphometric_pipeline',
-    python_callable=neuroMorphometricPipeline,
+#neuro_morphometric_pipeline = SpmOperator(
+#    task_id='neuro_morphometric_pipeline',
+#    python_callable=neuroMorphometricPipeline,
+#    provide_context=True,
+#    matlab_paths=[pipelines_path,neuro_morphometric_pipeline_path],
+#    dag=dag
+#    )
+#
+#neuro_morphometric_pipeline.set_upstream(extract_dicom_info)
+#
+#neuro_morphometric_pipeline.doc_md = """\
+## NeuroMorphometric Pipeline
+#
+#This function computes an individual Atlas based on the NeuroMorphometrics Atlas. This is based on the NeuroMorphometrics Toolbox.
+#This delivers three files:
+#
+#1. Atlas File (*.nii);
+#2. Volumes of the Morphometric Atlas structures (*.txt);
+#3. CSV File (.csv) containing the volume, globals, and Multiparametric Maps (R2*, R1, MT, PD) for each structure defined in the Subject Atlas.
+#
+#"""
+
+mpm_maps_pipeline = SpmOperator(
+    task_id='MPM_Maps_pipeline',
+    python_callable=mpmMapsPipeline,
     provide_context=True,
-    matlab_paths=[neuro_morphometric_pipeline_path],
+    matlab_paths=[pipelines_path,mpm_maps_pipeline_path],
     dag=dag
     )
 
-neuro_morphometric_pipeline.set_upstream(extract_dicom_info)
+mpm_maps_pipeline.set_upstream(extract_dicom_info)
 
-neuro_morphometric_pipeline.doc_md = """\
-# NeuroMorphometric Pipeline
+mpm_maps_pipeline.doc_md = """\
+# MPM Maps Pipeline
 
-This function computes an individual Atlas based on the NeuroMorphometrics Atlas. This is based on the NeuroMorphometrics Toolbox.
-This delivers three files:
-
-1. Atlas File (*.nii);
-2. Volumes of the Morphometric Atlas structures (*.txt);
-3. CSV File (.csv) containing the volume, globals, and Multiparametric Maps (R2*, R1, MT, PD) for each structure defined in the Subject Atlas.
+This function computes the Multiparametric Maps (MPMs) (R2*, R1, MT, PD) and brain segmentation in different tissue maps.
+All computation was programmed based on the LREN database structure. The MPMs are calculated locally in 'OutputFolder' and finally copied to 'ServerFolder'.
 
 """
