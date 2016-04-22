@@ -31,7 +31,7 @@ def dicom2db(folder):
 
     db_session = connection.db_session
 
-    for filename in glob.iglob(folder+'/*/*'):
+    for filename in glob.iglob(folder+'/*/MR.*'):
         ds = dicom.read_file(filename)
         try:
             participant_id = extract_participant(ds, db_session, DEFAULT_HANDEDNESS)

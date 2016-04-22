@@ -152,6 +152,6 @@ This delivers three files:
 
 1. Atlas File (*.nii);
 2. Volumes of the Morphometric Atlas structures (*.txt);
-3. Excel File (.xls) containing the volume, globals, and Multiparametric Maps (R2*, R1, MT, PD) for each structure defined in the Subject Atlas.
+3. CSV File (.csv) containing the volume, globals, and Multiparametric Maps (R2*, R1, MT, PD) for each structure defined in the Subject Atlas.
 
 """
