@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import orm
 
+from airflow import configuration
 
 Base = automap_base()
 engine = create_engine(configuration.get('mri', 'SQL_ALCHEMY_CONN'))
