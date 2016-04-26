@@ -53,7 +53,7 @@ def scan_dirs_for_preprocessing(folder, **kwargs):
 
                 context = copy.copy(kwargs)
                 context_params = context['params']
-                context_params['folder'] = path
+                context_params['folder'] = folder
                 context_params['session_id'] = fname
 
                 preprocessing_ingest = TriggerDagRunOperator(
@@ -61,7 +61,7 @@ def scan_dirs_for_preprocessing(folder, **kwargs):
                     task_id=str('preprocess_ingest_%s' % fname),
                     trigger_dag_id=pre_process_dicom.DAG_NAME,
                     python_callable=trigger_preprocessing,
-                    params={'folder': path, 'session_id': fname},
+                    params={'folder': folder, 'session_id': fname},
                     dag=dag
                 )
 
@@ -93,7 +93,7 @@ default_args = {
 
 dag = DAG(dag_id=DAG_NAME,
           default_args=default_args,
-          schedule_interval='0 * * * *')
+          schedule_interval='* * * * *')
 
 try:
     preprocessing_data_folder = Variable.get("preprocessing_data_folder")
