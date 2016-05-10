@@ -31,6 +31,16 @@ except:
     local_computation_folder = "/tmp/pipelines"
 
 try:
+    nifti_local_output_folder = Variable.get("nifti_local_output_folder")
+except:
+    nifti_local_output_folder = "/home/localadmin/data/Nifti_Data_MPMs"
+
+try:
+    nifti_server_output_folder = Variable.get("nifti_server_output_folder")
+except:
+    nifti_server_output_folder = "/mnt/filerc/LREN/SHARE/VBQ_Output_All/DataNifti_All"
+
+try:
     atlasing_output_folder = Variable.get("atlasing_output_folder")
 except:
     atlasing_output_folder = "/data/results"
@@ -82,11 +92,32 @@ def extractDicomInfo(**kwargs):
     ti.xcom_push(key='session_id', value=session_id)
     return "ok"
 
-def neuroMorphometricPipeline(**kwargs):
+def dicomToNiftiPipeline(**kwargs):
     engine = kwargs['engine']
     ti = kwargs['task_instance']
     input_data_folder = ti.xcom_pull(key='folder', task_ids='extract_dicom_info')
     session_id = ti.xcom_pull(key='session_id', task_ids='extract_dicom_info')
+    logging.info("DICOM to Nifti pipeline: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
+    success = engine.NeuroMorphometric_pipeline(
+        input_data_folder,
+        session_id,
+        local_computation_folder,
+        nifti_output_folder,
+        protocols_file)
+
+    logging.info("SPM returned %s", success)
+    if success != 1.0:
+        raise RuntimeError('DICOM to Nifti pipeline failed')
+
+    ti.xcom_push(key='folder', value=nifti_output_folder)
+    ti.xcom_push(key='session_id', value=session_id)
+    return success
+
+def neuroMorphometricPipeline(**kwargs):
+    engine = kwargs['engine']
+    ti = kwargs['task_instance']
+    input_data_folder = ti.xcom_pull(key='folder', task_ids='neuro_morphometric_pipeline')
+    session_id = ti.xcom_pull(key='session_id', task_ids='neuro_morphometric_pipeline')
     table_format='csv'
     logging.info("NeuroMorphometric pipeline: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
     success = engine.NeuroMorphometric_pipeline(session_id,
@@ -177,6 +208,25 @@ Read DICOM information from the files stored in the session folder and store tha
 #
 #"""
 
+dicom_to_nifti_pipeline = SpmOperator(
+    task_id='dicom_to_nifti_pipeline',
+    python_callable=dicomToNiftiPipeline,
+    provide_context=True,
+    matlab_paths=[dicom_to_nifti_pipeline_path],
+    execution_timeout=timedelta(hours=3),
+    dag=dag
+    )
+
+dicom_to_nifti_pipeline.set_upstream(extract_dicom_info)
+
+dicom_to_nifti_pipeline.doc_md = """\
+# DICOM to Nitfi Pipeline
+
+This function convert the dicom files to Nifti format using the SPM tools and dcm2nii tool developed by Chris Rorden.
+
+Webpage: http://www.mccauslandcenter.sc.edu/mricro/mricron/dcm2nii.html
+
+"""
 
 neuro_morphometric_pipeline = SpmOperator(
     task_id='neuro_morphometric_pipeline',
@@ -187,7 +237,7 @@ neuro_morphometric_pipeline = SpmOperator(
     dag=dag
     )
 
-neuro_morphometric_pipeline.set_upstream(extract_dicom_info)
+neuro_morphometric_pipeline.set_upstream(dicom_to_nifti_pipeline)
 
 neuro_morphometric_pipeline.doc_md = """\
 # NeuroMorphometric Pipeline
