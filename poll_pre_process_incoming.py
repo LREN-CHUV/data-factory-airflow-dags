@@ -26,7 +26,19 @@ from datetime import datetime, timedelta, time
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
-from airflow.models import Variable
+from airflow import configuration
+
+# constants
+
+START = datetime.utcnow()
+START = datetime.combine(START.date(), time(START.hour, 0))
+# START = datetime.combine(datetime.today() - timedelta(days=2), datetime.min.time()) + timedelta(hours=10)
+# START = datetime.now()
+
+DAG_NAME = 'poll_pre_process_incoming'
+
+# Folder to scan for new incoming session folders containing DICOM images.
+preprocessing_data_folder = str(configuration.get('mri', 'PREPROCESSING_DATA_FOLDER'))
 
 # functions
 
@@ -70,15 +82,6 @@ def scan_dirs_for_preprocessing(folder, **kwargs):
                 # Create .processing marker file in the folder marked for processing to avoid duplicate processing
                 open(proccessing_file_marker, 'a').close()
 
-# constants
-
-START = datetime.utcnow()
-START = datetime.combine(START.date(), time(START.hour, 0))
-# START = datetime.combine(datetime.today() - timedelta(days=2), datetime.min.time()) + timedelta(hours=10)
-# START = datetime.now()
-
-DAG_NAME = 'poll_pre_process_incoming'
-
 # Define the DAG
 
 default_args = {
@@ -94,11 +97,6 @@ default_args = {
 dag = DAG(dag_id=DAG_NAME,
           default_args=default_args,
           schedule_interval='* * * * *')
-
-try:
-    preprocessing_data_folder = Variable.get("preprocessing_data_folder")
-except:
-    preprocessing_data_folder = "/tmp/data/incoming"
 
 scan_ready_dirs = PythonOperator(
     task_id='scan_dirs_ready_for_preprocessing',

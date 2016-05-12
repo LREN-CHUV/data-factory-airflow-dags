@@ -13,6 +13,7 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators import SpmOperator
 from airflow.models import Variable
+from airflow import configuration
 
 from util import dicom_import
 
@@ -20,59 +21,15 @@ from util import dicom_import
 
 DAG_NAME = 'pre_process_dicom'
 
-try:
-    shared_data_folder = Variable.get("shared_data_folder")
-except:
-    shared_data_folder = "/data/shared"
-
-try:
-    local_computation_folder = Variable.get("local_computation_folder")
-except:
-    local_computation_folder = "/tmp/pipelines"
-
-try:
-    nifti_local_output_folder = Variable.get("nifti_local_output_folder")
-except:
-    nifti_local_output_folder = "/home/localadmin/data/Nifti_Data_MPMs"
-
-try:
-    nifti_server_output_folder = Variable.get("nifti_server_output_folder")
-except:
-    nifti_server_output_folder = "/mnt/filerc/LREN/SHARE/VBQ_Output_All/DataNifti_All"
-
-try:
-    atlasing_output_folder = Variable.get("atlasing_output_folder")
-except:
-    atlasing_output_folder = "/data/results"
-
-try:
-    mpms_output_folder = Variable.get("mpms_output_folder")
-except:
-    mpms_output_folder = "/data/results"
-
-try:
-    pipelines_path = Variable.get("pipelines_path")
-except:
-    pipelines_path = "/home/ludovic/Projects/LREN/automated-pipeline/Pipelines"
-
-try:
-    protocols_file = Variable.get("protocols_file")
-except:
-    protocols_file = "/home/ludovic/Projects/LREN/automated-pipeline/Protocols_definition.txt"
-
-logging.info("protocols_file: %s" % protocols_file)
-
-try:
-    neuro_morphometric_pipeline_path = Variable.get('neuro_morphometric_pipeline_path')
-except:
-    neuro_morphometric_pipeline_path = pipelines_path + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
-
-try:
-    mpm_maps_pipeline_path = Variable.get('mpm_maps_pipeline_path')
-except:
-    mpm_maps_pipeline_path = pipelines_path + '/MPMs_Pipeline'
-
-logging.info("mpm_maps_pipeline_path: %s" % mpm_maps_pipeline_path)
+local_computation_folder = str(configuration.get('mri', 'LOCAL_COMPUTATION_FOLDER'))
+nifti_local_output_folder = str(configuration.get('mri', 'NIFTI_LOCAL_OUTPUT_FOLDER'))
+nifti_server_output_folder = str(configuration.get('mri', 'NIFTI_SERVER_OUTPUT_FOLDER'))
+atlasing_output_folder = str(configuration.get('mri', 'ATLASING_OUTPUT_FOLDER'))
+mpms_output_folder = str(configuration.get('mri', 'MPMS_OUTPUT_FOLDER'))
+pipelines_path = str(configuration.get('mri', 'PIPELINES_PATH'))
+protocols_file = str(configuration.get('mri', 'PROTOCOLS_FILE'))
+neuro_morphometric_pipeline_path = pipelines_path + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
+mpm_maps_pipeline_path = pipelines_path + '/MPMs_Pipeline'
 
 # functions
 
@@ -192,21 +149,6 @@ extract_dicom_info.doc_md = """\
 
 Read DICOM information from the files stored in the session folder and store that information in the database.
 """
-
-#copy_to_shared_folder = BashOperator(
-#    task_id='copy_to_shared_folder',
-#    bash_command=copy_to_shared_folder_cmd,
-#    execution_timeout=timedelta(hours=3),
-#    pool='data_transfers',
-#    provide_context=True,
-#    params={'dest':shared_data_folder},
-#    dag=dag)
-#copy_to_shared_folder.set_upstream(extract_dicom_info)
-#
-#copy_to_shared_folder.doc_md = """\
-## Copy data to shared folder
-#
-#"""
 
 dicom_to_nifti_pipeline = SpmOperator(
     task_id='dicom_to_nifti_pipeline',
