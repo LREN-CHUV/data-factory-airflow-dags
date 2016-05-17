@@ -14,6 +14,7 @@ Participant = Base.classes.participant
 Scan = Base.classes.scan
 Dicom = Base.classes.dicom
 Session = Base.classes.session
+SequenceType = Base.classes.sequence_type
 Sequence = Base.classes.sequence
 Repetition = Base.classes.repetition
 

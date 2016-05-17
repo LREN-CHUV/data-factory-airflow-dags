@@ -44,7 +44,7 @@ def extract_dicom_info_fn(**kwargs):
 
     logging.info('folder %s, session_id %s' % (folder, session_id))
 
-    #dicom_import.dicom2db(folder)
+    dicom_import.dicom2db(folder)
 
     ti.xcom_push(key='folder', value=folder)
     ti.xcom_push(key='session_id', value=session_id)
