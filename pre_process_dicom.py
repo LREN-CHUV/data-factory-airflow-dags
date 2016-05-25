@@ -93,7 +93,7 @@ def neuro_morphometric_atlas_pipeline_fn(parent_task, **kwargs):
     ti.xcom_push(key='session_id', value=session_id)
     return success
 
-def mpm_maps_pipeline(parent_task, **kwargs):
+def mpm_maps_pipeline_fn(parent_task, **kwargs):
     engine = kwargs['engine']
     ti = kwargs['task_instance']
     input_data_folder = ti.xcom_pull(key='folder', task_ids=parent_task)
