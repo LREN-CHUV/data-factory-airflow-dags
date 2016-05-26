@@ -2,7 +2,8 @@
 # IMPORTS
 ########################################################################################################################
 
-import glob
+import os
+import fnmatch
 import traceback
 import sys
 import dicom
@@ -31,25 +32,27 @@ DEFAULT_COMMENT = ''
 
 def dicom2db(folder):
 
-    for filename in glob.iglob(folder + '/**/MR.*', recursive=True):
-        try:
-            logging.debug("Processing '%s'" % filename)
-            ds = dicom.read_file(filename)
+    for root, dirnames, filenames in os.walk(args.root):
+        for file in fnmatch.filter(filenames, 'MR.*'):
+            try:
+                filename = root+"/"+file
+                logging.info("Processing '%s'" % filename)
+                ds = dicom.read_file(filename)
 
-            participant_id = extract_participant(ds, DEFAULT_HANDEDNESS)
-            scan_id = extract_scan(ds, participant_id, DEFAULT_ROLE, DEFAULT_COMMENT)
-            session_id = extract_session(ds, scan_id)
-            sequence_type_id = extract_sequence_type(ds)
-            sequence_id = extract_sequence(session_id, sequence_type_id)
-            repetition_id = extract_repetition(ds, sequence_id)
-            extract_dicom(filename, repetition_id)
+                participant_id = extract_participant(ds, DEFAULT_HANDEDNESS)
+                scan_id = extract_scan(ds, participant_id, DEFAULT_ROLE, DEFAULT_COMMENT)
+                session_id = extract_session(ds, scan_id)
+                sequence_type_id = extract_sequence_type(ds)
+                sequence_id = extract_sequence(session_id, sequence_type_id)
+                repetition_id = extract_repetition(ds, sequence_id)
+                extract_dicom(filename, repetition_id)
 
-        except (InvalidDicomError, IsADirectoryError):
-            logging.warning("%s is not a DICOM file !" % filename)
+            except (InvalidDicomError, IsADirectoryError):
+                logging.warning("%s is not a DICOM file !" % filename)
 
-        except (err.IntegrityError, exc.IntegrityError):
-            print_db_except()
-            connection.db_session.rollback()
+            except (err.IntegrityError, exc.IntegrityError):
+                print_db_except()
+                connection.db_session.rollback()
 
 
 ########################################################################################################################
