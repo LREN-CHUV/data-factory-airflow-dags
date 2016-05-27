@@ -4,8 +4,6 @@
 
 import os
 import fnmatch
-import traceback
-import sys
 import dicom
 import datetime
 import logging
@@ -47,7 +45,7 @@ def dicom2db(folder):
                 repetition_id = extract_repetition(ds, sequence_id)
                 extract_dicom(filename, repetition_id)
 
-            except (InvalidDicomError, IsADirectoryError):
+            except (InvalidDicomError):
                 logging.warning("%s is not a DICOM file !" % filename)
 
             except (err.IntegrityError, exc.IntegrityError):
