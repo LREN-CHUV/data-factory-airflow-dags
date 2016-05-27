@@ -32,7 +32,7 @@ DEFAULT_COMMENT = ''
 
 def dicom2db(folder):
 
-    for root, dirnames, filenames in os.walk(args.root):
+    for root, dirnames, filenames in os.walk(folder):
         for file in fnmatch.filter(filenames, 'MR.*'):
             try:
                 filename = root+"/"+file
