@@ -31,9 +31,9 @@ DEFAULT_COMMENT = ''
 def dicom2db(folder):
 
     for root, dirnames, filenames in os.walk(folder):
-        for file in fnmatch.filter(filenames, 'MR.*'):
+        for f in fnmatch.filter(filenames, 'MR.*'):
             try:
-                filename = root+"/"+file
+                filename = root+"/"+f
                 logging.info("Processing '%s'" % filename)
                 ds = dicom.read_file(filename)
 
@@ -45,7 +45,29 @@ def dicom2db(folder):
                 repetition_id = extract_repetition(ds, sequence_id)
                 extract_dicom(filename, repetition_id)
 
-            except (InvalidDicomError):
+            except InvalidDicomError:
+                logging.warning("%s is not a DICOM file !" % filename)
+
+            except (err.IntegrityError, exc.IntegrityError):
+                print_db_except()
+                connection.db_session.rollback()
+
+
+def visit_info(folder):
+    for root, dirnames, filenames in os.walk(folder):
+        for f in fnmatch.filter(filenames, 'MR.*'):
+            filename = None
+            try:
+                filename = root+"/"+f
+                logging.info("Processing '%s'" % filename)
+                ds = dicom.read_file(filename)
+
+                participant_id = ds.PatientID
+                scan_date = format_date(ds.StudyDate)
+
+                return participant_id, scan_date
+
+            except InvalidDicomError:
                 logging.warning("%s is not a DICOM file !" % filename)
 
             except (err.IntegrityError, exc.IntegrityError):

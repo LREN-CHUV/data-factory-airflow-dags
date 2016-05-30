@@ -5,18 +5,17 @@ Pre-process DICOM files in a study folder
 """
 
 import logging
-import os
 
 from datetime import datetime, timedelta
 from functools import partial
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.operators.bash_operator import BashOperator
 from airflow.operators import SpmOperator
-from airflow.models import Variable
 from airflow import configuration
 
 from util import dicom_import
+from util import nifti_import
+
 
 # constants
 
@@ -34,21 +33,23 @@ mpm_maps_local_output_folder = str(configuration.get('mri', 'MPM_MAPS_LOCAL_OUTP
 mpm_maps_server_output_folder = str(configuration.get('mri', 'MPM_MAPS_SERVER_OUTPUT_FOLDER'))
 mpm_maps_pipeline_path = pipelines_path + '/MPMs_Pipeline'
 
+
 # functions
 
 def extract_dicom_info_fn(**kwargs):
     ti = kwargs['task_instance']
     dr = kwargs['dag_run']
-    folder = dr.conf['folder']
+    input_data_folder = dr.conf['folder']
     session_id = dr.conf['session_id']
 
-    logging.info('folder %s, session_id %s' % (folder, session_id))
+    logging.info('folder %s, session_id %s' % (input_data_folder, session_id))
 
-    dicom_import.dicom2db(folder)
+    dicom_import.dicom2db(input_data_folder)
 
-    ti.xcom_push(key='folder', value=folder)
+    ti.xcom_push(key='folder', value=input_data_folder)
     ti.xcom_push(key='session_id', value=session_id)
     return "ok"
+
 
 def dicom_to_nifti_pipeline_fn(parent_task, **kwargs):
     engine = kwargs['engine']
@@ -70,6 +71,7 @@ def dicom_to_nifti_pipeline_fn(parent_task, **kwargs):
     ti.xcom_push(key='folder', value=dicom_to_nifti_local_output_folder)
     ti.xcom_push(key='session_id', value=session_id)
     return success
+
 
 def neuro_morphometric_atlas_pipeline_fn(parent_task, **kwargs):
     engine = kwargs['engine']
@@ -93,6 +95,7 @@ def neuro_morphometric_atlas_pipeline_fn(parent_task, **kwargs):
     ti.xcom_push(key='session_id', value=session_id)
     return success
 
+
 def mpm_maps_pipeline_fn(parent_task, **kwargs):
     engine = kwargs['engine']
     ti = kwargs['task_instance']
@@ -115,6 +118,33 @@ def mpm_maps_pipeline_fn(parent_task, **kwargs):
     ti.xcom_push(key='folder', value=mpms_output_folder)
     ti.xcom_push(key='session_id', value=session_id)
     return success
+
+
+def extract_nifti_info_fn(parent_task, **kwargs):
+    ti = kwargs['task_instance']
+    input_data_folder = ti.xcom_pull(key='folder', task_ids=parent_task)
+    session_id = ti.xcom_pull(key='session_id', task_ids=parent_task)
+    logging.info("NIFTI extract: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
+    logging.info("root-folder: %s" % dicom_to_nifti_local_output_folder)
+
+    (participant_id, scan_date) = dicom_import.visit_info(input_data_folder)
+    nifti_import.nifti2db(dicom_to_nifti_local_output_folder, participant_id, scan_date)
+
+    return "ok"
+
+
+def extract_nifti_mpm_info_fn(parent_task, **kwargs):
+    ti = kwargs['task_instance']
+    input_data_folder = ti.xcom_pull(key='mpms_output_folder', task_ids=parent_task)
+    session_id = ti.xcom_pull(key='session_id', task_ids=parent_task)
+    logging.info("NIFTI extract: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
+    logging.info("root-folder: %s" % dicom_to_nifti_local_output_folder)
+
+    (participant_id, scan_date) = dicom_import.visit_info(input_data_folder)
+    nifti_import.nifti2db(mpms_output_folder, participant_id, scan_date)
+
+    return "ok"
+
 
 # Define the DAG
 
@@ -143,7 +173,8 @@ extract_dicom_info = PythonOperator(
     python_callable=extract_dicom_info_fn,
     provide_context=True,
     execution_timeout=timedelta(hours=1),
-    dag=dag)
+    dag=dag
+    )
 
 extract_dicom_info.doc_md = """\
 # Extract DICOM information
@@ -211,4 +242,36 @@ mpm_maps_pipeline.doc_md = """\
 This function computes the Multiparametric Maps (MPMs) (R2*, R1, MT, PD) and brain segmentation in different tissue maps.
 All computation was programmed based on the LREN database structure. The MPMs are calculated locally in 'OutputFolder' and finally copied to 'ServerFolder'.
 
+"""
+
+extract_nifti_info = PythonOperator(
+    task_id='extract_nifti_info',
+    python_callable=extract_nifti_info_fn,
+    provide_context=True,
+    execution_timeout=timedelta(hours=1),
+    dag=dag
+    )
+
+extract_nifti_info.set_upstream(dicom_to_nifti_pipeline)
+
+extract_nifti_info.doc_md = """\
+# Extract NIFTI information
+
+Read NIFTI information from a directories tree of nifti files and store that information in the database.
+"""
+
+extract_nifti_mpm_info = PythonOperator(
+    task_id='extract_nifti_mpm_info',
+    python_callable=extract_nifti_mpm_info_fn,
+    provide_context=True,
+    execution_timeout=timedelta(hours=1),
+    dag=dag
+    )
+
+extract_nifti_mpm_info.set_upstream(mpm_maps_pipeline)
+
+extract_nifti_mpm_info.doc_md = """\
+# Extract NIFTI_MPM information
+
+Read NIFTI_MPM information from a directories tree of nifti files and store that information in the database.
 """
