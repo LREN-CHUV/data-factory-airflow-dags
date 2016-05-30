@@ -56,7 +56,7 @@ def dicom_to_nifti_pipeline_fn(parent_task, **kwargs):
     input_data_folder = ti.xcom_pull(key='folder', task_ids=parent_task)
     session_id = ti.xcom_pull(key='session_id', task_ids=parent_task)
     logging.info("DICOM to Nifti pipeline: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
-    success = engine.NeuroMorphometric_pipeline(
+    success = engine.DCM2NII_LREN(
         input_data_folder,
         session_id,
         dicom_to_nifti_local_output_folder,
