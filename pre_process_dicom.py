@@ -5,6 +5,7 @@ Pre-process DICOM files in a study folder
 """
 
 import logging, os
+import StringIO
 
 from datetime import datetime, timedelta
 from functools import partial
@@ -69,16 +70,23 @@ def dicom_to_nifti_pipeline_fn(parent_task, **kwargs):
     scan_date = ti.xcom_pull(key='scan_date', task_ids=parent_task)
     logging.info("DICOM to Nifti pipeline: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
 
+    out = StringIO.StringIO()
+    err = StringIO.StringIO()
     parent_data_folder = os.path.abspath(input_data_folder + '/..')
+    logging.info("Calling DCM2NII_LREN(%s,%s,%s,%s,%s,%s)" % (parent_data_folder, session_id, dicom_to_nifti_local_output_folder, dicom_to_nifti_server_output_folder, protocols_file))
     success = engine.DCM2NII_LREN(
         parent_data_folder,
         session_id,
         dicom_to_nifti_local_output_folder,
         dicom_to_nifti_server_output_folder,
-        protocols_file)
+        protocols_file, stdout=out, stderr=err)
 
+    logging.info("SPM output:")
+    logging.info(out.getvalue())
+    logging.info("SPM errors:")
+    logging.info(err.getvalue())
     logging.info("SPM returned %s", success)
-    if success != 1.0:
+    if success < 1.0:
         raise RuntimeError('DICOM to Nifti pipeline failed')
 
     ti.xcom_push(key='folder', value=dicom_to_nifti_local_output_folder + '/' + session_id)
@@ -98,17 +106,24 @@ def neuro_morphometric_atlas_pipeline_fn(parent_task, **kwargs):
     scan_date = ti.xcom_pull(key='scan_date', task_ids=parent_task)
     logging.info("NeuroMorphometric pipeline: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
 
+    out = StringIO.StringIO()
+    err = StringIO.StringIO()
     table_format='csv'
     parent_data_folder = os.path.abspath(input_data_folder + '/..')
+    logging.info("Calling NeuroMorphometric_pipeline(%s,%s,%s,%s,%s,%s)" % (session_id, parent_data_folder, neuro_morphometric_atlas_local_output_folder, neuro_morphometric_atlas_server_output_folder, protocols_file, table_format))
     success = engine.NeuroMorphometric_pipeline(session_id,
         parent_data_folder,
         neuro_morphometric_atlas_local_output_folder,
         neuro_morphometric_atlas_server_output_folder,
         protocols_file,
-        table_format)
+        table_format, stdout=out, stderr=err)
 
+    logging.info("SPM output:")
+    logging.info(out.getvalue())
+    logging.info("SPM errors:")
+    logging.info(err.getvalue())
     logging.info("SPM returned %s", success)
-    if success != 1.0:
+    if success < 1.0:
         raise RuntimeError('NeuroMorphometric pipeline failed')
 
     ti.xcom_push(key='folder', value=neuro_morphometric_atlas_local_output_folder + '/' + session_id)
@@ -129,17 +144,24 @@ def mpm_maps_pipeline_fn(parent_task, **kwargs):
     scan_date = ti.xcom_pull(key='scan_date', task_ids=parent_task)
     logging.info("MPM Maps pipeline: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
 
+    out = StringIO.StringIO()
+    err = StringIO.StringIO()
     parent_data_folder = os.path.abspath(input_data_folder + '/..')
+    logging.info("Calling Preproc_mpm_maps(%s,%s,%s,%s,%s,%s)" % (parent_data_folder, session_id, mpm_maps_local_output_folder, protocols_file, pipeline_params_config_file, mpm_maps_server_output_folder))
     success = engine.Preproc_mpm_maps(
         parent_data_folder,
         session_id,
         mpm_maps_local_output_folder,
         protocols_file,
         pipeline_params_config_file,
-        mpm_maps_server_output_folder)
+        mpm_maps_server_output_folder, stdout=out, stderr=err)
 
+    logging.info("SPM output:")
+    logging.info(out.getvalue())
+    logging.info("SPM errors:")
+    logging.info(err.getvalue())
     logging.info("SPM returned %s", success)
-    if success != 1.0:
+    if success < 1.0:
         raise RuntimeError('MPM Maps pipeline failed')
 
     ti.xcom_push(key='folder', value=mpm_maps_local_output_folder + '/' + session_id)
