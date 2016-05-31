@@ -209,6 +209,22 @@ Webpage: http://www.mccauslandcenter.sc.edu/mricro/mricron/dcm2nii.html
 
 """
 
+extract_nifti_info = PythonOperator(
+    task_id='extract_nifti_info',
+    python_callable=partial(extract_nifti_info_fn, 'dicom_to_nifti_pipeline'),
+    provide_context=True,
+    execution_timeout=timedelta(hours=1),
+    dag=dag
+    )
+
+extract_nifti_info.set_upstream(dicom_to_nifti_pipeline)
+
+extract_nifti_info.doc_md = """\
+# Extract information from NIFTI files converted from DICOM
+
+Read NIFTI information from a directory tree of nifti files freshly converted from DICOM and store that information in the database.
+"""
+
 neuro_morphometric_atlas_pipeline = SpmOperator(
     task_id='neuro_morphometric_atlas_pipeline',
     python_callable=partial(neuro_morphometric_atlas_pipeline_fn, 'extract_nifti_info'),
@@ -249,22 +265,6 @@ mpm_maps_pipeline.doc_md = """\
 This function computes the Multiparametric Maps (MPMs) (R2*, R1, MT, PD) and brain segmentation in different tissue maps.
 All computation was programmed based on the LREN database structure. The MPMs are calculated locally in 'OutputFolder' and finally copied to 'ServerFolder'.
 
-"""
-
-extract_nifti_info = PythonOperator(
-    task_id='extract_nifti_info',
-    python_callable=partial(extract_nifti_info_fn, 'dicom_to_nifti_pipeline'),
-    provide_context=True,
-    execution_timeout=timedelta(hours=1),
-    dag=dag
-    )
-
-extract_nifti_info.set_upstream(dicom_to_nifti_pipeline)
-
-extract_nifti_info.doc_md = """\
-# Extract information from NIFTI files converted from DICOM
-
-Read NIFTI information from a directory tree of nifti files freshly converted from DICOM and store that information in the database.
 """
 
 extract_nifti_mpm_info = PythonOperator(
