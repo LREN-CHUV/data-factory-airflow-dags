@@ -65,7 +65,9 @@ def scan_dirs_for_preprocessing(folder, **kwargs):
 
                 context = copy.copy(kwargs)
                 context_params = context['params']
-                context_params['folder'] = folder
+                # Folder containing the DICOM files to process
+                context_params['folder'] = path
+                # Session ID identifies the session for a scan. The last part of the folder path should match session_id
                 context_params['session_id'] = fname
 
                 preprocessing_ingest = TriggerDagRunOperator(
@@ -73,7 +75,7 @@ def scan_dirs_for_preprocessing(folder, **kwargs):
                     task_id=str('preprocess_ingest_%s' % fname),
                     trigger_dag_id=pre_process_dicom.DAG_NAME,
                     python_callable=trigger_preprocessing,
-                    params={'folder': folder, 'session_id': fname},
+                    params={'folder': path, 'session_id': fname},
                     dag=dag
                 )
 
