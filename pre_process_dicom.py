@@ -32,6 +32,7 @@ neuro_morphometric_atlas_pipeline_path = pipelines_path + '/NeuroMorphometric_Pi
 mpm_maps_local_output_folder = str(configuration.get('mri', 'MPM_MAPS_LOCAL_OUTPUT_FOLDER'))
 mpm_maps_server_output_folder = str(configuration.get('mri', 'MPM_MAPS_SERVER_OUTPUT_FOLDER'))
 mpm_maps_pipeline_path = pipelines_path + '/MPMs_Pipeline'
+misc_library_path = pipelines_path + '/../Miscellaneous&Others'
 
 
 # functions
@@ -57,7 +58,7 @@ def dicom_to_nifti_pipeline_fn(parent_task, **kwargs):
     input_data_folder = ti.xcom_pull(key='folder', task_ids=parent_task)
     session_id = ti.xcom_pull(key='session_id', task_ids=parent_task)
     logging.info("DICOM to Nifti pipeline: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
-    success = engine.NeuroMorphometric_pipeline(
+    success = engine.DCM2NII_LREN(
         input_data_folder,
         session_id,
         dicom_to_nifti_local_output_folder,
@@ -186,7 +187,7 @@ dicom_to_nifti_pipeline = SpmOperator(
     task_id='dicom_to_nifti_pipeline',
     python_callable=partial(dicom_to_nifti_pipeline_fn, 'extract_dicom_info'),
     provide_context=True,
-    matlab_paths=[dicom_to_nifti_pipeline_path],
+    matlab_paths=[misc_library_path, dicom_to_nifti_pipeline_path],
     execution_timeout=timedelta(hours=3),
     dag=dag
     )
@@ -206,7 +207,7 @@ neuro_morphometric_atlas_pipeline = SpmOperator(
     task_id='neuro_morphometric_atlas_pipeline',
     python_callable=partial(neuro_morphometric_atlas_pipeline_fn, 'dicom_to_nifti_pipeline'),
     provide_context=True,
-    matlab_paths=[neuro_morphometric_atlas_pipeline_path],
+    matlab_paths=[misc_library_path, neuro_morphometric_atlas_pipeline_path],
     execution_timeout=timedelta(hours=3),
     dag=dag
     )
@@ -229,7 +230,7 @@ mpm_maps_pipeline = SpmOperator(
     task_id='mpm_maps_pipeline',
     python_callable=partial(mpm_maps_pipeline_fn, 'neuro_morphometric_atlas_pipeline'),
     provide_context=True,
-    matlab_paths=[mpm_maps_pipeline_path],
+    matlab_paths=[misc_library_path, mpm_maps_pipeline_path],
     execution_timeout=timedelta(hours=3),
     dag=dag
     )
