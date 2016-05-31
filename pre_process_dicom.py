@@ -65,7 +65,10 @@ def dicom_to_nifti_pipeline_fn(parent_task, **kwargs):
     ti = kwargs['task_instance']
     input_data_folder = ti.xcom_pull(key='folder', task_ids=parent_task)
     session_id = ti.xcom_pull(key='session_id', task_ids=parent_task)
+    participant_id = ti.xcom_pull(key='participant_id', task_ids=parent_task)
+    scan_date = ti.xcom_pull(key='scan_date', task_ids=parent_task)
     logging.info("DICOM to Nifti pipeline: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
+
     parent_data_folder = os.path.abspath(input_data_folder + '/..')
     success = engine.DCM2NII_LREN(
         parent_data_folder,
@@ -80,6 +83,8 @@ def dicom_to_nifti_pipeline_fn(parent_task, **kwargs):
 
     ti.xcom_push(key='folder', value=dicom_to_nifti_local_output_folder + '/' + session_id)
     ti.xcom_push(key='session_id', value=session_id)
+    ti.xcom_push(key='participant_id', value=participant_id)
+    ti.xcom_push(key='scan_date', value=scan_date)
     return success
 
 # Pipeline that builds a Neuro morphometric atlas from the Nitfi files located in the sub folder 'session_id' of 'folder'
@@ -89,8 +94,11 @@ def neuro_morphometric_atlas_pipeline_fn(parent_task, **kwargs):
     ti = kwargs['task_instance']
     input_data_folder = ti.xcom_pull(key='folder', task_ids=parent_task)
     session_id = ti.xcom_pull(key='session_id', task_ids=parent_task)
-    table_format='csv'
+    participant_id = ti.xcom_pull(key='participant_id', task_ids=parent_task)
+    scan_date = ti.xcom_pull(key='scan_date', task_ids=parent_task)
     logging.info("NeuroMorphometric pipeline: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
+
+    table_format='csv'
     parent_data_folder = os.path.abspath(input_data_folder + '/..')
     success = engine.NeuroMorphometric_pipeline(session_id,
         parent_data_folder,
@@ -105,6 +113,8 @@ def neuro_morphometric_atlas_pipeline_fn(parent_task, **kwargs):
 
     ti.xcom_push(key='folder', value=neuro_morphometric_atlas_local_output_folder + '/' + session_id)
     ti.xcom_push(key='session_id', value=session_id)
+    ti.xcom_push(key='participant_id', value=participant_id)
+    ti.xcom_push(key='scan_date', value=scan_date)
     return success
 
 # Pipeline that builds the MPM maps from the Nitfi files located in the sub folder 'session_id' of 'folder'
@@ -115,7 +125,10 @@ def mpm_maps_pipeline_fn(parent_task, **kwargs):
     input_data_folder = ti.xcom_pull(key='folder', task_ids=parent_task)
     session_id = ti.xcom_pull(key='session_id', task_ids=parent_task)
     pipeline_params_config_file = 'Preproc_mpm_maps_pipeline_config.txt'
+    participant_id = ti.xcom_pull(key='participant_id', task_ids=parent_task)
+    scan_date = ti.xcom_pull(key='scan_date', task_ids=parent_task)
     logging.info("MPM Maps pipeline: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
+
     parent_data_folder = os.path.abspath(input_data_folder + '/..')
     success = engine.Preproc_mpm_maps(
         parent_data_folder,
@@ -131,6 +144,8 @@ def mpm_maps_pipeline_fn(parent_task, **kwargs):
 
     ti.xcom_push(key='folder', value=mpm_maps_local_output_folder + '/' + session_id)
     ti.xcom_push(key='session_id', value=session_id)
+    ti.xcom_push(key='participant_id', value=participant_id)
+    ti.xcom_push(key='scan_date', value=scan_date)
     return success
 
 # Extract information from the Nifti files located in the sub folder 'session_id' of 'folder'
@@ -139,8 +154,8 @@ def extract_nifti_info_fn(parent_task, **kwargs):
     ti = kwargs['task_instance']
     input_data_folder = ti.xcom_pull(key='folder', task_ids=parent_task)
     session_id = ti.xcom_pull(key='session_id', task_ids=parent_task)
-    participant_id = ti.xcom_pull(key='participant_id')
-    scan_date = ti.xcom_pull(key='scan_date')
+    participant_id = ti.xcom_pull(key='participant_id', task_ids=parent_task)
+    scan_date = ti.xcom_pull(key='scan_date', task_ids=parent_task)
 
     logging.info("NIFTI extract: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
     logging.info("root-folder: %s" % dicom_to_nifti_local_output_folder)
@@ -149,6 +164,8 @@ def extract_nifti_info_fn(parent_task, **kwargs):
 
     ti.xcom_push(key='folder', value=input_data_folder)
     ti.xcom_push(key='session_id', value=session_id)
+    ti.xcom_push(key='participant_id', value=participant_id)
+    ti.xcom_push(key='scan_date', value=scan_date)
 
     return "ok"
 
