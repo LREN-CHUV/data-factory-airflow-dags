@@ -37,6 +37,8 @@ misc_library_path = pipelines_path + '/../Miscellaneous&Others'
 
 # functions
 
+# Extract the information from DICOM files located inside a folder.
+# The folder information should be given in the configuration parameter 'folder' of the DAG run
 def extract_dicom_info_fn(**kwargs):
     ti = kwargs['task_instance']
     dr = kwargs['dag_run']
@@ -51,7 +53,9 @@ def extract_dicom_info_fn(**kwargs):
     ti.xcom_push(key='session_id', value=session_id)
     return "ok"
 
-
+# Conversion pipeline from DICOM to Nifti format.
+# It converts all files located in the sub folder 'session_id' of 'folder'
+# parent_task should contain XCOM keys 'folder' and 'session_id'
 def dicom_to_nifti_pipeline_fn(parent_task, **kwargs):
     engine = kwargs['engine']
     ti = kwargs['task_instance']
@@ -73,7 +77,8 @@ def dicom_to_nifti_pipeline_fn(parent_task, **kwargs):
     ti.xcom_push(key='session_id', value=session_id)
     return success
 
-
+# Pipeline that builds a Neuro morphometric atlas from the Nitfi files located in the sub folder 'session_id' of 'folder'
+# parent_task should contain XCOM keys 'folder' and 'session_id'
 def neuro_morphometric_atlas_pipeline_fn(parent_task, **kwargs):
     engine = kwargs['engine']
     ti = kwargs['task_instance']
@@ -92,11 +97,12 @@ def neuro_morphometric_atlas_pipeline_fn(parent_task, **kwargs):
     if success != 1.0:
         raise RuntimeError('NeuroMorphometric pipeline failed')
 
-    ti.xcom_push(key='folder', value=atlasing_output_folder)
+    ti.xcom_push(key='folder', value=neuro_morphometric_atlas_local_output_folder)
     ti.xcom_push(key='session_id', value=session_id)
     return success
 
-
+# Pipeline that builds the MPM maps from the Nitfi files located in the sub folder 'session_id' of 'folder'
+# parent_task should contain XCOM keys 'folder' and 'session_id'
 def mpm_maps_pipeline_fn(parent_task, **kwargs):
     engine = kwargs['engine']
     ti = kwargs['task_instance']
@@ -107,20 +113,21 @@ def mpm_maps_pipeline_fn(parent_task, **kwargs):
     success = engine.Preproc_mpm_maps(
         input_data_folder,
         session_id,
-        local_computation_folder,
+        mpm_maps_local_output_folder,
         protocols_file,
         pipeline_params_config_file,
-        mpms_output_folder)
+        mpm_maps_server_output_folder)
 
     logging.info("SPM returned %s", success)
     if success != 1.0:
         raise RuntimeError('MPM Maps pipeline failed')
 
-    ti.xcom_push(key='folder', value=mpms_output_folder)
+    ti.xcom_push(key='folder', value=mpm_maps_local_output_folder)
     ti.xcom_push(key='session_id', value=session_id)
     return success
 
-
+# Extract information from the Nifti files located in the sub folder 'session_id' of 'folder'
+# parent_task should contain XCOM keys 'folder' and 'session_id'
 def extract_nifti_info_fn(parent_task, **kwargs):
     ti = kwargs['task_instance']
     input_data_folder = ti.xcom_pull(key='folder', task_ids=parent_task)
@@ -131,18 +138,23 @@ def extract_nifti_info_fn(parent_task, **kwargs):
     (participant_id, scan_date) = dicom_import.visit_info(input_data_folder)
     nifti_import.nifti2db(dicom_to_nifti_local_output_folder, participant_id, scan_date)
 
+    ti.xcom_push(key='participant_id', value=participant_id)
+    ti.xcom_push(key='scan_date', value=scan_date)
+
     return "ok"
 
 
-def extract_nifti_mpm_info_fn(parent_task, **kwargs):
+# parent_task should contain XCOM keys 'folder' and 'session_id'
+def extract_nifti_mpm_info_fn(parent_task, nifti_info_task, **kwargs):
     ti = kwargs['task_instance']
-    input_data_folder = ti.xcom_pull(key='mpms_output_folder', task_ids=parent_task)
+    input_data_folder = ti.xcom_pull(key='folder', task_ids=parent_task)
     session_id = ti.xcom_pull(key='session_id', task_ids=parent_task)
+    participant_id = ti.xcom_pull(key='participant_id', task_ids=nifti_info_task)
+    scan_date = ti.xcom_pull(key='scan_date', task_ids=nifti_info_task)
     logging.info("NIFTI extract: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
     logging.info("root-folder: %s" % dicom_to_nifti_local_output_folder)
 
-    (participant_id, scan_date) = dicom_import.visit_info(input_data_folder)
-    nifti_import.nifti2db(mpms_output_folder, participant_id, scan_date)
+    nifti_import.nifti2db(input_data_folder, participant_id, scan_date)
 
     return "ok"
 
@@ -212,7 +224,7 @@ neuro_morphometric_atlas_pipeline = SpmOperator(
     dag=dag
     )
 
-neuro_morphometric_atlas_pipeline.set_upstream(dicom_to_nifti_pipeline)
+neuro_morphometric_atlas_pipeline.set_upstream(extract_nifti_info)
 
 neuro_morphometric_atlas_pipeline.doc_md = """\
 # NeuroMorphometric Pipeline
@@ -263,7 +275,7 @@ Read NIFTI information from a directories tree of nifti files and store that inf
 
 extract_nifti_mpm_info = PythonOperator(
     task_id='extract_nifti_mpm_info',
-    python_callable=partial(extract_nifti_mpm_info_fn, 'mpm_maps_pipeline'),
+    python_callable=partial(extract_nifti_mpm_info_fn, 'mpm_maps_pipeline', 'extract_nifti_info'),
     provide_context=True,
     execution_timeout=timedelta(hours=1),
     dag=dag
