@@ -73,7 +73,7 @@ def dicom_to_nifti_pipeline_fn(parent_task, **kwargs):
     out = StringIO.StringIO()
     err = StringIO.StringIO()
     parent_data_folder = os.path.abspath(input_data_folder + '/..')
-    logging.info("Calling DCM2NII_LREN(%s,%s,%s,%s,%s,%s)" % (parent_data_folder, session_id, dicom_to_nifti_local_output_folder, dicom_to_nifti_server_output_folder, protocols_file))
+    logging.info("Calling DCM2NII_LREN(%s,%s,%s,%s,%s)" % (parent_data_folder, session_id, dicom_to_nifti_local_output_folder, dicom_to_nifti_server_output_folder, protocols_file))
     success = engine.DCM2NII_LREN(
         parent_data_folder,
         session_id,
