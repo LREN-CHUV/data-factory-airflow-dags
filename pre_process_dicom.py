@@ -246,7 +246,7 @@ All computation was programmed based on the LREN database structure. The MPMs ar
 
 extract_nifti_info = PythonOperator(
     task_id='extract_nifti_info',
-    python_callable=extract_nifti_info_fn,
+    python_callable=partial(extract_nifti_info_fn, 'dicom_to_nifti_pipeline'),
     provide_context=True,
     execution_timeout=timedelta(hours=1),
     dag=dag
@@ -262,7 +262,7 @@ Read NIFTI information from a directories tree of nifti files and store that inf
 
 extract_nifti_mpm_info = PythonOperator(
     task_id='extract_nifti_mpm_info',
-    python_callable=extract_nifti_mpm_info_fn,
+    python_callable=partial(extract_nifti_mpm_info_fn, 'mpm_maps_pipeline'),
     provide_context=True,
     execution_timeout=timedelta(hours=1),
     dag=dag
