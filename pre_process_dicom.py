@@ -44,8 +44,8 @@ misc_library_path = pipelines_path + '/../Miscellaneous&Others'
 def extract_dicom_info_fn(**kwargs):
     ti = kwargs['task_instance']
     dr = kwargs['dag_run']
-    input_data_folder = dr.conf['folder']
     session_id = dr.conf['session_id']
+    input_data_folder = dicom_local_output_folder + '/' + session_id
 
     logging.info('folder %s, session_id %s' % (input_data_folder, session_id))
 
@@ -60,7 +60,7 @@ def extract_dicom_info_fn(**kwargs):
     return "ok"
 
 # Conversion pipeline from DICOM to Nifti format.
-# It converts all files located in the sub folder 'session_id' of 'folder'
+# It converts all files located in the folder 'folder'
 # parent_task should contain XCOM keys 'folder' and 'session_id'
 def dicom_to_nifti_pipeline_fn(parent_task, **kwargs):
     engine = kwargs['engine']
@@ -96,7 +96,7 @@ def dicom_to_nifti_pipeline_fn(parent_task, **kwargs):
     ti.xcom_push(key='scan_date', value=scan_date)
     return success
 
-# Pipeline that builds a Neuro morphometric atlas from the Nitfi files located in the sub folder 'session_id' of 'folder'
+# Pipeline that builds a Neuro morphometric atlas from the Nitfi files located in the folder 'folder'
 # parent_task should contain XCOM keys 'folder' and 'session_id'
 def neuro_morphometric_atlas_pipeline_fn(parent_task, **kwargs):
     engine = kwargs['engine']
@@ -133,7 +133,7 @@ def neuro_morphometric_atlas_pipeline_fn(parent_task, **kwargs):
     ti.xcom_push(key='scan_date', value=scan_date)
     return success
 
-# Pipeline that builds the MPM maps from the Nitfi files located in the sub folder 'session_id' of 'folder'
+# Pipeline that builds the MPM maps from the Nitfi files located in the folder 'folder'
 # parent_task should contain XCOM keys 'folder' and 'session_id'
 def mpm_maps_pipeline_fn(parent_task, **kwargs):
     engine = kwargs['engine']
@@ -171,7 +171,7 @@ def mpm_maps_pipeline_fn(parent_task, **kwargs):
     ti.xcom_push(key='scan_date', value=scan_date)
     return success
 
-# Extract information from the Nifti files located in the sub folder 'session_id' of 'folder'
+# Extract information from the Nifti files located in the folder 'folder'
 # parent_task should contain XCOM keys 'folder' and 'session_id'
 def extract_nifti_info_fn(parent_task, **kwargs):
     ti = kwargs['task_instance']
@@ -181,9 +181,8 @@ def extract_nifti_info_fn(parent_task, **kwargs):
     scan_date = ti.xcom_pull(key='scan_date', task_ids=parent_task)
 
     logging.info("NIFTI extract: session_id=%s, input_folder=%s" % (session_id, input_data_folder))
-    logging.info("root-folder: %s" % dicom_to_nifti_local_output_folder)
 
-    nifti_import.nifti2db(dicom_to_nifti_local_output_folder, participant_id, scan_date)
+    nifti_import.nifti2db(input_data_folder, participant_id, scan_date)
 
     ti.xcom_push(key='folder', value=input_data_folder)
     ti.xcom_push(key='session_id', value=session_id)
@@ -211,8 +210,21 @@ dag = DAG(
     default_args=default_args,
     schedule_interval=None)
 
-copy_to_shared_folder_cmd = """
-    cp -R {{ dag_run.conf["folder"] }} {{ params.dest }}
+copy_dicom_to_local_cmd = """
+    rsync -av {{ dag_run.conf["folder"] }} {{ params["local_output_folder"] }}/{{ dag_run.conf["session_id"] }}
+"""
+
+copy_dicom_to_local = BashOperator(
+    task_id='copy_dicom_to_local',
+    bash_command=copy_dicom_to_local_cmd,
+    params={'local_output_folder': dicom_local_output_folder}
+    dag = dag
+    )
+
+copy_dicom_to_local.doc_md = """\
+# Copy DICOM files to a local drive
+
+Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
 """
 
 extract_dicom_info = PythonOperator(
@@ -222,6 +234,7 @@ extract_dicom_info = PythonOperator(
     execution_timeout=timedelta(hours=1),
     dag=dag
     )
+extract_dicom_info.set_upstream(copy_dicom_to_local)
 
 extract_dicom_info.doc_md = """\
 # Extract DICOM information
@@ -247,6 +260,24 @@ This function convert the dicom files to Nifti format using the SPM tools and dc
 
 Webpage: http://www.mccauslandcenter.sc.edu/mricro/mricron/dcm2nii.html
 
+"""
+
+cleanup_local_dicom_cmd = """
+    rm -rf {{ params["local_output_folder"] }}/{{ dag_run.conf["session_id"] }}
+"""
+
+cleanup_local_dicom = BashOperator(
+    task_id='cleanup_local_dicom',
+    bash_command=copy_dicom_to_local_cmd,
+    params={'local_output_folder': dicom_local_output_folder}
+    dag = dag
+    )
+cleanup_local_dicom.set_upstream(dicom_to_nifti_pipeline)
+
+cleanup_local_dicom.doc_md = """\
+# Cleanup local DICOM files
+
+Remove locally stored DICOM files as they have been processed already.
 """
 
 extract_nifti_info = PythonOperator(
@@ -284,6 +315,22 @@ All computation was programmed based on the LREN database structure. The MPMs ar
 
 """
 
+extract_nifti_mpm_info = PythonOperator(
+    task_id='extract_nifti_mpm_info',
+    python_callable=partial(extract_nifti_info_fn, 'mpm_maps_pipeline'),
+    provide_context=True,
+    execution_timeout=timedelta(hours=1),
+    dag=dag
+    )
+
+extract_nifti_mpm_info.set_upstream(mpm_maps_pipeline)
+
+extract_nifti_mpm_info.doc_md = """\
+# Extract information from NIFTI files generated by MPM pipeline
+
+Read NIFTI information from a directory tree containing the Nifti files created by MPM pipeline and store that information in the database.
+"""
+
 neuro_morphometric_atlas_pipeline = SpmOperator(
     task_id='neuro_morphometric_atlas_pipeline',
     python_callable=partial(neuro_morphometric_atlas_pipeline_fn, 'mpm_maps_pipeline'),
@@ -307,18 +354,18 @@ This delivers three files:
 
 """
 
-extract_nifti_mpm_info = PythonOperator(
-    task_id='extract_nifti_mpm_info',
+extract_nifti_atlas_info = PythonOperator(
+    task_id='extract_nifti_atlas_info',
     python_callable=partial(extract_nifti_info_fn, 'neuro_morphometric_atlas_pipeline'),
     provide_context=True,
     execution_timeout=timedelta(hours=1),
     dag=dag
     )
 
-extract_nifti_mpm_info.set_upstream(neuro_morphometric_atlas_pipeline)
+extract_nifti_atlas_info.set_upstream(neuro_morphometric_atlas_pipeline)
 
-extract_nifti_mpm_info.doc_md = """\
-# Extract information from NIFTI files generated by the MPM pipeline
+extract_nifti_atlas_info.doc_md = """\
+# Extract information from NIFTI files generated by Neuro Morphometrics Atlas pipeline
 
-Read NIFTI information from a directory tree containing the Nifti files created by MPM pipeline and store that information in the database.
+Read NIFTI information from a directory tree containing the Nifti files created by Neuro Morphometrics Atlas pipeline and store that information in the database.
 """
