@@ -40,6 +40,7 @@ DAG_NAME = 'poll_pre_process_incoming'
 # Folder to scan for new incoming session folders containing DICOM images.
 preprocessing_data_folder = str(configuration.get('mri', 'PREPROCESSING_DATA_FOLDER'))
 dicom_local_output_folder = str(configuration.get('mri', 'DICOM_LOCAL_OUTPUT_FOLDER'))
+dicom_to_nifti_local_output_folder = str(configuration.get('mri', 'NIFTI_LOCAL_OUTPUT_FOLDER'))
 
 # functions
 
@@ -53,37 +54,49 @@ def trigger_preprocessing(context, dag_run_obj):
         return dag_run_obj
 
 def scan_dirs_for_preprocessing(folder, **kwargs):
+    dr = kwargs['dag_run']
+	daily_folder_date = dr.execution_date
+	look_for_ready_file_marker = daily_folder_date.date() == datetime.today().date()
+
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    for fname in os.listdir(folder):
-        path = os.path.join(folder, fname)
+    daily_folder = os.path.join(folder, daily_folder_date.strftime('%Y'), daily_folder_date.strftime('%Y%m%d'))
+
+    if not os.path.isdir(daily_folder):
+      daily_folder = os.path.join(folder, '2014', daily_folder_date.strftime('%Y%m%d'))
+    
+    for fname in os.listdir(daily_folder):
+        path = os.path.join(daily_folder, fname)
         if os.path.isdir(path):
+
             ready_file_marker = os.path.join(path, '.ready')
-            proccessing_file_marker = os.path.join(path, '.processing')
-            if os.access(ready_file_marker, os.R_OK) and not os.access(proccessing_file_marker, os.R_OK):
-                logging.info('Prepare trigger for preprocessing : %s', str(fname))
+            if not look_for_ready_file_marker or os.access(ready_file_marker, os.R_OK):
 
-                context = copy.copy(kwargs)
-                context_params = context['params']
-                # Folder containing the DICOM files to process
-                context_params['folder'] = path
-                # Session ID identifies the session for a scan. The last part of the folder path should match session_id
-                context_params['session_id'] = fname
+            	expected_dicom_folder = os.path.join(dicom_local_output_folder, fname)
+            	expected_nifti_folder = os.path.join(dicom_to_nifti_local_output_folder, fname)
 
-                preprocessing_ingest = TriggerDagRunOperator(
-                    # need to wrap task_id in str() because log_name returns as unicode
-                    task_id=str('preprocess_ingest_%s' % fname),
-                    trigger_dag_id=pre_process_dicom.DAG_NAME,
-                    python_callable=trigger_preprocessing,
-                    params={'folder': path, 'session_id': fname},
-                    dag=dag
-                )
+            	if not os.path.isdir(expected_dicom_folder) and not os.path.isdir(expected_nifti_folder):
 
-                preprocessing_ingest.execute(context)
-
-                # Create .processing marker file in the folder marked for processing to avoid duplicate processing
-                open(proccessing_file_marker, 'a').close()
+                    logging.info('Prepare trigger for preprocessing : %s', str(fname))
+    
+                    context = copy.copy(kwargs)
+                    context_params = context['params']
+                    # Folder containing the DICOM files to process
+                    context_params['folder'] = path
+                    # Session ID identifies the session for a scan. The last part of the folder path should match session_id
+                    context_params['session_id'] = fname
+    
+                    preprocessing_ingest = TriggerDagRunOperator(
+                        # need to wrap task_id in str() because log_name returns as unicode
+                        task_id=str('preprocess_ingest_%s' % fname),
+                        trigger_dag_id=pre_process_dicom.DAG_NAME,
+                        python_callable=trigger_preprocessing,
+                        params={'folder': path, 'session_id': fname},
+                        dag=dag
+                    )
+    
+                    preprocessing_ingest.execute(context)
 
 # Define the DAG
 
@@ -100,7 +113,7 @@ default_args = {
 
 dag = DAG(dag_id=DAG_NAME,
           default_args=default_args,
-          schedule_interval='*/10 * * * *')
+          schedule_interval='@daily')
 
 scan_ready_dirs = PythonOperator(
     task_id='scan_dirs_ready_for_preprocessing',
