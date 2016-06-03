@@ -202,6 +202,7 @@ default_args = {
  'start_date': datetime.now(),
  'retries': 1,
  'retry_delay': timedelta(seconds=120),
+ 'email': 'ludovic.claude@chuv.ch',
  'email_on_failure': True,
  'email_on_retry': True
 }
