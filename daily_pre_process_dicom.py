@@ -35,7 +35,7 @@ START = datetime.combine(START.date(), time(START.hour, 0))
 # START = datetime.combine(datetime.today() - timedelta(days=2), datetime.min.time()) + timedelta(hours=10)
 # START = datetime.now()
 
-DAG_NAME = 'poll_pre_process_incoming'
+DAG_NAME = 'daily_pre_process_incoming'
 
 # Folder to scan for new incoming session folders containing DICOM images.
 preprocessing_data_folder = str(configuration.get('mri', 'PREPROCESSING_DATA_FOLDER'))
