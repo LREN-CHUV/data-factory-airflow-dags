@@ -55,8 +55,8 @@ def trigger_preprocessing(context, dag_run_obj):
 
 def scan_dirs_for_preprocessing(folder, **kwargs):
     dr = kwargs['dag_run']
-	daily_folder_date = dr.execution_date
-	look_for_ready_file_marker = daily_folder_date.date() == datetime.today().date()
+    daily_folder_date = dr.execution_date
+    look_for_ready_file_marker = daily_folder_date.date() == datetime.today().date()
 
     if not os.path.exists(folder):
         os.makedirs(folder)
@@ -73,10 +73,10 @@ def scan_dirs_for_preprocessing(folder, **kwargs):
             ready_file_marker = os.path.join(path, '.ready')
             if not look_for_ready_file_marker or os.access(ready_file_marker, os.R_OK):
 
-            	expected_dicom_folder = os.path.join(dicom_local_output_folder, fname)
-            	expected_nifti_folder = os.path.join(dicom_to_nifti_local_output_folder, fname)
+                expected_dicom_folder = os.path.join(dicom_local_output_folder, fname)
+                expected_nifti_folder = os.path.join(dicom_to_nifti_local_output_folder, fname)
 
-            	if not os.path.isdir(expected_dicom_folder) and not os.path.isdir(expected_nifti_folder):
+                if not os.path.isdir(expected_dicom_folder) and not os.path.isdir(expected_nifti_folder):
 
                     logging.info('Prepare trigger for preprocessing : %s', str(fname))
     
