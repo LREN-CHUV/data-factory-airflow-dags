@@ -217,7 +217,7 @@ copy_dicom_to_local_cmd = """
 copy_dicom_to_local = BashOperator(
     task_id='copy_dicom_to_local',
     bash_command=copy_dicom_to_local_cmd,
-    params={'local_output_folder': dicom_local_output_folder}
+    params={'local_output_folder': dicom_local_output_folder},
     dag = dag
     )
 
@@ -269,7 +269,7 @@ cleanup_local_dicom_cmd = """
 cleanup_local_dicom = BashOperator(
     task_id='cleanup_local_dicom',
     bash_command=copy_dicom_to_local_cmd,
-    params={'local_output_folder': dicom_local_output_folder}
+    params={'local_output_folder': dicom_local_output_folder},
     dag = dag
     )
 cleanup_local_dicom.set_upstream(dicom_to_nifti_pipeline)
