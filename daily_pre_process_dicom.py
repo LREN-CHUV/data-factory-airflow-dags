@@ -93,7 +93,7 @@ def scan_dirs_for_preprocessing(folder, **kwargs):
     
                     preprocessing_ingest = TriggerDagRunOperator(
                         # need to wrap task_id in str() because log_name returns as unicode
-                        task_id=str('preprocess_ingest_%s' % fname),
+                        task_id=str('preprocess_daily_%s' % fname),
                         trigger_dag_id=pre_process_dicom.DAG_NAME,
                         python_callable=trigger_preprocessing,
                         params={'folder': path, 'session_id': fname},
