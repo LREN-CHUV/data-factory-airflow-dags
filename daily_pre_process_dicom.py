@@ -55,7 +55,11 @@ def trigger_preprocessing(context, dag_run_obj):
 
 def scan_dirs_for_preprocessing(folder, **kwargs):
     dr = kwargs['dag_run']
-    daily_folder_date = dr.execution_date
+    ti = kwargs['task_instance']
+    if dr:
+        daily_folder_date = dr.execution_date
+    else:
+        daily_folder_date = ti.execution_date
     look_for_ready_file_marker = daily_folder_date.date() == datetime.today().date()
 
     if not os.path.exists(folder):
