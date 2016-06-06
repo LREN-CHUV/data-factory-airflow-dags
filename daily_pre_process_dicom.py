@@ -50,8 +50,12 @@ def trigger_preprocessing(context, dag_run_obj):
         logging.info('Trigger preprocessing for : %s', str(session_id))
         # The payload will be available in target dag context as kwargs['dag_run'].conf
         dag_run_obj.payload = context['params']
-        dag_run_obj.run_id = session_id
+        dag_run_obj.run_id = session_id + '-' + datetime.today().date().strftime('%Y%m%d-%h%M')
         return dag_run_obj
+
+def is_valid_session_id(session_id):
+	sid = trim(lower(session_id))
+	return sid != 'deleteit' and sid != 'delete_it'
 
 def scan_dirs_for_preprocessing(folder, **kwargs):
     dr = kwargs['dag_run']
@@ -75,7 +79,7 @@ def scan_dirs_for_preprocessing(folder, **kwargs):
         if os.path.isdir(path):
 
             ready_file_marker = os.path.join(path, '.ready')
-            if not look_for_ready_file_marker or os.access(ready_file_marker, os.R_OK):
+            if is_valid_session_id(fname) and not look_for_ready_file_marker or os.access(ready_file_marker, os.R_OK):
 
                 expected_dicom_folder = os.path.join(dicom_local_output_folder, fname)
                 expected_nifti_folder = os.path.join(dicom_to_nifti_local_output_folder, fname)
