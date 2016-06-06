@@ -213,7 +213,7 @@ dag = DAG(
     schedule_interval=None)
 
 copy_dicom_to_local_cmd = """
-    rsync -av {{ dag_run.conf["folder"] }} {{ params["local_output_folder"] }}/{{ dag_run.conf["session_id"] }}
+    rsync -av {{ dag_run.conf["folder"] }}/ {{ params["local_output_folder"] }}/{{ dag_run.conf["session_id"] }}
 """
 
 copy_dicom_to_local = BashOperator(
