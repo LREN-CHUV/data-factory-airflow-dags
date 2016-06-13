@@ -54,7 +54,7 @@ dag = DAG(dag_id=DAG_NAME,
 
 scan_ready_dirs = PythonOperator(
     task_id='scan_dirs_ready_for_preprocessing',
-    python_callable=scan_dirs_for_preprocessing,
+    python_callable=scan_dirs_for_preprocessing(dag),
     op_args=[preprocessing_data_folder],
     provide_context=True,
     dag=dag)
