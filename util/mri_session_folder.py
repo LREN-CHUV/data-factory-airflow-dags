@@ -29,8 +29,8 @@ def trigger_preprocessing(context, dag_run_obj):
         return dag_run_obj
 
 def is_valid_session_id(session_id):
-	sid = session_id.strip().lower()
-	return sid != 'deleteit' and sid != 'delete_it'
+    sid = session_id.strip().lower()
+    return sid != 'deleteit' and sid != 'delete_it'
 
 def scan_dirs_for_preprocessing(dag):
     def _scan_dirs_for_preprocessing(folder, **kwargs):
