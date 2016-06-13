@@ -16,17 +16,13 @@ We are looking for the presence of the .ready marker file indicating that pre-pr
 
 """
 
-import logging
-
-import pre_process_dicom
-import os
-import copy
 
 from datetime import datetime, timedelta, time
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow import configuration
+
+from util import mri_session_folder
 
 # constants
 
@@ -39,51 +35,6 @@ DAG_NAME = 'poll_pre_process_incoming'
 
 # Folder to scan for new incoming session folders containing DICOM images.
 preprocessing_data_folder = str(configuration.get('mri', 'PREPROCESSING_DATA_FOLDER'))
-dicom_local_output_folder = str(configuration.get('mri', 'DICOM_LOCAL_OUTPUT_FOLDER'))
-
-# functions
-
-def trigger_preprocessing(context, dag_run_obj):
-    if True:
-        session_id = context['params']['session_id']
-        logging.info('Trigger preprocessing for : %s', str(session_id))
-        # The payload will be available in target dag context as kwargs['dag_run'].conf
-        dag_run_obj.payload = context['params']
-        dag_run_obj.run_id = session_id
-        return dag_run_obj
-
-def scan_dirs_for_preprocessing(folder, **kwargs):
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-
-    for fname in os.listdir(folder):
-        path = os.path.join(folder, fname)
-        if os.path.isdir(path):
-            ready_file_marker = os.path.join(path, '.ready')
-            proccessing_file_marker = os.path.join(path, '.processing')
-            if os.access(ready_file_marker, os.R_OK) and not os.access(proccessing_file_marker, os.R_OK):
-                logging.info('Prepare trigger for preprocessing : %s', str(fname))
-
-                context = copy.copy(kwargs)
-                context_params = context['params']
-                # Folder containing the DICOM files to process
-                context_params['folder'] = path
-                # Session ID identifies the session for a scan. The last part of the folder path should match session_id
-                context_params['session_id'] = fname
-
-                preprocessing_ingest = TriggerDagRunOperator(
-                    # need to wrap task_id in str() because log_name returns as unicode
-                    task_id=str('preprocess_ingest_%s' % fname),
-                    trigger_dag_id=pre_process_dicom.DAG_NAME,
-                    python_callable=trigger_preprocessing,
-                    params={'folder': path, 'session_id': fname},
-                    dag=dag
-                )
-
-                preprocessing_ingest.execute(context)
-
-                # Create .processing marker file in the folder marked for processing to avoid duplicate processing
-                open(proccessing_file_marker, 'a').close()
 
 # Define the DAG
 
