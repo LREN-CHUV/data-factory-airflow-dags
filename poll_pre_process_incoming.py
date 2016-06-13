@@ -22,7 +22,7 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow import configuration
 
-from util import mri_session_folder
+from util.mri_session_folder import scan_dirs_for_preprocessing
 
 # constants
 
