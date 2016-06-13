@@ -84,3 +84,5 @@ def scan_dirs_for_preprocessing(dag):
 
                         # Avoid creating Dags at the same time, overwise may get 'Duplicate entry pre_process_dicom-2016-06-06 00:01:00 for key dag_id'
                         sleep(1)
+    return _scan_dirs_for_preprocessing
+
