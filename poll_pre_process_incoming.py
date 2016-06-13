@@ -16,7 +16,6 @@ We are looking for the presence of the .ready marker file indicating that pre-pr
 
 """
 
-
 from datetime import datetime, timedelta, time
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
