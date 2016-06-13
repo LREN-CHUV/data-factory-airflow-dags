@@ -33,7 +33,7 @@ def is_valid_session_id(session_id):
 	return sid != 'deleteit' and sid != 'delete_it'
 
 def scan_dirs_for_preprocessing(dag):
-	def _scan_dirs_for_preprocessing(folder, **kwargs):
+    def _scan_dirs_for_preprocessing(folder, **kwargs):
         dr = kwargs['dag_run']
         ti = kwargs['task_instance']
         if dr:
