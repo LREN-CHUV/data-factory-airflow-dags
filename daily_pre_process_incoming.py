@@ -22,6 +22,7 @@ import pre_process_dicom
 import os
 import copy
 
+from time import sleep
 from datetime import datetime, timedelta, time
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -105,6 +106,9 @@ def scan_dirs_for_preprocessing(folder, **kwargs):
                     )
     
                     preprocessing_ingest.execute(context)
+
+                    # Avoid creating Dags at the same time, overwise may get 'Duplicate entry pre_process_dicom-2016-06-06 00:01:00 for key dag_id'
+                    sleep(1)
 
 # Define the DAG
 
