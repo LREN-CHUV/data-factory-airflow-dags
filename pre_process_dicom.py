@@ -62,11 +62,7 @@ def extract_dicom_info_fn(**kwargs):
 
 # Prepare the arguments for conversion pipeline from DICOM to Nifti format.
 # It converts all files located in the folder 'folder'
-def dicom_to_nifti_arguments_fn(**kwargs):
-    input_data_folder = kwargs['input_data_folder']
-    session_id = kwargs['session_id']
-    participant_id = kwargs['participant_id']
-    scan_date = kwargs['scan_date']
+def dicom_to_nifti_arguments_fn(input_data_folder, session_id, participant_id, scan_date):
     parent_data_folder = os.path.abspath(input_data_folder + '/..')
 
     return [parent_data_folder,
@@ -76,11 +72,7 @@ def dicom_to_nifti_arguments_fn(**kwargs):
             protocols_file]
 
 # Prepare the arguments for the pipeline that builds a Neuro morphometric atlas from the Nitfi files located in the folder 'folder'
-def neuro_morphometric_atlas_arguments_fn(**kwargs):
-    input_data_folder = kwargs['input_data_folder']
-    session_id = kwargs['session_id']
-    participant_id = kwargs['participant_id']
-    scan_date = kwargs['scan_date']
+def neuro_morphometric_atlas_arguments_fn(input_data_folder, session_id, participant_id, scan_date):
     parent_data_folder = os.path.abspath(input_data_folder + '/..')
     table_format='csv'
 
@@ -92,11 +84,7 @@ def neuro_morphometric_atlas_arguments_fn(**kwargs):
             table_format]
 
 # Pipeline that builds the MPM maps from the Nitfi files located in the folder 'folder'
-def mpm_maps_arguments_fn(**kwargs):
-    input_data_folder = kwargs['input_data_folder']
-    session_id = kwargs['session_id']
-    participant_id = kwargs['participant_id']
-    scan_date = kwargs['scan_date']
+def mpm_maps_arguments_fn(input_data_folder, session_id, participant_id, scan_date):
     parent_data_folder = os.path.abspath(input_data_folder + '/..')
     pipeline_params_config_file = 'Preproc_mpm_maps_pipeline_config.txt'
 
