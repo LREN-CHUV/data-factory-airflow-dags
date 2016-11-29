@@ -54,7 +54,7 @@ def dicom2db(folder):
 
 
 def visit_info(folder):
-    for root, dirnames, filenames in os.walk(folder):
+    for root, _, filenames in os.walk(folder):
         for f in fnmatch.filter(filenames, 'MR.*'):
             filename = None
             try:

@@ -6,7 +6,6 @@ Pre-process DICOM files in a study folder
 
 import logging
 import os
-import StringIO
 
 from datetime import datetime, timedelta
 from functools import partial
