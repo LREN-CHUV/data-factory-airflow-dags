@@ -30,7 +30,7 @@ ARGS = ['root_folder', 'csv', 'db']
 
 def nifti2db(folder, participant_id, scan_date):
 
-    for root, dirnames, filenames in os.walk(folder):
+    for root, _, filenames in os.walk(folder):
         for f in fnmatch.filter(filenames, '*.nii'):
             file_path = root+"/"+f
             file_path = path.abspath(file_path)
