@@ -2,7 +2,6 @@
 # IMPORTS
 ########################################################################################################################
 
-import os
 import fnmatch
 import dicom
 import datetime
@@ -16,7 +15,7 @@ if path not in sys.path:
     sys.path.append(path)
 
 import connection
-from sqlalchemy import exc
+from psycopg2 import IntegrityError
 
 from pymysql import err
 from dicom.errors import InvalidDicomError
@@ -55,7 +54,7 @@ def dicom2db(folder):
             except InvalidDicomError:
                 logging.warning("%s is not a DICOM file !" % filename)
 
-            except (err.IntegrityError, exc.IntegrityError):
+            except (err.IntegrityError, IntegrityError):
                 print_db_except()
                 connection.db_session.rollback()
 
@@ -77,7 +76,7 @@ def visit_info(folder):
             except InvalidDicomError:
                 logging.warning("%s is not a DICOM file !" % filename)
 
-            except (err.IntegrityError, exc.IntegrityError):
+            except (err.IntegrityError, IntegrityError):
                 print_db_except()
                 connection.db_session.rollback()
 
