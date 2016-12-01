@@ -10,6 +10,13 @@ import os
 import fnmatch
 import re
 
+# append sys.path in order to import local python file
+import sys
+import os
+path = os.path.dirname(__file__)
+if path not in sys.path:
+    sys.path.append(path)
+
 import connection
 
 from datetime import date
