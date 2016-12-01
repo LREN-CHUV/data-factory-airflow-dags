@@ -15,9 +15,8 @@ if path not in sys.path:
     sys.path.append(path)
 
 import connection
-from psycopg2 import IntegrityError
+from sqlalchemy.exc import IntegrityError
 
-from pymysql import err
 from dicom.errors import InvalidDicomError
 
 
@@ -54,7 +53,7 @@ def dicom2db(folder):
             except InvalidDicomError:
                 logging.warning("%s is not a DICOM file !" % filename)
 
-            except (err.IntegrityError, IntegrityError):
+            except IntegrityError:
                 print_db_except()
                 connection.db_session.rollback()
 
@@ -76,7 +75,7 @@ def visit_info(folder):
             except InvalidDicomError:
                 logging.warning("%s is not a DICOM file !" % filename)
 
-            except (err.IntegrityError, IntegrityError):
+            except IntegrityError:
                 print_db_except()
                 connection.db_session.rollback()
 
