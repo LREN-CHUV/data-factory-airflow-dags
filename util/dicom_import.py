@@ -6,10 +6,9 @@ import fnmatch
 import dicom
 import datetime
 import logging
-import .connection
 
+from . import connection
 from sqlalchemy.exc import IntegrityError
-
 from dicom.errors import InvalidDicomError
 
 

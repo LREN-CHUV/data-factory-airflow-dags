@@ -8,10 +8,9 @@
 import logging
 import fnmatch
 import re
-import .connection
 
+from . import connection
 from datetime import date
-
 from os import path
 
 
