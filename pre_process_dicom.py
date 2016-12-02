@@ -12,7 +12,7 @@ from functools import partial
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator
-from airflow.operators import SpmOperator
+from airflow_spm.operators import SpmPipelineOperator
 from airflow import configuration
 
 from util import dicom_import
@@ -244,7 +244,7 @@ extract_nifti_info.doc_md = """\
 Read NIFTI information from a directory tree of nifti files freshly converted from DICOM and store that information in the database.
 """
 
-mpm_maps_pipeline = SpmOperator(
+mpm_maps_pipeline = SpmPipelineOperator(
     task_id='mpm_maps_pipeline',
     spm_function='Preproc_mpm_maps',
     spm_arguments_callable=mpm_maps_arguments_fn,
