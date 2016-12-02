@@ -6,15 +6,9 @@ import fnmatch
 import dicom
 import datetime
 import logging
-
-# append sys.path in order to import local python file
-import sys
 import os
-path = os.path.dirname(__file__)
-if path not in sys.path:
-    sys.path.append(path)
 
-import connection
+from util import connection
 from sqlalchemy.exc import IntegrityError
 
 from dicom.errors import InvalidDicomError
