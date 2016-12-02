@@ -25,23 +25,23 @@ DAG_NAME = 'pre_process_dicom'
 
 pipelines_path = str(configuration.get('mri', 'PIPELINES_PATH'))
 protocols_file = str(configuration.get('mri', 'PROTOCOLS_FILE'))
-dicom_local_output_folder = str(
-    configuration.get('mri', 'DICOM_LOCAL_OUTPUT_FOLDER'))
-dicom_to_nifti_local_output_folder = str(
-    configuration.get('mri', 'NIFTI_LOCAL_OUTPUT_FOLDER'))
-dicom_to_nifti_server_output_folder = str(
-    configuration.get('mri', 'NIFTI_SERVER_OUTPUT_FOLDER'))
+dicom_local_folder = str(
+    configuration.get('mri', 'DICOM_LOCAL_FOLDER'))
+dicom_to_nifti_local_folder = str(
+    configuration.get('mri', 'NIFTI_LOCAL_FOLDER'))
+dicom_to_nifti_server_folder = str(
+    configuration.get('mri', 'NIFTI_SERVER_FOLDER'))
 dicom_to_nifti_pipeline_path = pipelines_path + '/Nifti_Conversion_Pipeline'
-neuro_morphometric_atlas_local_output_folder = str(
-    configuration.get('mri', 'NEURO_MORPHOMETRIC_ATLAS_LOCAL_OUTPUT_FOLDER'))
-neuro_morphometric_atlas_server_output_folder = str(
-    configuration.get('mri', 'NEURO_MORPHOMETRIC_ATLAS_SERVER_OUTPUT_FOLDER'))
+neuro_morphometric_atlas_local_folder = str(
+    configuration.get('mri', 'NEURO_MORPHOMETRIC_ATLAS_LOCAL_FOLDER'))
+neuro_morphometric_atlas_server_folder = str(
+    configuration.get('mri', 'NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER'))
 neuro_morphometric_atlas_pipeline_path = pipelines_path + \
     '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
-mpm_maps_local_output_folder = str(
-    configuration.get('mri', 'MPM_MAPS_LOCAL_OUTPUT_FOLDER'))
-mpm_maps_server_output_folder = str(
-    configuration.get('mri', 'MPM_MAPS_SERVER_OUTPUT_FOLDER'))
+mpm_maps_local_folder = str(
+    configuration.get('mri', 'MPM_MAPS_LOCAL_FOLDER'))
+mpm_maps_server_folder = str(
+    configuration.get('mri', 'MPM_MAPS_SERVER_FOLDER'))
 mpm_maps_pipeline_path = pipelines_path + '/MPMs_Pipeline'
 misc_library_path = pipelines_path + '/../Miscellaneous&Others'
 
@@ -55,7 +55,7 @@ def extract_dicom_info_fn(**kwargs):
     ti = kwargs['task_instance']
     dr = kwargs['dag_run']
     session_id = dr.conf['session_id']
-    input_data_folder = dicom_local_output_folder + '/' + session_id
+    input_data_folder = dicom_local_folder + '/' + session_id
 
     logging.info('folder %s, session_id %s' % (input_data_folder, session_id))
 
@@ -78,8 +78,8 @@ def dicom_to_nifti_arguments_fn(input_data_folder, session_id, participant_id, s
 
     return [parent_data_folder,
             session_id,
-            dicom_to_nifti_local_output_folder,
-            dicom_to_nifti_server_output_folder,
+            dicom_to_nifti_local_folder,
+            dicom_to_nifti_server_folder,
             protocols_file]
 
 # Prepare the arguments for the pipeline that builds a Neuro morphometric
@@ -92,8 +92,8 @@ def neuro_morphometric_atlas_arguments_fn(input_data_folder, session_id, partici
 
     return [session_id,
             parent_data_folder,
-            neuro_morphometric_atlas_local_output_folder,
-            neuro_morphometric_atlas_server_output_folder,
+            neuro_morphometric_atlas_local_folder,
+            neuro_morphometric_atlas_server_folder,
             protocols_file,
             table_format]
 
@@ -107,10 +107,10 @@ def mpm_maps_arguments_fn(input_data_folder, session_id, participant_id, scan_da
 
     return [parent_data_folder,
             session_id,
-            mpm_maps_local_output_folder,
+            mpm_maps_local_folder,
             protocols_file,
             pipeline_params_config_file,
-            mpm_maps_server_output_folder]
+            mpm_maps_server_folder]
 
 # Extract information from the Nifti files located in the folder 'folder'
 # parent_task should contain XCOM keys 'folder' and 'session_id'
@@ -140,7 +140,7 @@ def extract_nifti_info_fn(parent_task, **kwargs):
 
 default_args = {
     'owner': 'airflow',
-    'pool': 'clinical_vertex',
+    'pool': 'image_preprocessing',
     'depends_on_past': False,
     'start_date': datetime.now(),
     'retries': 1,
@@ -162,7 +162,7 @@ copy_dicom_to_local_cmd = """
 copy_dicom_to_local = BashOperator(
     task_id='copy_dicom_to_local',
     bash_command=copy_dicom_to_local_cmd,
-    params={'local_output_folder': dicom_local_output_folder},
+    params={'local_put_folder': dicom_local_folder},
     dag=dag
 )
 
@@ -193,7 +193,7 @@ dicom_to_nifti_pipeline = SpmPipelineOperator(
     spm_arguments_callable=dicom_to_nifti_arguments_fn,
     provide_context=True,
     matlab_paths=[misc_library_path, dicom_to_nifti_pipeline_path],
-    output_folder_callable=lambda session_id, **kwargs: dicom_to_nifti_local_output_folder + '/' + session_id,
+    folder_callable=lambda session_id, **kwargs: dicom_to_nifti_local_folder + '/' + session_id,
     execution_timeout=timedelta(hours=3),
     parent_task='extract_dicom_info',
     dag=dag
@@ -211,13 +211,13 @@ Webpage: http://www.mccauslandcenter.sc.edu/mricro/mricron/dcm2nii.html
 """
 
 cleanup_local_dicom_cmd = """
-    rm -rf {{ params["local_output_folder"] }}/{{ dag_run.conf["session_id"] }}
+    rm -rf {{ params["local_folder"] }}/{{ dag_run.conf["session_id"] }}
 """
 
 cleanup_local_dicom = BashOperator(
     task_id='cleanup_local_dicom',
     bash_command=copy_dicom_to_local_cmd,
-    params={'local_output_folder': dicom_local_output_folder},
+    params={'local_folder': dicom_local_folder},
     dag=dag
 )
 cleanup_local_dicom.set_upstream(dicom_to_nifti_pipeline)
@@ -250,7 +250,7 @@ mpm_maps_pipeline = SpmPipelineOperator(
     spm_arguments_callable=mpm_maps_arguments_fn,
     provide_context=True,
     matlab_paths=[misc_library_path, mpm_maps_pipeline_path],
-    output_folder_callable=lambda session_id, **kwargs: mpm_maps_local_output_folder + '/' + session_id,
+    folder_callable=lambda session_id, **kwargs: mpm_maps_local_folder + '/' + session_id,
     execution_timeout=timedelta(hours=3),
     parent_task='extract_nifti_info',
     dag=dag
@@ -288,7 +288,7 @@ neuro_morphometric_atlas_pipeline = SpmPipelineOperator(
     spm_arguments_callable=neuro_morphometric_atlas_arguments_fn,
     provide_context=True,
     matlab_paths=[misc_library_path, neuro_morphometric_atlas_pipeline_path],
-    output_folder_callable=lambda session_id, **kwargs: neuro_morphometric_atlas_local_output_folder + '/' + session_id,
+    folder_callable=lambda session_id, **kwargs: neuro_morphometric_atlas_local_folder + '/' + session_id,
     execution_timeout=timedelta(hours=3),
     parent_task='mpm_maps_pipeline',
     dag=dag
