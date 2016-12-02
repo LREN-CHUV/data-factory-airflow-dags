@@ -16,8 +16,8 @@ from airflow.operators.dagrun_operator import TriggerDagRunOperator
 PRE_PROCESS_DICOM_DAG_NAME = 'pre_process_dicom'
 
 # Folder to scan for new incoming session folders containing DICOM images.
-dicom_local_output_folder = str(configuration.get('mri', 'DICOM_LOCAL_OUTPUT_FOLDER'))
-dicom_to_nifti_local_output_folder = str(configuration.get('mri', 'NIFTI_LOCAL_OUTPUT_FOLDER'))
+dicom_local_folder = str(configuration.get('mri', 'DICOM_LOCAL_FOLDER'))
+dicom_to_nifti_local_folder = str(configuration.get('mri', 'NIFTI_LOCAL_FOLDER'))
 
 def trigger_preprocessing(context, dag_run_obj):
     if True:
@@ -57,8 +57,8 @@ def scan_dirs_for_preprocessing(dag):
                 ready_file_marker = os.path.join(path, '.ready')
                 if is_valid_session_id(fname) and not look_for_ready_file_marker or os.access(ready_file_marker, os.R_OK):
 
-                    expected_dicom_folder = os.path.join(dicom_local_output_folder, fname)
-                    expected_nifti_folder = os.path.join(dicom_to_nifti_local_output_folder, fname)
+                    expected_dicom_folder = os.path.join(dicom_local_folder, fname)
+                    expected_nifti_folder = os.path.join(dicom_to_nifti_local_folder, fname)
 
                     if not os.path.isdir(expected_dicom_folder) and not os.path.isdir(expected_nifti_folder):
 
@@ -85,4 +85,3 @@ def scan_dirs_for_preprocessing(dag):
                         # Avoid creating Dags at the same time, overwise may get 'Duplicate entry pre_process_dicom-2016-06-06 00:01:00 for key dag_id'
                         sleep(1)
     return _scan_dirs_for_preprocessing
-
