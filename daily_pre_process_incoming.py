@@ -33,19 +33,20 @@ START = datetime.combine(START.date(), time(START.hour, 0))
 DAG_NAME = 'daily_pre_process_incoming'
 
 # Folder to scan for new incoming session folders containing DICOM images.
-preprocessing_data_folder = str(configuration.get('mri', 'PREPROCESSING_DATA_FOLDER'))
+preprocessing_data_folder = str(
+    configuration.get('mri', 'PREPROCESSING_DATA_FOLDER'))
 
 # Define the DAG
 
 default_args = {
- 'owner': 'airflow',
- 'depends_on_past': False,
- 'start_date': START,
- 'retries': 1,
- 'retry_delay': timedelta(seconds=120),
- 'email': 'ludovic.claude@chuv.ch',
- 'email_on_failure': True,
- 'email_on_retry': True
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': START,
+    'retries': 1,
+    'retry_delay': timedelta(seconds=120),
+    'email': 'ludovic.claude@chuv.ch',
+    'email_on_failure': True,
+    'email_on_retry': True
 }
 
 dag = DAG(dag_id=DAG_NAME,

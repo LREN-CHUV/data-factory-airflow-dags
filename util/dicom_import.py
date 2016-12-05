@@ -1,6 +1,6 @@
-########################################################################################################################
+##########################################################################
 # IMPORTS
-########################################################################################################################
+##########################################################################
 
 import os
 import fnmatch
@@ -13,30 +13,31 @@ from sqlalchemy.exc import IntegrityError
 from dicom.errors import InvalidDicomError
 
 
-########################################################################################################################
+##########################################################################
 # CONSTANTS
-########################################################################################################################
+##########################################################################
 
 DEFAULT_HANDEDNESS = 'unknown'
 DEFAULT_ROLE = 'U'
 DEFAULT_COMMENT = ''
 
 
-########################################################################################################################
+##########################################################################
 # FUNCTIONS - DICOM
-########################################################################################################################
+##########################################################################
 
 def dicom2db(folder):
 
     for root, _, filenames in os.walk(folder):
         for f in fnmatch.filter(filenames, 'MR.*'):
             try:
-                filename = root+"/"+f
+                filename = root + "/" + f
                 logging.info("Processing '%s'" % filename)
                 ds = dicom.read_file(filename)
 
                 participant_id = extract_participant(ds, DEFAULT_HANDEDNESS)
-                scan_id = extract_scan(ds, participant_id, DEFAULT_ROLE, DEFAULT_COMMENT)
+                scan_id = extract_scan(
+                    ds, participant_id, DEFAULT_ROLE, DEFAULT_COMMENT)
                 session_id = extract_session(ds, scan_id)
                 sequence_type_id = extract_sequence_type(ds)
                 sequence_id = extract_sequence(session_id, sequence_type_id)
@@ -56,7 +57,7 @@ def visit_info(folder):
         for f in fnmatch.filter(filenames, 'MR.*'):
             filename = None
             try:
-                filename = root+"/"+f
+                filename = root + "/" + f
                 logging.info("Processing '%s'" % filename)
                 ds = dicom.read_file(filename)
 
@@ -73,9 +74,9 @@ def visit_info(folder):
                 connection.db_session.rollback()
 
 
-########################################################################################################################
+##########################################################################
 # FUNCTIONS - UTILS
-########################################################################################################################
+##########################################################################
 
 def format_date(date):
     return datetime.datetime(int(date[:4]), int(date[4:6]), int(date[6:8]))
@@ -92,13 +93,14 @@ def format_gender(gender):
 
 def print_db_except():
     logging.warning("A problem occurred while trying to insert data into DB.")
-    logging.warning("This can be caused by a duplicate entry on a unique field.")
+    logging.warning(
+        "This can be caused by a duplicate entry on a unique field.")
     logging.warning("A rollback will be performed !")
 
 
-########################################################################################################################
+##########################################################################
 # FUNCTIONS - DATABASE
-########################################################################################################################
+##########################################################################
 
 
 def extract_participant(ds, handedness):
@@ -109,10 +111,12 @@ def extract_participant(ds, handedness):
     participant_gender = format_gender(ds.PatientSex)
 
     if participant_id is None:
-        logging.warning("participant cannot be saved because no ID was found !")
+        logging.warning(
+            "participant cannot be saved because no ID was found !")
         return None
     else:
-        participant = connection.db_session.query(connection.Participant).filter_by(id=participant_id).first()
+        participant = connection.db_session.query(
+            connection.Participant).filter_by(id=participant_id).first()
 
         if not participant:
             participant = connection.Participant(
@@ -131,7 +135,8 @@ def extract_scan(ds, participant_id, role, comment):
 
     scan_date = format_date(ds.StudyDate)
 
-    scan = connection.db_session.query(connection.Scan).filter_by(participant_id=participant_id, date=scan_date).first()
+    scan = connection.db_session.query(connection.Scan).filter_by(
+        participant_id=participant_id, date=scan_date).first()
 
     if not scan:
         scan = connection.Scan(
@@ -150,7 +155,8 @@ def extract_session(ds, scan_id):
 
     session_value = int(ds.StudyID)
 
-    session = connection.db_session.query(connection.Session).filter_by(scan_id=scan_id, value=session_value).first()
+    session = connection.db_session.query(connection.Session).filter_by(
+        scan_id=scan_id, value=session_value).first()
 
     if not session:
         session = connection.Session(
@@ -272,7 +278,8 @@ def extract_repetition(ds, sequence_id):
 
     repetition_value = int(ds.SeriesNumber)
 
-    repetition = connection.db_session.query(connection.Repetition).filter_by(sequence_id=sequence_id, value=repetition_value).first()
+    repetition = connection.db_session.query(connection.Repetition).filter_by(
+        sequence_id=sequence_id, value=repetition_value).first()
 
     if not repetition:
         repetition = connection.Repetition(
@@ -287,7 +294,8 @@ def extract_repetition(ds, sequence_id):
 
 def extract_dicom(path, repetition_id):
 
-    dcm = connection.db_session.query(connection.Dicom).filter_by(path=path, repetition_id=repetition_id).first()
+    dcm = connection.db_session.query(connection.Dicom).filter_by(
+        path=path, repetition_id=repetition_id).first()
 
     if not dcm:
         dcm = connection.Dicom(
