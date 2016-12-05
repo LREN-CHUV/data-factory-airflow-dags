@@ -12,6 +12,7 @@ from airflow import configuration
 from datetime import datetime
 
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
+from airflow.exceptions import AirflowSkipException
 
 PRE_PROCESS_DICOM_DAG_NAME = 'pre_process_dicom'
 
@@ -49,6 +50,9 @@ def scan_dirs_for_preprocessing(dag):
 
         if not os.path.isdir(daily_folder):
           daily_folder = os.path.join(folder, '2014', daily_folder_date.strftime('%Y%m%d'))
+
+        if not os.path.isdir(daily_folder):
+            raise AirflowSkipException
 
         for fname in os.listdir(daily_folder):
             path = os.path.join(daily_folder, fname)
