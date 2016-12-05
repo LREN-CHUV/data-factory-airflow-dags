@@ -162,7 +162,7 @@ copy_dicom_to_local_cmd = """
 copy_dicom_to_local = BashOperator(
     task_id='copy_dicom_to_local',
     bash_command=copy_dicom_to_local_cmd,
-    params={'local_put_folder': dicom_local_folder},
+    params={'local_output_folder': dicom_local_folder},
     dag=dag
 )
 
