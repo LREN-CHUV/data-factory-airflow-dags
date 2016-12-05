@@ -20,6 +20,7 @@ TODO: it should use mri-meta-extract
 * In Airflow config file, add the [mri] section with the following entries:
    * PIPELINES_PATH: path to the root folder containing the Matlab scripts for the pipelines
    * PROTOCOLS_FILE: path to the MRI acquisition protocol file
+   * MIN_FREE_SPACE_LOCAL_FOLDER: minimum percentage of free space available on local disk
    * DICOM_LOCAL_FOLDER: path containing the anonimised DICOM files coming from the MRI scanner and already anonimised by a tool
    * NIFTI_LOCAL_FOLDER: path for the image files converted to Nifti
    * NIFTI_SERVER_FOLDER: long term storage location for the image files converted to Nifti
