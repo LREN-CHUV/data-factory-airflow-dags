@@ -13,6 +13,7 @@ from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow_spm.operators import SpmPipelineOperator
+from airflow_freespace.operators import FreeSpaceSensor
 from airflow import configuration
 
 from util import dicom_import
@@ -25,6 +26,8 @@ DAG_NAME = 'pre_process_dicom'
 
 pipelines_path = str(configuration.get('mri', 'PIPELINES_PATH'))
 protocols_file = str(configuration.get('mri', 'PROTOCOLS_FILE'))
+min_free_space_local_folder = float(
+    configuration.get('mri', 'MIN_FREE_SPACE_LOCAL_FOLDER'))
 dicom_local_folder = str(
     configuration.get('mri', 'DICOM_LOCAL_FOLDER'))
 dicom_to_nifti_local_folder = str(
@@ -154,6 +157,21 @@ dag = DAG(
     default_args=default_args,
     schedule_interval=None)
 
+check_free_space = FreeSpaceSensor(
+    task_id='check_free_space',
+    path=dicom_local_folder,
+    free_disk_threshold=min_free_space_local_folder,
+    retry_delay=timedelta(hours=1),
+    retries=24*7,
+    dag=dag
+)
+
+check_free_space.doc_md = """\
+# Check free space
+
+Check that there is enough free space on the local disk for processing, wait otherwise.
+"""
+
 copy_dicom_to_local_cmd = """
     rsync -av {{ dag_run.conf["folder"] }}/ {{ params["local_output_folder"] }}/{{ dag_run.conf["session_id"] }}
 """
@@ -165,6 +183,7 @@ copy_dicom_to_local = BashOperator(
     pool='remote_file_copy',
     dag=dag
 )
+copy_dicom_to_local.set_upstream(check_free_space)
 
 copy_dicom_to_local.doc_md = """\
 # Copy DICOM files to a local drive
