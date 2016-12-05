@@ -140,7 +140,6 @@ def extract_nifti_info_fn(parent_task, **kwargs):
 
 default_args = {
     'owner': 'airflow',
-    'pool': 'image_preprocessing',
     'depends_on_past': False,
     'start_date': datetime.now(),
     'retries': 1,
@@ -163,6 +162,7 @@ copy_dicom_to_local = BashOperator(
     task_id='copy_dicom_to_local',
     bash_command=copy_dicom_to_local_cmd,
     params={'local_output_folder': dicom_local_folder},
+    pool='remote_file_copy',
     dag=dag
 )
 
@@ -195,6 +195,7 @@ dicom_to_nifti_pipeline = SpmPipelineOperator(
     matlab_paths=[misc_library_path, dicom_to_nifti_pipeline_path],
     folder_callable=lambda session_id, **kwargs: dicom_to_nifti_local_folder + '/' + session_id,
     execution_timeout=timedelta(hours=3),
+    pool='image_preprocessing',
     parent_task='extract_dicom_info',
     dag=dag
 )
@@ -252,6 +253,7 @@ mpm_maps_pipeline = SpmPipelineOperator(
     matlab_paths=[misc_library_path, mpm_maps_pipeline_path],
     folder_callable=lambda session_id, **kwargs: mpm_maps_local_folder + '/' + session_id,
     execution_timeout=timedelta(hours=3),
+    pool='image_preprocessing',
     parent_task='extract_nifti_info',
     dag=dag
 )
@@ -290,6 +292,7 @@ neuro_morphometric_atlas_pipeline = SpmPipelineOperator(
     matlab_paths=[misc_library_path, neuro_morphometric_atlas_pipeline_path],
     folder_callable=lambda session_id, **kwargs: neuro_morphometric_atlas_local_folder + '/' + session_id,
     execution_timeout=timedelta(hours=3),
+    pool='image_preprocessing',
     parent_task='mpm_maps_pipeline',
     dag=dag
 )

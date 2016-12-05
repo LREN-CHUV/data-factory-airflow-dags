@@ -15,6 +15,7 @@ TODO: it should use mri-meta-extract
 
 * Create the following pools:
    * image_preprocessing with N slots, where N is less than the number of vCPUs available on the machine
+   * remote_file_copy with N slots, where N should be 1 or 2 to avoid saturating network IO
 
 * In Airflow config file, add the [mri] section with the following entries:
    * PIPELINES_PATH: path to the root folder containing the Matlab scripts for the pipelines
