@@ -162,7 +162,7 @@ check_free_space = FreeSpaceSensor(
     path=dicom_local_folder,
     free_disk_threshold=min_free_space_local_folder,
     retry_delay=timedelta(hours=1),
-    retries=24*7,
+    retries=24 * 7,
     depends_on_past=True,
     wait_for_downstream=True,
     pool='remote_file_copy',
