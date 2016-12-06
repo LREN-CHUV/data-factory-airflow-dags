@@ -87,7 +87,7 @@ def scan_dirs_for_preprocessing(dag):
                         # last part of the folder path should match session_id
                         context_params['session_id'] = fname
 
-                        context_params['start_date'] = datetime.utcnow() + timedelta(minute=1)
+                        context_params['start_date'] = datetime.utcnow() + timedelta(minutes=1)
 
                         preprocessing_ingest = TriggerDagRunOperator(
                             # need to wrap task_id in str() because log_name
