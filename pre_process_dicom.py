@@ -182,6 +182,7 @@ copy_dicom_to_local = BashOperator(
     bash_command=copy_dicom_to_local_cmd,
     params={'local_output_folder': dicom_local_folder},
     pool='remote_file_copy',
+    priority_weight=10,
     dag=dag
 )
 copy_dicom_to_local.set_upstream(check_free_space)
@@ -239,6 +240,7 @@ cleanup_local_dicom = BashOperator(
     task_id='cleanup_local_dicom',
     bash_command=copy_dicom_to_local_cmd,
     params={'local_folder': dicom_local_folder},
+    priority_weight=20,
     dag=dag
 )
 cleanup_local_dicom.set_upstream(dicom_to_nifti_pipeline)
