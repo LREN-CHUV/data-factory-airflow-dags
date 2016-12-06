@@ -49,9 +49,10 @@ default_args = {
     'email_on_retry': True
 }
 
+# Run the DAG every 10 minutes
 dag = DAG(dag_id=DAG_NAME,
           default_args=default_args,
-          schedule_interval='*/10 * * * *')
+          schedule_interval='* */10 * * *')
 
 scan_ready_dirs = PythonOperator(
     task_id='scan_dirs_ready_for_preprocessing',
