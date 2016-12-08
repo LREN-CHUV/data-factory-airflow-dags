@@ -56,7 +56,6 @@ scan_ready_dirs = ScanFolderOperator(
     task_id='scan_dirs_ready_for_preprocessing',
     folder=preprocessing_data_folder,
     trigger_dag_id='pre_process_dicom',
-    provide_context=True,
     dag=dag)
 
 scan_ready_dirs.doc_md = """\
