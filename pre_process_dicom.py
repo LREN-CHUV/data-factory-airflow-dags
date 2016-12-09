@@ -183,6 +183,7 @@ copy_dicom_to_local = BashOperator(
     params={'local_output_folder': dicom_local_folder},
     pool='remote_file_copy',
     priority_weight=10,
+    execution_timeout=timedelta(hours=3),
     dag=dag
 )
 copy_dicom_to_local.set_upstream(check_free_space)
@@ -197,7 +198,7 @@ extract_dicom_info = PythonOperator(
     task_id='extract_dicom_info',
     python_callable=extract_dicom_info_fn,
     provide_context=True,
-    execution_timeout=timedelta(hours=1),
+    execution_timeout=timedelta(hours=3),
     dag=dag
 )
 extract_dicom_info.set_upstream(copy_dicom_to_local)
@@ -218,6 +219,7 @@ dicom_to_nifti_pipeline = SpmPipelineOperator(
     execution_timeout=timedelta(hours=3),
     pool='image_preprocessing',
     parent_task='extract_dicom_info',
+    execution_timeout=timedelta(hours=24),
     dag=dag
 )
 
@@ -241,6 +243,7 @@ cleanup_local_dicom = BashOperator(
     bash_command=copy_dicom_to_local_cmd,
     params={'local_folder': dicom_local_folder},
     priority_weight=20,
+    execution_timeout=timedelta(hours=1),
     dag=dag
 )
 cleanup_local_dicom.set_upstream(dicom_to_nifti_pipeline)
@@ -255,7 +258,7 @@ extract_nifti_info = PythonOperator(
     task_id='extract_nifti_info',
     python_callable=partial(extract_nifti_info_fn, 'dicom_to_nifti_pipeline'),
     provide_context=True,
-    execution_timeout=timedelta(hours=1),
+    execution_timeout=timedelta(hours=3),
     dag=dag
 )
 
@@ -294,7 +297,7 @@ extract_nifti_mpm_info = PythonOperator(
     task_id='extract_nifti_mpm_info',
     python_callable=partial(extract_nifti_info_fn, 'mpm_maps_pipeline'),
     provide_context=True,
-    execution_timeout=timedelta(hours=1),
+    execution_timeout=timedelta(hours=3),
     dag=dag
 )
 
@@ -316,6 +319,7 @@ neuro_morphometric_atlas_pipeline = SpmPipelineOperator(
     execution_timeout=timedelta(hours=3),
     pool='image_preprocessing',
     parent_task='mpm_maps_pipeline',
+    execution_timeout=timedelta(hours=24),
     dag=dag
 )
 
@@ -338,7 +342,7 @@ extract_nifti_atlas_info = PythonOperator(
     python_callable=partial(extract_nifti_info_fn,
                             'neuro_morphometric_atlas_pipeline'),
     provide_context=True,
-    execution_timeout=timedelta(hours=1),
+    execution_timeout=timedelta(hours=3),
     dag=dag
 )
 
