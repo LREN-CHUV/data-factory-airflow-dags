@@ -46,10 +46,10 @@ check_python_fn():
 
 check_spm_fn(engine):
     print("Checking Matlab...")
-    ret = engine.sqr(2)
-    if int(ret) != 4:
+    ret = engine.sqrt(4)
+    if int(ret) != 2:
         raise RuntimeError("Matlab integration is not working") from error
-    print("sqr(2) = %s" % ret)
+    print("sqrt(4) = %s" % ret)
     print("[OK]")
     print("Checking SPM...")
     spm_dir = eng.spm('Dir')
