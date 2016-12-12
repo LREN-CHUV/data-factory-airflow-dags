@@ -110,7 +110,6 @@ Displays some technical information about the Python runtime.
 
 check_spm = SpmOperator(
     task_id='spm_check',
-    spm_function='check',
     python_callable=check_spm_fn,
     matlab_paths=[],
     execution_timeout=timedelta(minutes=10),
