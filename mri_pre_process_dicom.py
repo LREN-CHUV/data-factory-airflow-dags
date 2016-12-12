@@ -22,7 +22,7 @@ from util import nifti_import
 
 # constants
 
-DAG_NAME = 'pre_process_dicom'
+DAG_NAME = 'mri_pre_process_dicom'
 
 pipelines_path = str(configuration.get('mri', 'PIPELINES_PATH'))
 protocols_file = str(configuration.get('mri', 'PROTOCOLS_FILE'))
@@ -174,6 +174,11 @@ Check that there is enough free space on the local disk for processing, wait oth
 """
 
 copy_dicom_to_local_cmd = """
+    used="$(df -h /home | grep '/' | grep -Po '[^ ]*(?=%)')"
+    if (( 101 - used < {{ min_free_space_local_folder|float * 100 }} )); then
+      echo "Not enough space left, cannot continue"
+      ecit 1
+    fi
     rsync -av {{ dag_run.conf["folder"] }}/ {{ params["local_output_folder"] }}/{{ dag_run.conf["session_id"] }}
 """
 
