@@ -38,7 +38,7 @@ def check_python_fn():
     print("Hostname: %s" % socket.gethostname())
     print("Environement:")
     print("-------------")
-    for k,v in os.environ:
+    for k,v in os.environ.items():
         print("%s = %s" % (k,v))
     print("-------------")
 
