@@ -33,7 +33,7 @@ dicom_local_folder = str(
 
 # functions
 
-check_python_fn():
+def check_python_fn():
     import os
     import socket
     print("Hostname: %s" % socket.gethostname())
@@ -44,7 +44,7 @@ check_python_fn():
     print("-------------")
 
 
-check_spm_fn(engine):
+def check_spm_fn(engine):
     print("Checking Matlab...")
     ret = engine.sqrt(4)
     if int(ret) != 2:
