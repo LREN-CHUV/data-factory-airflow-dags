@@ -24,8 +24,7 @@ from util import nifti_import
 
 DAG_NAME = 'mri_self_checks'
 
-spm_config_folder = float(
-    configuration.get('spm', 'SPM_DIR'))
+spm_config_folder = configuration.get('spm', 'SPM_DIR')
 min_free_space_local_folder = float(
     configuration.get('mri', 'MIN_FREE_SPACE_LOCAL_FOLDER'))
 dicom_local_folder = str(
