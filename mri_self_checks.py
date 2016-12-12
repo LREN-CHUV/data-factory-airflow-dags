@@ -45,7 +45,7 @@ def check_python_fn():
 
 def check_spm_fn(engine):
     print("Checking Matlab...")
-    ret = engine.sqrt(4)
+    ret = engine.sqrt(4.0)
     if int(ret) != 2:
         raise RuntimeError("Matlab integration is not working") from error
     print("sqrt(4) = %s" % ret)
