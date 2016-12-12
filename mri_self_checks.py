@@ -4,20 +4,14 @@ Runs self-checks
 
 """
 
-import logging
 import os
 
 from datetime import datetime, timedelta
-from functools import partial
 from airflow import DAG
-from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow_spm.operators import SpmOperator
 from airflow_freespace.operators import FreeSpaceSensor
 from airflow import configuration
-
-from util import dicom_import
-from util import nifti_import
 
 
 # constants
@@ -32,14 +26,14 @@ dicom_local_folder = str(
 
 # functions
 
+
 def check_python_fn():
-    import os
     import socket
     print("Hostname: %s" % socket.gethostname())
     print("Environement:")
     print("-------------")
-    for k,v in os.environ.items():
-        print("%s = %s" % (k,v))
+    for k, v in os.environ.items():
+        print("%s = %s" % (k, v))
     print("-------------")
 
 
