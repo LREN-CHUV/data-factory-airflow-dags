@@ -87,7 +87,6 @@ Check that there is enough free space on the local disk for processing, wait oth
 
 check_python = PythonOperator(
     task_id='check_python',
-    spm_function='check',
     python_callable=check_python_fn,
     execution_timeout=timedelta(minutes=10),
     dag=dag
