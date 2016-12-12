@@ -175,7 +175,7 @@ Check that there is enough free space on the local disk for processing, wait oth
 
 copy_dicom_to_local_cmd = """
     used="$(df -h /home | grep '/' | grep -Po '[^ ]*(?=%)')"
-    if (( 101 - used < {{ min_free_space_local_folder|float * 100 }} )); then
+    if (( 101 - used < {{ params['min_free_space_local_folder']|float * 100 }} )); then
       echo "Not enough space left, cannot continue"
       ecit 1
     fi
@@ -185,7 +185,7 @@ copy_dicom_to_local_cmd = """
 copy_dicom_to_local = BashOperator(
     task_id='copy_dicom_to_local',
     bash_command=copy_dicom_to_local_cmd,
-    params={'local_output_folder': dicom_local_folder},
+    params={'local_output_folder': dicom_local_folder, 'min_free_space_local_folder': min_free_space_local_folder},
     pool='remote_file_copy',
     priority_weight=10,
     execution_timeout=timedelta(hours=3),
