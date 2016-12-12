@@ -51,7 +51,7 @@ def check_spm_fn(engine):
     print("sqrt(4) = %s" % ret)
     print("[OK]")
     print("Checking SPM...")
-    spm_dir = eng.spm('Dir')
+    spm_dir = engine.spm('Dir')
     if spm_dir != spm_config_folder:
         raise RuntimeError("SPM integration is not working, found SPM in directory %s" % spm_dir) from error
     print("[OK]")
