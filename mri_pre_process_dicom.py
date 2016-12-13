@@ -54,16 +54,13 @@ misc_library_path = pipelines_path + '/../Miscellaneous&Others'
 # Extract the information from DICOM files located inside a folder.
 # The folder information should be given in the configuration parameter
 # 'folder' of the DAG run
-def extract_dicom_info_fn(base_folder, session_id, **kwargs):
-    folder = base_folder + '/' + session_id
-
+def extract_dicom_info_fn(folder, session_id, **kwargs):
     logging.info('folder %s, session_id %s' % (folder, session_id))
 
     (participant_id, scan_date) = dicom_import.visit_info(folder)
     dicom_import.dicom2db(folder)
 
     return {
-        'folder': folder,
         'participant_id': participant_id,
         'scan_date': scan_date
     }
