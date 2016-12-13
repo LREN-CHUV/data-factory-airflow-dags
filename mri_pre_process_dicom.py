@@ -187,7 +187,7 @@ prepare_pipeline = PreparePipelineOperator(
     dag=dag
 )
 
-prepare_pipeline.set_upstream(check_free_space)
+prepare_pipeline.set_upstream(copy_dicom_to_local)
 
 prepare_pipeline.doc_md = """\
 # Copy DICOM files to a local drive
@@ -218,13 +218,13 @@ dicom_to_nifti_pipeline = SpmPipelineOperator(
     matlab_paths=[misc_library_path, dicom_to_nifti_pipeline_path],
     output_folder_callable=lambda session_id, **kwargs: dicom_to_nifti_local_folder + '/' + session_id,
     pool='image_preprocessing',
-    parent_task='extract_dicom_info',
+    parent_task='prepare_pipeline',
     priority_weight=20,
     execution_timeout=timedelta(hours=24),
     dag=dag
 )
 
-dicom_to_nifti_pipeline.set_upstream(copy_dicom_to_local)
+dicom_to_nifti_pipeline.set_upstream(prepare_pipeline)
 
 dicom_to_nifti_pipeline.doc_md = """\
 # DICOM to Nitfi Pipeline
