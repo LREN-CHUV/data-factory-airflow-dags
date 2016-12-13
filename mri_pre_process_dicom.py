@@ -177,7 +177,7 @@ copy_dicom_to_local_cmd = """
     used="$(df -h /home | grep '/' | grep -Po '[^ ]*(?=%)')"
     if (( 101 - used < {{ params['min_free_space_local_folder']|float * 100 }} )); then
       echo "Not enough space left, cannot continue"
-      ecit 1
+      exit 1
     fi
     rsync -av {{ dag_run.conf["folder"] }}/ {{ params["local_output_folder"] }}/{{ dag_run.conf["session_id"] }}
 """
@@ -223,11 +223,12 @@ dicom_to_nifti_pipeline = SpmPipelineOperator(
     output_folder_callable=lambda session_id, **kwargs: dicom_to_nifti_local_folder + '/' + session_id,
     pool='image_preprocessing',
     parent_task='extract_dicom_info',
+    priority_weight=20,
     execution_timeout=timedelta(hours=24),
     dag=dag
 )
 
-dicom_to_nifti_pipeline.set_upstream(extract_dicom_info)
+dicom_to_nifti_pipeline.set_upstream(copy_dicom_to_local)
 
 dicom_to_nifti_pipeline.doc_md = """\
 # DICOM to Nitfi Pipeline
@@ -281,13 +282,14 @@ mpm_maps_pipeline = SpmPipelineOperator(
     provide_context=True,
     matlab_paths=[misc_library_path, mpm_maps_pipeline_path],
     output_folder_callable=lambda session_id, **kwargs: mpm_maps_local_folder + '/' + session_id,
+    priority_weight=30,
     execution_timeout=timedelta(hours=3),
     pool='image_preprocessing',
-    parent_task='extract_nifti_info',
+    parent_task='dicom_to_nifti_pipeline',
     dag=dag
 )
 
-mpm_maps_pipeline.set_upstream(extract_nifti_info)
+mpm_maps_pipeline.set_upstream(dicom_to_nifti_pipeline)
 
 mpm_maps_pipeline.doc_md = """\
 # MPM Maps Pipeline
@@ -322,6 +324,7 @@ neuro_morphometric_atlas_pipeline = SpmPipelineOperator(
     output_folder_callable=lambda session_id, **kwargs: neuro_morphometric_atlas_local_folder + '/' + session_id,
     pool='image_preprocessing',
     parent_task='mpm_maps_pipeline',
+    priority_weight=30,
     execution_timeout=timedelta(hours=24),
     dag=dag
 )
