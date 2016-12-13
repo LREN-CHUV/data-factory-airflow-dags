@@ -77,6 +77,8 @@ def extract_dicom_info_fn(**kwargs):
 
 
 def dicom_to_nifti_arguments_fn(input_data_folder, session_id, participant_id, scan_date, **kwargs):
+    if not input_data_folder:
+        input_data_folder = dicom_local_folder + '/' + session_id
     parent_data_folder = os.path.abspath(input_data_folder + '/..')
 
     return [parent_data_folder,
@@ -203,6 +205,7 @@ extract_dicom_info = PythonOperator(
     task_id='extract_dicom_info',
     python_callable=extract_dicom_info_fn,
     provide_context=True,
+    priority_weight=15,
     execution_timeout=timedelta(hours=3),
     dag=dag
 )
@@ -245,9 +248,9 @@ cleanup_local_dicom_cmd = """
 
 cleanup_local_dicom = BashOperator(
     task_id='cleanup_local_dicom',
-    bash_command=copy_dicom_to_local_cmd,
+    bash_command=cleanup_local_dicom_cmd,
     params={'local_folder': dicom_local_folder},
-    priority_weight=20,
+    priority_weight=25,
     execution_timeout=timedelta(hours=1),
     dag=dag
 )
@@ -263,6 +266,7 @@ extract_nifti_info = PythonOperator(
     task_id='extract_nifti_info',
     python_callable=partial(extract_nifti_info_fn, 'dicom_to_nifti_pipeline'),
     provide_context=True,
+    priority_weight=21,
     execution_timeout=timedelta(hours=3),
     dag=dag
 )
@@ -303,6 +307,7 @@ extract_nifti_mpm_info = PythonOperator(
     task_id='extract_nifti_mpm_info',
     python_callable=partial(extract_nifti_info_fn, 'mpm_maps_pipeline'),
     provide_context=True,
+    priority_weight=35,
     execution_timeout=timedelta(hours=3),
     dag=dag
 )
@@ -324,7 +329,7 @@ neuro_morphometric_atlas_pipeline = SpmPipelineOperator(
     output_folder_callable=lambda session_id, **kwargs: neuro_morphometric_atlas_local_folder + '/' + session_id,
     pool='image_preprocessing',
     parent_task='mpm_maps_pipeline',
-    priority_weight=30,
+    priority_weight=40,
     execution_timeout=timedelta(hours=24),
     dag=dag
 )
@@ -348,6 +353,7 @@ extract_nifti_atlas_info = PythonOperator(
     python_callable=partial(extract_nifti_info_fn,
                             'neuro_morphometric_atlas_pipeline'),
     provide_context=True,
+    priority_weight=45,
     execution_timeout=timedelta(hours=3),
     dag=dag
 )
