@@ -11,9 +11,9 @@ from datetime import datetime, timedelta
 from functools import partial
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
-from airflow.operators.python_operator import PythonOperator
 from airflow_spm.operators import SpmPipelineOperator
 from airflow_freespace.operators import FreeSpaceSensor
+from airflow_pipeline.operators import PreparePipelineOperator, PythonPipelineOperator
 from airflow import configuration
 
 from util import dicom_import
@@ -54,32 +54,26 @@ misc_library_path = pipelines_path + '/../Miscellaneous&Others'
 # Extract the information from DICOM files located inside a folder.
 # The folder information should be given in the configuration parameter
 # 'folder' of the DAG run
-def extract_dicom_info_fn(**kwargs):
-    ti = kwargs['task_instance']
-    dr = kwargs['dag_run']
-    session_id = dr.conf['session_id']
-    input_data_folder = dicom_local_folder + '/' + session_id
+def extract_dicom_info_fn(base_folder, session_id, **kwargs):
+    folder = base_folder + '/' + session_id
 
-    logging.info('folder %s, session_id %s' % (input_data_folder, session_id))
+    logging.info('folder %s, session_id %s' % (folder, session_id))
 
-    (participant_id, scan_date) = dicom_import.visit_info(input_data_folder)
-    dicom_import.dicom2db(input_data_folder)
+    (participant_id, scan_date) = dicom_import.visit_info(folder)
+    dicom_import.dicom2db(folder)
 
-    ti.xcom_push(key='folder', value=input_data_folder)
-    ti.xcom_push(key='session_id', value=session_id)
-    ti.xcom_push(key='participant_id', value=participant_id)
-    ti.xcom_push(key='scan_date', value=scan_date)
-
-    return "ok"
+    return {
+        'folder': folder,
+        'participant_id': participant_id,
+        'scan_date': scan_date
+    }
 
 # Prepare the arguments for conversion pipeline from DICOM to Nifti format.
 # It converts all files located in the folder 'folder'
 
 
-def dicom_to_nifti_arguments_fn(input_data_folder, session_id, participant_id, scan_date, **kwargs):
-    if not input_data_folder:
-        input_data_folder = dicom_local_folder + '/' + session_id
-    parent_data_folder = os.path.abspath(input_data_folder + '/..')
+def dicom_to_nifti_arguments_fn(folder, session_id, participant_id, scan_date, **kwargs):
+    parent_data_folder = os.path.abspath(folder + '/..')
 
     return [parent_data_folder,
             session_id,
@@ -91,8 +85,8 @@ def dicom_to_nifti_arguments_fn(input_data_folder, session_id, participant_id, s
 # atlas from the Nitfi files located in the folder 'folder'
 
 
-def neuro_morphometric_atlas_arguments_fn(input_data_folder, session_id, participant_id, scan_date, **kwargs):
-    parent_data_folder = os.path.abspath(input_data_folder + '/..')
+def neuro_morphometric_atlas_arguments_fn(folder, session_id, participant_id, scan_date, **kwargs):
+    parent_data_folder = os.path.abspath(folder + '/..')
     table_format = 'csv'
 
     return [session_id,
@@ -106,8 +100,8 @@ def neuro_morphometric_atlas_arguments_fn(input_data_folder, session_id, partici
 # folder 'folder'
 
 
-def mpm_maps_arguments_fn(input_data_folder, session_id, participant_id, scan_date, **kwargs):
-    parent_data_folder = os.path.abspath(input_data_folder + '/..')
+def mpm_maps_arguments_fn(folder, session_id, participant_id, scan_date, **kwargs):
+    parent_data_folder = os.path.abspath(folder + '/..')
     pipeline_params_config_file = 'Preproc_mpm_maps_pipeline_config.txt'
 
     return [parent_data_folder,
@@ -121,23 +115,10 @@ def mpm_maps_arguments_fn(input_data_folder, session_id, participant_id, scan_da
 # parent_task should contain XCOM keys 'folder' and 'session_id'
 
 
-def extract_nifti_info_fn(parent_task, **kwargs):
-    ti = kwargs['task_instance']
-    input_data_folder = ti.xcom_pull(key='folder', task_ids=parent_task)
-    session_id = ti.xcom_pull(key='session_id', task_ids=parent_task)
-    participant_id = ti.xcom_pull(key='participant_id', task_ids=parent_task)
-    scan_date = ti.xcom_pull(key='scan_date', task_ids=parent_task)
-
+def extract_nifti_info_fn(folder, session_id, participant_id, scan_date, **kwargs):
     logging.info("NIFTI extract: session_id=%s, input_folder=%s" %
-                 (session_id, input_data_folder))
-
-    nifti_import.nifti2db(input_data_folder, participant_id, scan_date)
-
-    ti.xcom_push(key='folder', value=input_data_folder)
-    ti.xcom_push(key='session_id', value=session_id)
-    ti.xcom_push(key='participant_id', value=participant_id)
-    ti.xcom_push(key='scan_date', value=scan_date)
-
+                 (session_id, folder))
+    nifti_import.nifti2db(folder, participant_id, scan_date)
     return "ok"
 
 
@@ -201,15 +182,31 @@ copy_dicom_to_local.doc_md = """\
 Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
 """
 
-extract_dicom_info = PythonOperator(
-    task_id='extract_dicom_info',
-    python_callable=extract_dicom_info_fn,
-    provide_context=True,
-    priority_weight=15,
-    execution_timeout=timedelta(hours=3),
+prepare_pipeline = PreparePipelineOperator(
+    task_id='prepare_pipeline',
+    initial_root_folder=dicom_local_folder,
+    priority_weight=12,
+    execution_timeout=timedelta(minutes=10),
     dag=dag
 )
-extract_dicom_info.set_upstream(copy_dicom_to_local)
+
+prepare_pipeline.set_upstream(check_free_space)
+
+prepare_pipeline.doc_md = """\
+# Copy DICOM files to a local drive
+
+Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
+"""
+
+extract_dicom_info = PythonPipelineOperator(
+    task_id='extract_dicom_info',
+    python_callable=extract_dicom_info_fn,
+    parent_task='prepare_pipeline',
+    priority_weight=15,
+    execution_timeout=timedelta(hours=6),
+    dag=dag
+)
+extract_dicom_info.set_upstream(prepare_pipeline)
 
 extract_dicom_info.doc_md = """\
 # Extract DICOM information
@@ -221,7 +218,6 @@ dicom_to_nifti_pipeline = SpmPipelineOperator(
     task_id='dicom_to_nifti_pipeline',
     spm_function='DCM2NII_LREN',
     spm_arguments_callable=dicom_to_nifti_arguments_fn,
-    provide_context=True,
     matlab_paths=[misc_library_path, dicom_to_nifti_pipeline_path],
     output_folder_callable=lambda session_id, **kwargs: dicom_to_nifti_local_folder + '/' + session_id,
     pool='image_preprocessing',
@@ -262,10 +258,10 @@ cleanup_local_dicom.doc_md = """\
 Remove locally stored DICOM files as they have been processed already.
 """
 
-extract_nifti_info = PythonOperator(
+extract_nifti_info = PythonPipelineOperator(
     task_id='extract_nifti_info',
-    python_callable=partial(extract_nifti_info_fn, 'dicom_to_nifti_pipeline'),
-    provide_context=True,
+    python_callable=extract_nifti_info_fn,
+    parent_task='dicom_to_nifti_pipeline',
     priority_weight=21,
     execution_timeout=timedelta(hours=3),
     dag=dag
@@ -283,7 +279,6 @@ mpm_maps_pipeline = SpmPipelineOperator(
     task_id='mpm_maps_pipeline',
     spm_function='Preproc_mpm_maps',
     spm_arguments_callable=mpm_maps_arguments_fn,
-    provide_context=True,
     matlab_paths=[misc_library_path, mpm_maps_pipeline_path],
     output_folder_callable=lambda session_id, **kwargs: mpm_maps_local_folder + '/' + session_id,
     priority_weight=30,
@@ -303,10 +298,10 @@ All computation was programmed based on the LREN database structure. The MPMs ar
 
 """
 
-extract_nifti_mpm_info = PythonOperator(
+extract_nifti_mpm_info = PythonPipelineOperator(
     task_id='extract_nifti_mpm_info',
-    python_callable=partial(extract_nifti_info_fn, 'mpm_maps_pipeline'),
-    provide_context=True,
+    python_callable=extract_nifti_info_fn,
+    parent_task='mpm_maps_pipeline',
     priority_weight=35,
     execution_timeout=timedelta(hours=3),
     dag=dag
@@ -324,7 +319,6 @@ neuro_morphometric_atlas_pipeline = SpmPipelineOperator(
     task_id='neuro_morphometric_atlas_pipeline',
     spm_function='NeuroMorphometric_pipeline',
     spm_arguments_callable=neuro_morphometric_atlas_arguments_fn,
-    provide_context=True,
     matlab_paths=[misc_library_path, neuro_morphometric_atlas_pipeline_path],
     output_folder_callable=lambda session_id, **kwargs: neuro_morphometric_atlas_local_folder + '/' + session_id,
     pool='image_preprocessing',
@@ -348,11 +342,10 @@ This delivers three files:
 
 """
 
-extract_nifti_atlas_info = PythonOperator(
+extract_nifti_atlas_info = PythonPipelineOperator(
     task_id='extract_nifti_atlas_info',
-    python_callable=partial(extract_nifti_info_fn,
-                            'neuro_morphometric_atlas_pipeline'),
-    provide_context=True,
+    python_callable=extract_nifti_info_fn,
+    parent_task='neuro_morphometric_atlas_pipeline',
     priority_weight=45,
     execution_timeout=timedelta(hours=3),
     dag=dag
