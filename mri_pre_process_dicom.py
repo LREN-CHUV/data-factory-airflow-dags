@@ -248,6 +248,7 @@ cleanup_local_dicom = BashOperator(
     dag=dag
 )
 cleanup_local_dicom.set_upstream(dicom_to_nifti_pipeline)
+cleanup_local_dicom.set_upstream(extract_dicom_info)
 
 cleanup_local_dicom.doc_md = """\
 # Cleanup local DICOM files
