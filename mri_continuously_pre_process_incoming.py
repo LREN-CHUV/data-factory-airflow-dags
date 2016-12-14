@@ -50,7 +50,7 @@ default_args = {
 # Run the DAG every 10 minutes
 dag = DAG(dag_id=DAG_NAME,
           default_args=default_args,
-          schedule_interval='* */10 * * *')
+          schedule_interval='0 */10 * * *')
 
 scan_ready_dirs = ScanFolderOperator(
     task_id='scan_dirs_ready_for_preprocessing',
