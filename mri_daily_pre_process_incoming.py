@@ -60,7 +60,7 @@ scan_ready_dirs = ScanFolderOperator(
 scan_ready_dirs.doc_md = """\
 # Scan directories ready for processing
 
-Scan the session folders starting from the root folder %s (defined by variable __preprocessing_data_folder__).
+Scan the session folders located inside folder %s (defined by variable __preprocessing_data_folder__).
 
 It looks for the presence of a .ready marker file to mark that session folder as ready for processing, but it
 will skip it if contains the marker file .processing indicating that processing has already started.

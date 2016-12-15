@@ -26,6 +26,8 @@ DAG_NAME = 'mri_pre_process_dicom'
 
 pipelines_path = str(configuration.get('mri', 'PIPELINES_PATH'))
 protocols_file = str(configuration.get('mri', 'PROTOCOLS_FILE'))
+max_active_runs = int(
+    configuration.get('mri', 'MAX_ACTIVE_RUNS'))
 min_free_space_local_folder = float(
     configuration.get('mri', 'MIN_FREE_SPACE_LOCAL_FOLDER'))
 dicom_local_folder = str(
@@ -135,7 +137,8 @@ default_args = {
 dag = DAG(
     dag_id=DAG_NAME,
     default_args=default_args,
-    schedule_interval=None)
+    schedule_interval=None,
+    max_active_runs=max_active_runs)
 
 check_free_space = FreeSpaceSensor(
     task_id='check_free_space',
@@ -150,8 +153,8 @@ check_free_space = FreeSpaceSensor(
 check_free_space.doc_md = """\
 # Check free space
 
-Check that there is enough free space on the local disk for processing, wait otherwise.
-"""
+Check that there is enough free space on the disk hosting folder %s for processing, wait otherwise.
+""" % dicom_local_folder
 
 copy_dicom_to_local_cmd = """
     used="$(df -h /home | grep '/' | grep -Po '[^ ]*(?=%)')"
@@ -174,10 +177,10 @@ copy_dicom_to_local = BashOperator(
 copy_dicom_to_local.set_upstream(check_free_space)
 
 copy_dicom_to_local.doc_md = """\
-# Copy DICOM files to a local drive
+# Copy DICOM files to local %s folder
 
 Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
-"""
+""" % dicom_local_folder
 
 prepare_pipeline = PreparePipelineOperator(
     task_id='prepare_pipeline',
@@ -190,15 +193,16 @@ prepare_pipeline = PreparePipelineOperator(
 prepare_pipeline.set_upstream(copy_dicom_to_local)
 
 prepare_pipeline.doc_md = """\
-# Copy DICOM files to a local drive
+# Prepare pipeline
 
-Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
+Add information required by the SpmPipeline operators.
 """
 
 extract_dicom_info = PythonPipelineOperator(
     task_id='extract_dicom_info',
     python_callable=extract_dicom_info_fn,
     parent_task='prepare_pipeline',
+    pool='io_intensive',
     priority_weight=15,
     execution_timeout=timedelta(hours=6),
     dag=dag
@@ -208,7 +212,7 @@ extract_dicom_info.set_upstream(prepare_pipeline)
 extract_dicom_info.doc_md = """\
 # Extract DICOM information
 
-Read DICOM information from the files stored in the session folder and store that information in the database.
+Read DICOM information from the files stored in the session folder and store that information into the database.
 """
 
 dicom_to_nifti_pipeline = SpmPipelineOperator(
@@ -217,7 +221,7 @@ dicom_to_nifti_pipeline = SpmPipelineOperator(
     spm_arguments_callable=dicom_to_nifti_arguments_fn,
     matlab_paths=[misc_library_path, dicom_to_nifti_pipeline_path],
     output_folder_callable=lambda session_id, **kwargs: dicom_to_nifti_local_folder + '/' + session_id,
-    pool='image_preprocessing',
+    pool='io_intensive',
     parent_task='prepare_pipeline',
     priority_weight=20,
     execution_timeout=timedelta(hours=24),
@@ -229,11 +233,14 @@ dicom_to_nifti_pipeline.set_upstream(prepare_pipeline)
 dicom_to_nifti_pipeline.doc_md = """\
 # DICOM to Nitfi Pipeline
 
-This function convert the dicom files to Nifti format using the SPM tools and dcm2nii tool developed by Chris Rorden.
+This function convert the dicom files to Nifti format using the SPM tools and
+[dcm2nii](http://www.mccauslandcenter.sc.edu/mricro/mricron/dcm2nii.html) tool developed by Chris Rorden.
 
-Webpage: http://www.mccauslandcenter.sc.edu/mricro/mricron/dcm2nii.html
+Nifti files are stored the the following locations:
+* Local folder: %s
+* Remote folder: %s
 
-"""
+""" % (dicom_to_nifti_local_folder, dicom_to_nifti_server_folder)
 
 cleanup_local_dicom_cmd = """
     rm -rf {{ params["local_folder"] }}/{{ dag_run.conf["session_id"] }}
@@ -260,6 +267,7 @@ extract_nifti_info = PythonPipelineOperator(
     task_id='extract_nifti_info',
     python_callable=extract_nifti_info_fn,
     parent_task='dicom_to_nifti_pipeline',
+    pool='io_intensive',
     priority_weight=21,
     execution_timeout=timedelta(hours=3),
     dag=dag
@@ -270,8 +278,8 @@ extract_nifti_info.set_upstream(dicom_to_nifti_pipeline)
 extract_nifti_info.doc_md = """\
 # Extract information from NIFTI files converted from DICOM
 
-Read NIFTI information from a directory tree of nifti files freshly converted from DICOM and store that information in the database.
-"""
+Read NIFTI information from directory %s containing nifti files freshly converted from DICOM and store that information into the database.
+""" % dicom_to_nifti_local_folder
 
 mpm_maps_pipeline = SpmPipelineOperator(
     task_id='mpm_maps_pipeline',
@@ -292,14 +300,19 @@ mpm_maps_pipeline.doc_md = """\
 # MPM Maps Pipeline
 
 This function computes the Multiparametric Maps (MPMs) (R2*, R1, MT, PD) and brain segmentation in different tissue maps.
-All computation was programmed based on the LREN database structure. The MPMs are calculated locally in 'OutputFolder' and finally copied to 'ServerFolder'.
+All computation was programmed based on the LREN database structure.
 
-"""
+The MPMs are calculated locally and finally copied to a remote folder:
+* Local folder: %s
+* Remote folder: %s
+
+""" % (mpm_maps_local_folder, mpm_maps_server_folder)
 
 extract_nifti_mpm_info = PythonPipelineOperator(
     task_id='extract_nifti_mpm_info',
     python_callable=extract_nifti_info_fn,
     parent_task='mpm_maps_pipeline',
+    pool='io_intensive',
     priority_weight=35,
     execution_timeout=timedelta(hours=3),
     dag=dag
@@ -310,8 +323,8 @@ extract_nifti_mpm_info.set_upstream(mpm_maps_pipeline)
 extract_nifti_mpm_info.doc_md = """\
 # Extract information from NIFTI files generated by MPM pipeline
 
-Read NIFTI information from a directory tree containing the Nifti files created by MPM pipeline and store that information in the database.
-"""
+Read NIFTI information from directory %s containing the Nifti files created by MPM pipeline and store that information in the database.
+""" % mpm_maps_local_folder
 
 neuro_morphometric_atlas_pipeline = SpmPipelineOperator(
     task_id='neuro_morphometric_atlas_pipeline',
@@ -338,12 +351,17 @@ This delivers three files:
 2. Volumes of the Morphometric Atlas structures (*.txt);
 3. CSV File (.csv) containing the volume, globals, and Multiparametric Maps (R2*, R1, MT, PD) for each structure defined in the Subject Atlas.
 
-"""
+The atlas is calculated locally and finally copied to a remote folder:
+* Local folder: %s
+* Remote folder: %s
+
+""" % (neuro_morphometric_atlas_local_folder, neuro_morphometric_atlas_server_folder)
 
 extract_nifti_atlas_info = PythonPipelineOperator(
     task_id='extract_nifti_atlas_info',
     python_callable=extract_nifti_info_fn,
     parent_task='neuro_morphometric_atlas_pipeline',
+    pool='io_intensive',
     priority_weight=45,
     execution_timeout=timedelta(hours=3),
     dag=dag
@@ -354,5 +372,5 @@ extract_nifti_atlas_info.set_upstream(neuro_morphometric_atlas_pipeline)
 extract_nifti_atlas_info.doc_md = """\
 # Extract information from NIFTI files generated by Neuro Morphometrics Atlas pipeline
 
-Read NIFTI information from a directory tree containing the Nifti files created by Neuro Morphometrics Atlas pipeline and store that information in the database.
-"""
+Read NIFTI information from directory %s containing the Nifti files created by Neuro Morphometrics Atlas pipeline and store that information in the database.
+""" % neuro_morphometric_atlas_local_folder
