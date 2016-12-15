@@ -3,7 +3,7 @@
 ##########################################################################
 
 import os
-import fnmatch
+import glob
 import dicom
 import datetime
 import logging
@@ -27,12 +27,14 @@ DEFAULT_COMMENT = ''
 ##########################################################################
 
 def dicom2db(folder):
+    checked = dict()
+    for filename in glob.iglob(folder + '/**/MR.*', recursive=True):
+        try:
+            logging.debug("Processing '%s'" % filename)
 
-    for root, _, filenames in os.walk(folder):
-        for f in fnmatch.filter(filenames, 'MR.*'):
-            try:
-                filename = root + "/" + f
-                logging.info("Processing '%s'" % filename)
+            leaf_folder = os.path.split(filename)[0]
+            if leaf_folder not in checked:
+                logging.info("Extracting DICOM headers from '%s'" % filename)
                 ds = dicom.read_file(filename)
 
                 participant_id = extract_participant(ds, DEFAULT_HANDEDNESS)
@@ -42,36 +44,35 @@ def dicom2db(folder):
                 sequence_type_id = extract_sequence_type(ds)
                 sequence_id = extract_sequence(session_id, sequence_type_id)
                 repetition_id = extract_repetition(ds, sequence_id)
-                extract_dicom(filename, repetition_id)
 
-            except InvalidDicomError:
-                logging.warning("%s is not a DICOM file !" % filename)
+                checked[leaf_folder] = repetition_id
+            extract_dicom(filename, checked[leaf_folder])
 
-            except IntegrityError:
-                print_db_except()
-                connection.db_session.rollback()
+        except InvalidDicomError:
+            logging.warning("%s is not a DICOM file !" % filename)
+
+        except IntegrityError:
+            print_db_except()
+            connection.db_session.rollback()
 
 
 def visit_info(folder):
-    for root, _, filenames in os.walk(folder):
-        for f in fnmatch.filter(filenames, 'MR.*'):
-            filename = None
-            try:
-                filename = root + "/" + f
-                logging.info("Processing '%s'" % filename)
-                ds = dicom.read_file(filename)
+    for filename in glob.iglob(folder + '/**/MR.*', recursive=True):
+        try:
+            logging.info("Processing '%s'" % filename)
+            ds = dicom.read_file(filename)
 
-                participant_id = ds.PatientID
-                scan_date = format_date(ds.StudyDate)
+            participant_id = ds.PatientID
+            scan_date = format_date(ds.StudyDate)
 
-                return participant_id, scan_date
+            return participant_id, scan_date
 
-            except InvalidDicomError:
-                logging.warning("%s is not a DICOM file !" % filename)
+        except InvalidDicomError:
+            logging.warning("%s is not a DICOM file !" % filename)
 
-            except IntegrityError:
-                print_db_except()
-                connection.db_session.rollback()
+        except IntegrityError:
+            print_db_except()
+            connection.db_session.rollback()
 
 
 ##########################################################################
@@ -213,18 +214,18 @@ def extract_sequence_type(ds):
         echo_train_length=echo_train_length
     ).all()
 
-    for s in sequence_type_list:
-        if str(s.slice_thickness) != str(slice_thickness) \
-                or str(s.repetition_time) != str(repetition_time)\
-                or str(s.echo_time) != str(echo_time)\
-                or str(s.percent_phase_field_of_view) != str(percent_phase_field_of_view)\
-                or str(s.flip_angle) != str(flip_angle)\
-                or str(s.magnetic_field_strength) != str(magnetic_field_strength)\
-                or str(s.flip_angle) != str(flip_angle)\
-                or str(s.percent_sampling) != str(percent_sampling)\
-                or str(s.pixel_spacing_0) != str(pixel_spacing_0)\
-                or str(s.pixel_spacing_1) != str(pixel_spacing_1):
-            sequence_type_list.remove(s)
+    sequence_type_list = list(filter(lambda s: not (
+        s.slice_thickness != str(slice_thickness)
+        or str(s.repetition_time) != str(repetition_time)
+        or str(s.echo_time) != str(echo_time)
+        or str(s.percent_phase_field_of_view) != str(percent_phase_field_of_view)
+        or str(s.flip_angle) != str(flip_angle)
+        or str(s.magnetic_field_strength) != str(magnetic_field_strength)
+        or str(s.flip_angle) != str(flip_angle)
+        or str(s.percent_sampling) != str(percent_sampling)
+        or str(s.pixel_spacing_0) != str(pixel_spacing_0)
+        or str(s.pixel_spacing_1) != str(pixel_spacing_1)
+    ), sequence_type_list))
 
     if len(sequence_type_list) > 0:
         sequence_type = sequence_type_list[0]
