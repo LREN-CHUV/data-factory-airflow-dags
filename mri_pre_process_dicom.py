@@ -13,7 +13,7 @@ from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow_spm.operators import SpmPipelineOperator
 from airflow_freespace.operators import FreeSpaceSensor
-from airflow_pipeline.operators import PreparePipelineOperator, PythonPipelineOperator
+from airflow_pipeline.operators import PreparePipelineOperator, PythonPipelineOperator, SlackAPIPostOperator
 from airflow import configuration
 
 from util import dicom_import
@@ -26,6 +26,9 @@ DAG_NAME = 'mri_pre_process_dicom'
 
 pipelines_path = str(configuration.get('mri', 'PIPELINES_PATH'))
 protocols_file = str(configuration.get('mri', 'PROTOCOLS_FILE'))
+slack_token = str(configuration.get('mri', 'SLACK_TOKEN'))
+slack_channel = str(configuration.get('mri', 'SLACK_CHANNEL'))
+slack_channel_user = str(configuration.get('mri', 'SLACK_CHANNEL_USER'))
 max_active_runs = int(
     configuration.get('mri', 'MAX_ACTIVE_RUNS'))
 min_free_space_local_folder = float(
@@ -288,7 +291,7 @@ mpm_maps_pipeline = SpmPipelineOperator(
     matlab_paths=[misc_library_path, mpm_maps_pipeline_path],
     output_folder_callable=lambda session_id, **kwargs: mpm_maps_local_folder + '/' + session_id,
     priority_weight=30,
-    execution_timeout=timedelta(hours=3),
+    execution_timeout=timedelta(hours=24),
     pool='image_preprocessing',
     parent_task='dicom_to_nifti_pipeline',
     dag=dag
@@ -374,3 +377,13 @@ extract_nifti_atlas_info.doc_md = """\
 
 Read NIFTI information from directory %s containing the Nifti files created by Neuro Morphometrics Atlas pipeline and store that information in the database.
 """ % neuro_morphometric_atlas_local_folder
+
+post_on_slack = SlackAPIPostOperator(
+    token=slack_token,
+    channel=slack_channel,
+    username=slack_channel_user,
+    text='Processed {{ dag_run.conf["session_id"] }}',
+    icon_url='https://raw.githubusercontent.com/airbnb/airflow/master/airflow/www/static/pin_100.png'
+)
+
+post_on_slack.set_upstream(extract_nifti_atlas_info)
