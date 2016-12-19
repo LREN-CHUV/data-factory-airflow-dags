@@ -10,10 +10,10 @@ import os
 from datetime import datetime, timedelta
 from functools import partial
 from airflow import DAG
-from airflow.operators.bash_operator import BashOperator
+from airflow.operators.bash_operator import BashOperator, SlackAPIPostOperator
 from airflow_spm.operators import SpmPipelineOperator
 from airflow_freespace.operators import FreeSpaceSensor
-from airflow_pipeline.operators import PreparePipelineOperator, PythonPipelineOperator, SlackAPIPostOperator
+from airflow_pipeline.operators import PreparePipelineOperator, PythonPipelineOperator
 from airflow import configuration
 
 from util import dicom_import
