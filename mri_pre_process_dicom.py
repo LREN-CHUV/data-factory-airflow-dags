@@ -240,6 +240,7 @@ This function convert the dicom files to Nifti format using the SPM tools and
 [dcm2nii](http://www.mccauslandcenter.sc.edu/mricro/mricron/dcm2nii.html) tool developed by Chris Rorden.
 
 Nifti files are stored the the following locations:
+
 * Local folder: %s
 * Remote folder: %s
 
@@ -306,6 +307,7 @@ This function computes the Multiparametric Maps (MPMs) (R2*, R1, MT, PD) and bra
 All computation was programmed based on the LREN database structure.
 
 The MPMs are calculated locally and finally copied to a remote folder:
+
 * Local folder: %s
 * Remote folder: %s
 
@@ -355,6 +357,7 @@ This delivers three files:
 3. CSV File (.csv) containing the volume, globals, and Multiparametric Maps (R2*, R1, MT, PD) for each structure defined in the Subject Atlas.
 
 The atlas is calculated locally and finally copied to a remote folder:
+
 * Local folder: %s
 * Remote folder: %s
 
