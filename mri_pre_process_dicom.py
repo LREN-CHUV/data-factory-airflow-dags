@@ -384,7 +384,8 @@ post_on_slack = SlackAPIPostOperator(
     channel=slack_channel,
     username=slack_channel_user,
     text='Processed {{ dag_run.conf["session_id"] }}',
-    icon_url='https://raw.githubusercontent.com/airbnb/airflow/master/airflow/www/static/pin_100.png'
+    icon_url='https://raw.githubusercontent.com/airbnb/airflow/master/airflow/www/static/pin_100.png',
+    dag=dag
 )
 
 post_on_slack.set_upstream(extract_nifti_atlas_info)
