@@ -8,7 +8,6 @@ import logging
 import os
 
 from datetime import datetime, timedelta
-from functools import partial
 from airflow import DAG
 from airflow.operators import BashOperator, SlackAPIPostOperator
 from airflow_spm.operators import SpmPipelineOperator
