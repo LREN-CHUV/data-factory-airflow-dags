@@ -379,6 +379,7 @@ Read NIFTI information from directory %s containing the Nifti files created by N
 """ % neuro_morphometric_atlas_local_folder
 
 post_on_slack = SlackAPIPostOperator(
+    task_id='post_on_slack',
     token=slack_token,
     channel=slack_channel,
     username=slack_channel_user,
@@ -387,3 +388,9 @@ post_on_slack = SlackAPIPostOperator(
 )
 
 post_on_slack.set_upstream(extract_nifti_atlas_info)
+
+post_on_slack.doc_md = """\
+# Post information about the processed MRI scan session on Slack
+
+Post information about the processed MRI scan session on Slack channel %s
+""" % slack_channel
