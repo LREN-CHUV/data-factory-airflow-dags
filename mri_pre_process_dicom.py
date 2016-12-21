@@ -9,10 +9,11 @@ import os
 
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators import BashOperator, SlackAPIPostOperator
+from airflow.operators import BashOperator, TriggerDagOperator
 from airflow_spm.operators import SpmPipelineOperator
 from airflow_freespace.operators import FreeSpaceSensor
 from airflow_pipeline.operators import PreparePipelineOperator, PythonPipelineOperator
+from airflow_pipeline import pipeline_trigger
 from airflow import configuration
 
 from util import dicom_import
@@ -23,11 +24,9 @@ from util import nifti_import
 
 DAG_NAME = 'mri_pre_process_dicom'
 
+email_errors_to = str(configuration.get('mri', 'EMAIL_ERRORS_TO'))
 pipelines_path = str(configuration.get('mri', 'PIPELINES_PATH'))
 protocols_file = str(configuration.get('mri', 'PROTOCOLS_FILE'))
-slack_token = str(configuration.get('mri', 'SLACK_TOKEN'))
-slack_channel = str(configuration.get('mri', 'SLACK_CHANNEL'))
-slack_channel_user = str(configuration.get('mri', 'SLACK_CHANNEL_USER'))
 max_active_runs = int(
     configuration.get('mri', 'MAX_ACTIVE_RUNS'))
 min_free_space_local_folder = float(
@@ -55,10 +54,12 @@ misc_library_path = pipelines_path + '/../Miscellaneous&Others'
 
 # functions
 
-# Extract the information from DICOM files located inside a folder.
-# The folder information should be given in the configuration parameter
-# 'folder' of the DAG run
 def extract_dicom_info_fn(folder, session_id, **kwargs):
+    """
+     Extract the information from DICOM files located inside a folder.
+     The folder information should be given in the configuration parameter
+     'folder' of the DAG run
+    """
     logging.info('folder %s, session_id %s' % (folder, session_id))
 
     (participant_id, scan_date) = dicom_import.visit_info(folder)
@@ -69,11 +70,12 @@ def extract_dicom_info_fn(folder, session_id, **kwargs):
         'scan_date': scan_date
     }
 
-# Prepare the arguments for conversion pipeline from DICOM to Nifti format.
-# It converts all files located in the folder 'folder'
-
 
 def dicom_to_nifti_arguments_fn(folder, session_id, participant_id, scan_date, **kwargs):
+    """
+      Prepare the arguments for conversion pipeline from DICOM to Nifti format.
+      It converts all files located in the folder 'folder'
+    """
     parent_data_folder = os.path.abspath(folder + '/..')
 
     return [parent_data_folder,
@@ -82,11 +84,12 @@ def dicom_to_nifti_arguments_fn(folder, session_id, participant_id, scan_date, *
             dicom_to_nifti_server_folder,
             protocols_file]
 
-# Prepare the arguments for the pipeline that builds a Neuro morphometric
-# atlas from the Nitfi files located in the folder 'folder'
-
 
 def neuro_morphometric_atlas_arguments_fn(folder, session_id, participant_id, scan_date, **kwargs):
+    """
+      Prepare the arguments for the pipeline that builds a Neuro morphometric
+      atlas from the Nitfi files located in the folder 'folder'
+    """
     parent_data_folder = os.path.abspath(folder + '/..')
     table_format = 'csv'
 
@@ -97,11 +100,12 @@ def neuro_morphometric_atlas_arguments_fn(folder, session_id, participant_id, sc
             protocols_file,
             table_format]
 
-# Pipeline that builds the MPM maps from the Nitfi files located in the
-# folder 'folder'
-
 
 def mpm_maps_arguments_fn(folder, session_id, participant_id, scan_date, **kwargs):
+    """
+      Pipeline that builds the MPM maps from the Nitfi files located in the
+      folder 'folder'
+    """
     parent_data_folder = os.path.abspath(folder + '/..')
     pipeline_params_config_file = 'Preproc_mpm_maps_pipeline_config.txt'
 
@@ -112,11 +116,12 @@ def mpm_maps_arguments_fn(folder, session_id, participant_id, scan_date, **kwarg
             pipeline_params_config_file,
             mpm_maps_server_folder]
 
-# Extract information from the Nifti files located in the folder 'folder'
-# parent_task should contain XCOM keys 'folder' and 'session_id'
-
 
 def extract_nifti_info_fn(folder, session_id, participant_id, scan_date, **kwargs):
+    """
+      Extract information from the Nifti files located in the folder 'folder'
+      parent_task should contain XCOM keys 'folder' and 'session_id'
+    """
     logging.info("NIFTI extract: session_id=%s, input_folder=%s" %
                  (session_id, folder))
     nifti_import.nifti2db(folder, participant_id, scan_date)
@@ -131,7 +136,7 @@ default_args = {
     'start_date': datetime.now(),
     'retries': 1,
     'retry_delay': timedelta(seconds=120),
-    'email': 'ludovic.claude@chuv.ch',
+    'email': email_errors_to,
     'email_on_failure': True,
     'email_on_retry': True
 }
@@ -170,7 +175,8 @@ copy_dicom_to_local_cmd = """
 copy_dicom_to_local = BashOperator(
     task_id='copy_dicom_to_local',
     bash_command=copy_dicom_to_local_cmd,
-    params={'local_output_folder': dicom_local_folder, 'min_free_space_local_folder': min_free_space_local_folder},
+    params={'local_output_folder': dicom_local_folder,
+            'min_free_space_local_folder': min_free_space_local_folder},
     pool='remote_file_copy',
     priority_weight=10,
     execution_timeout=timedelta(hours=3),
@@ -227,6 +233,8 @@ dicom_to_nifti_pipeline = SpmPipelineOperator(
     parent_task='prepare_pipeline',
     priority_weight=20,
     execution_timeout=timedelta(hours=24),
+    on_skip_trigger_dag_id='mri_notify_skipped_processing',
+    on_failure_trigger_dag_id='mri_notify_failed_processing',
     dag=dag
 )
 
@@ -294,6 +302,8 @@ mpm_maps_pipeline = SpmPipelineOperator(
     execution_timeout=timedelta(hours=24),
     pool='image_preprocessing',
     parent_task='dicom_to_nifti_pipeline',
+    on_skip_trigger_dag_id='mri_notify_skipped_processing',
+    on_failure_trigger_dag_id='mri_notify_failed_processing',
     dag=dag
 )
 
@@ -340,6 +350,8 @@ neuro_morphometric_atlas_pipeline = SpmPipelineOperator(
     parent_task='mpm_maps_pipeline',
     priority_weight=40,
     execution_timeout=timedelta(hours=24),
+    on_skip_trigger_dag_id='mri_notify_skipped_processing',
+    on_failure_trigger_dag_id='mri_notify_failed_processing',
     dag=dag
 )
 
@@ -380,20 +392,17 @@ extract_nifti_atlas_info.doc_md = """\
 Read NIFTI information from directory %s containing the Nifti files created by Neuro Morphometrics Atlas pipeline and store that information in the database.
 """ % neuro_morphometric_atlas_local_folder
 
-post_on_slack = SlackAPIPostOperator(
-    task_id='post_on_slack',
-    token=slack_token,
-    channel=slack_channel,
-    username=slack_channel_user,
-    text='Processed {{ dag_run.conf["session_id"] }}',
-    icon_url='https://raw.githubusercontent.com/airbnb/airflow/master/airflow/www/static/pin_100.png',
+notify_success = TriggerDagOperator(
+    task_id='notify_success',
+    trigger_dag_id='mri_notify_successful_processing',
+    python_callable=pipeline_trigger('extract_nifti_atlas_info'),
     dag=dag
 )
 
-post_on_slack.set_upstream(extract_nifti_atlas_info)
+notify_success.set_upstream(extract_nifti_atlas_info)
 
-post_on_slack.doc_md = """\
-# Post information about the processed MRI scan session on Slack
+notify_success.doc_md = """\
+# Notify successful processing
 
-Post information about the processed MRI scan session on Slack channel %s
-""" % slack_channel
+Notify successful processing of this MRI scan session.
+"""
