@@ -4,17 +4,10 @@ Inform administrators when processing on a MRI session has been skipped because 
 
 """
 
-import logging
-import os
-
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators import SlackAPIPostOperator
 from airflow import configuration
-
-from util import dicom_import
-from util import nifti_import
-
 
 # constants
 

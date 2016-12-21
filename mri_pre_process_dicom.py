@@ -19,7 +19,6 @@ from airflow import configuration
 from util import dicom_import
 from util import nifti_import
 
-
 # constants
 
 DAG_NAME = 'mri_pre_process_dicom'
