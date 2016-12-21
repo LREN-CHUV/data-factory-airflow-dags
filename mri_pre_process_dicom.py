@@ -9,7 +9,7 @@ import os
 
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators import BashOperator, TriggerDagOperator
+from airflow.operators import BashOperator, TriggerDagRunOperator
 from airflow_spm.operators import SpmPipelineOperator
 from airflow_freespace.operators import FreeSpaceSensor
 from airflow_pipeline.operators import PreparePipelineOperator, PythonPipelineOperator
@@ -392,7 +392,7 @@ extract_nifti_atlas_info.doc_md = """\
 Read NIFTI information from directory %s containing the Nifti files created by Neuro Morphometrics Atlas pipeline and store that information in the database.
 """ % neuro_morphometric_atlas_local_folder
 
-notify_success = TriggerDagOperator(
+notify_success = TriggerDagRunOperator(
     task_id='notify_success',
     trigger_dag_id='mri_notify_successful_processing',
     python_callable=pipeline_trigger('extract_nifti_atlas_info'),
