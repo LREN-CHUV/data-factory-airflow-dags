@@ -13,7 +13,7 @@ from airflow.operators import BashOperator, TriggerDagRunOperator
 from airflow_spm.operators import SpmPipelineOperator
 from airflow_freespace.operators import FreeSpaceSensor
 from airflow_pipeline.operators import PreparePipelineOperator, PythonPipelineOperator
-from airflow_pipeline import pipeline_trigger
+from airflow_pipeline.pipelines import pipeline_trigger
 from airflow import configuration
 
 from util import dicom_import
