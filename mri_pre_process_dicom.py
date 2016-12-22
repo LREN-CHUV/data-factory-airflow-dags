@@ -395,6 +395,7 @@ notify_success = TriggerDagRunOperator(
     task_id='notify_success',
     trigger_dag_id='mri_notify_successful_processing',
     python_callable=pipeline_trigger('extract_nifti_atlas_info'),
+    priority_weight=50,
     dag=dag
 )
 
