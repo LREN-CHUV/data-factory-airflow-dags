@@ -229,7 +229,7 @@ dicom_to_nifti_pipeline = SpmPipelineOperator(
     matlab_paths=[misc_library_path, dicom_to_nifti_pipeline_path],
     output_folder_callable=lambda session_id, **kwargs: dicom_to_nifti_local_folder + '/' + session_id,
     pool='io_intensive',
-    parent_task='prepare_pipeline',
+    parent_task='extract_dicom_info',
     priority_weight=20,
     execution_timeout=timedelta(hours=24),
     on_skip_trigger_dag_id='mri_notify_skipped_processing',
@@ -237,7 +237,7 @@ dicom_to_nifti_pipeline = SpmPipelineOperator(
     dag=dag
 )
 
-dicom_to_nifti_pipeline.set_upstream(prepare_pipeline)
+dicom_to_nifti_pipeline.set_upstream(extract_dicom_info)
 
 dicom_to_nifti_pipeline.doc_md = """\
 # DICOM to Nitfi Pipeline
