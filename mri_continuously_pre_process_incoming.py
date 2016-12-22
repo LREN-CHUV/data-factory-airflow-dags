@@ -28,11 +28,13 @@ START = datetime.combine(START.date(), time(START.hour, 0))
 # START = datetime.combine(datetime.today() - timedelta(days=2), datetime.min.time()) + timedelta(hours=10)
 # START = datetime.now()
 
-DAG_NAME = 'mri_lren_daily_pre_process_incoming'
+DAG_NAME = 'mri_continuously_pre_process_incoming'
 
 # Folder to scan for new incoming session folders containing DICOM images.
 preprocessing_data_folder = str(
     configuration.get('mri', 'PREPROCESSING_DATA_FOLDER'))
+dataset = str(configuration.get('mri', 'DATASET'))
+email_errors_to = str(configuration.get('mri', 'EMAIL_ERRORS_TO'))
 
 # Define the DAG
 
@@ -42,20 +44,21 @@ default_args = {
     'start_date': START,
     'retries': 1,
     'retry_delay': timedelta(seconds=120),
-    'email': 'ludovic.claude@chuv.ch',
+    'email': email_errors_to,
     'email_on_failure': True,
     'email_on_retry': True
 }
 
+# Run the DAG every 10 minutes
 dag = DAG(dag_id=DAG_NAME,
           default_args=default_args,
-          schedule_interval='@daily')
+          schedule_interval='0 */10 * * *')
 
 scan_ready_dirs = ScanFolderOperator(
     task_id='scan_dirs_ready_for_preprocessing',
     folder=preprocessing_data_folder,
     trigger_dag_id='mri_pre_process_dicom',
-    dataset='LREN',
+    dataset=dataset,
     dag=dag)
 
 scan_ready_dirs.doc_md = """\
