@@ -40,7 +40,8 @@ post_on_slack = SlackAPIPostOperator(
     token=slack_token,
     channel=slack_channel,
     username=slack_channel_user,
-    text=':ghost: *{{ dag_run.conf["dataset"] }}*: Skipped processing on scan session *{{ dag_run.conf["session_id"] }}*\nScan {% if dag_run.conf["scan_date"] %}done on {{ dag_run.conf["scan_date"].strftime("%Y-%m-%d") }} {% endif %}for participant {{ dag_run.conf["participant_id"] | default("?") }}{% if dag_run.conf["task_id"] %} at stage {{ dag_run.conf["task_id"] }}{% endif %}',
+    text=':ghost: *{{ dag_run.conf["dataset"] }}*: Skipped processing on scan session *{{ dag_run.conf["session_id"] }}*\n'
+    + '> Scan {% if dag_run.conf["scan_date"] %}done on {{ dag_run.conf["scan_date"].strftime("%Y-%m-%d") }} {% endif %}for participant {{ dag_run.conf["participant_id"] | default("?") }}{% if dag_run.conf["task_id"] %} at stage {{ dag_run.conf["task_id"] }}{% endif %}',
     icon_url='https://raw.githubusercontent.com/airbnb/airflow/master/airflow/www/static/pin_100.png',
     dag=dag
 )
