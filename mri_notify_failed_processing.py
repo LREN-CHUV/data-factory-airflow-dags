@@ -40,8 +40,8 @@ post_on_slack = SlackAPIPostOperator(
     token=slack_token,
     channel=slack_channel,
     username=slack_channel_user,
-    text='@channel :boom: *{{ dag_run.conf["dataset"] }}*: `Failed processing for scan session *{{ dag_run.conf["session_id"] }}*`\n'
-    + '> Scan {% if dag_run.conf["scan_date"] %}done on {{ dag_run.conf["scan_date"].strftime("%Y-%m-%d") }} {% endif %}for participant {{ dag_run.conf["participant_id"] | default("?") }}{% if dag_run.conf["task_id"] %} at stage {{ dag_run.conf["task_id"] }}{% endif %}\n'
+    text='@channel :boom: *{{ dag_run.conf["dataset"] }}*: `Failed processing for scan session *{{ dag_run.conf["session_id"] }}*{% if dag_run.conf["task_id"] %} at stage {{ dag_run.conf["task_id"] }}{% endif %}`\n'
+    + '> Scan {% if dag_run.conf["scan_date"] %}done on {{ dag_run.conf["scan_date"].strftime("%Y-%m-%d") }} {% endif %}for participant {{ dag_run.conf["participant_id"] | default("?") }}\n'
     + '> Output:\n'
     + '> ```{{ dag_run.conf["spm_output"] | default("?") }}```\n'
     + '> Errors:\n'
