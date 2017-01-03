@@ -16,8 +16,8 @@ from airflow_pipeline.operators import PreparePipelineOperator, PythonPipelineOp
 from airflow_pipeline.pipelines import pipeline_trigger
 from airflow import configuration
 
-from util import dicom_import
-from util import nifti_import
+from mri_meta_extract import dicom_import
+from mri_meta_extract import nifti_import
 
 # constants
 
