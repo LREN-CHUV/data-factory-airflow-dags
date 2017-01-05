@@ -19,7 +19,6 @@ We are looking for the presence of the .ready marker file indicating that pre-pr
 from datetime import datetime, timedelta, time
 from textwrap import dedent
 from airflow import DAG
-from airflow import configuration
 from airflow_scan_folder.operators import ScanDailyFolderOperator
 
 

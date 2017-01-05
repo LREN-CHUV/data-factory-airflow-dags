@@ -16,7 +16,6 @@ from airflow_spm.operators import SpmPipelineOperator
 from airflow_freespace.operators import FreeSpaceSensor
 from airflow_pipeline.operators import PreparePipelineOperator, PythonPipelineOperator
 from airflow_pipeline.pipelines import pipeline_trigger
-from airflow import configuration
 
 from mri_meta_extract import dicom_import
 from mri_meta_extract import nifti_import

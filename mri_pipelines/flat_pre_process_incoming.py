@@ -15,7 +15,6 @@ Dicom files are already processed by the hierarchize.sh script with the followin
 from datetime import datetime, timedelta, time
 from textwrap import dedent
 from airflow import DAG
-from airflow import configuration
 from airflow_scan_folder.operators import ScanFolderOperator
 
 def flat_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):

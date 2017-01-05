@@ -20,7 +20,6 @@ or a date folder with a date older than today.
 from datetime import datetime, timedelta, time
 from textwrap import dedent
 from airflow import DAG
-from airflow import configuration
 from airflow_scan_folder.operators import ScanDailyFolderOperator
 
 def daily_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):
