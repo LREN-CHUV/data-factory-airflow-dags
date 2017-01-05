@@ -103,4 +103,4 @@ for dataset_section in dataset_sections.split(','):
                           mpm_maps=mpm_maps, mpm_maps_spm_function=mpm_maps_spm_function, mpm_maps_pipeline_path=mpm_maps_pipeline_path,
                           mpm_maps_local_folder=mpm_maps_local_folder, mpm_maps_server_folder=mpm_maps_local_folder,
                           neuro_morphometric_atlas=neuro_morphometric_atlas, neuro_morphometric_atlas_spm_function=neuro_morphometric_atlas_spm_function,
-                          neuro_morphometric_atlas_pipeline_path=neuro_morphometric_atlas_pipeline_path, neuro_morphometric_atlas_local_folder=neuro_morphometric_atlas_local_folder, neuro_morphometric_atlas_server_folder=neuro_morphometric_atlas_server_folder):
+                          neuro_morphometric_atlas_pipeline_path=neuro_morphometric_atlas_pipeline_path, neuro_morphometric_atlas_local_folder=neuro_morphometric_atlas_local_folder, neuro_morphometric_atlas_server_folder=neuro_morphometric_atlas_server_folder)
