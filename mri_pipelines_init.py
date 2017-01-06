@@ -35,33 +35,33 @@ for dataset_section in dataset_sections.split(','):
     default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION',
                    'NeuroMorphometric_pipeline')
 
-    preprocessing_scanners = configuration.get(
-        dataset_section, 'PREPROCESSING_SCANNERS').split(',')
     dataset = configuration.get(dataset_section, 'DATASET')
     preprocessing_data_folder = configuration.get(
         dataset_section, 'PREPROCESSING_DATA_FOLDER')
+    preprocessing_scanners = configuration.get(
+        dataset_section, 'PREPROCESSING_SCANNERS').split(',')
+    preprocessing_pipelines = configuration.get(
+        dataset_section, 'PREPROCESSING_PIPELINES').split(',')
 
-    logging.info("Create pipelines for dataset %s" % dataset)
+    logging.info("Create pipelines for dataset %s using scannners %s and pipelines %s" % (dataset, preprocessing_scanners, preprocessing_pipelines))
 
     if 'continuous' in preprocessing_scanners:
         dag = continuously_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                              email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
-        logging.info("  Add DAG ", dag.dag_id)
+        logging.info("  Add DAG %s" % dag.dag_id)
     if 'daily' in preprocessing_scanners:
         dag = daily_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                       email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
-        logging.info("  Add DAG ", dag.dag_id)
+        logging.info("  Add DAG %s" % dag.dag_id)
     if 'flat' in preprocessing_scanners:
         dag = flat_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                      email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
-        logging.info("  Add DAG ", dag.dag_id)
+        logging.info("  Add DAG %s" % dag.dag_id)
 
     pipelines_path = configuration.get(dataset_section, 'PIPELINES_PATH')
     protocols_file = configuration.get(dataset_section, 'PROTOCOLS_FILE')
     max_active_runs = int(configuration.get(
         dataset_section, 'MAX_ACTIVE_RUNS'))
-    preprocessing_pipelines = configuration.get(
-        dataset_section, 'PREPROCESSING_PIPELINES').split(',')
     misc_library_path = pipelines_path + '/../Miscellaneous&Others'
     min_free_space_local_folder = configuration.getfloat(
         dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
@@ -106,4 +106,4 @@ for dataset_section in dataset_sections.split(','):
         params['neuro_morphometric_atlas_pipeline_path'] = pipelines_path + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
 
     dag = pre_process_dicom_dag(**params)
-    logging.info("  Add DAG ", dag.dag_id)
+    logging.info("  Add DAG %s" % dag.dag_id)
