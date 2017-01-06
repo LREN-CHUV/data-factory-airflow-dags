@@ -56,3 +56,5 @@ def flat_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_i
 
     Scan the session folders located inside folder %s (defined by variable __preprocessing_data_folder__).
     """ % folder)
+
+    return dag

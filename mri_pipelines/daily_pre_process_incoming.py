@@ -63,3 +63,5 @@ def daily_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_
 
     Daily folders older than today are always processed, and today's folder content is skipped unless a .ready marker file is found.
     """ % folder)
+
+    return dag

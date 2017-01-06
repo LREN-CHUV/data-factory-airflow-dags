@@ -37,15 +37,20 @@ for dataset_section in dataset_sections.split(','):
     preprocessing_data_folder = configuration.get(
         dataset_section, 'PREPROCESSING_DATA_FOLDER')
 
+    print("Create pipelines for dataset %s" % dataset)
+
     if 'continuous' in preprocessing_scanners:
-        continuously_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
+        dag = continuously_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                              email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
+        globals()[dag.dag_id] = dag
     if 'daily' in preprocessing_scanners:
-        daily_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
+        dag = daily_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                       email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
+        globals()[dag.dag_id] = dag
     if 'flat' in preprocessing_scanners:
-        flat_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
+        dag = flat_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                      email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
+        globals()[dag.dag_id] = dag
 
     pipelines_path = configuration.get(dataset_section, 'PIPELINES_PATH')
     protocols_file = configuration.get(dataset_section, 'PROTOCOLS_FILE')

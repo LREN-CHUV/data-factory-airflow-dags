@@ -65,3 +65,5 @@ def continuously_preprocess_incoming_dag(dataset, folder, email_errors_to, trigg
     It looks for the presence of a .ready marker file to mark that session folder as ready for processing, but it
     will skip it if contains the marker file .processing indicating that processing has already started.
     """ % folder)
+
+    return dag
