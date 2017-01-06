@@ -29,6 +29,7 @@ for dataset_section in dataset_sections.split(','):
                    'dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')
     default_config(dataset_section, 'COPY_DICOM_TO_LOCAL', 'True')
     default_config(dataset_section, 'DICOM_ORGANIZER_SPM_FUNCTION', 'dicomOrganizer')
+    default_config(dataset_section, 'DICOM_ORGANIZER_DATA_STRUCTURE', 'PatientID:StudyID:SeriesDescription:SeriesDate')
     default_config(dataset_section, 'DICOM_ORGANIZER_LOCAL_FOLDER', '/dev/null')
     default_config(dataset_section, 'NIFTI_SPM_FUNCTION', 'DCM2NII_LREN')
     default_config(dataset_section, 'MPM_MAPS_SPM_FUNCTION',
