@@ -93,7 +93,7 @@ for dataset_section in dataset_sections.split(','):
     neuro_morphometric_atlas_pipeline_path = pipelines_path + \
         '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
 
-    pre_process_dicom_dag(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, misc_library_path=misc_library_path,
+    dag = pre_process_dicom_dag(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, misc_library_path=misc_library_path,
                           min_free_space_local_folder=min_free_space_local_folder, dicom_local_folder=dicom_local_folder,
                           copy_dicom_to_local=copy_dicom_to_local,
                           dicom_organizer=dicom_organizer, dicom_organizer_spm_function=dicom_organizer_spm_function, dicom_organizer_pipeline_path=dicom_organizer_pipeline_path,
@@ -104,3 +104,5 @@ for dataset_section in dataset_sections.split(','):
                           mpm_maps_local_folder=mpm_maps_local_folder, mpm_maps_server_folder=mpm_maps_local_folder,
                           neuro_morphometric_atlas=neuro_morphometric_atlas, neuro_morphometric_atlas_spm_function=neuro_morphometric_atlas_spm_function,
                           neuro_morphometric_atlas_pipeline_path=neuro_morphometric_atlas_pipeline_path, neuro_morphometric_atlas_local_folder=neuro_morphometric_atlas_local_folder, neuro_morphometric_atlas_server_folder=neuro_morphometric_atlas_server_folder)
+
+    globals()[dag.dag_id] = dag

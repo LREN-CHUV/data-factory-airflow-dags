@@ -479,3 +479,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
         """ % neuro_morphometric_atlas_local_folder)
 
         notify_success.set_upstream(extract_nifti_atlas_info)
+
+    #endif
+
+    return dag

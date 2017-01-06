@@ -21,8 +21,8 @@ DAG_NAME = 'mri_self_checks'
 spm_config_folder = configuration.get('spm', 'SPM_DIR')
 min_free_space_local_folder = float(
     configuration.get('mri', 'MIN_FREE_SPACE_LOCAL_FOLDER'))
-dicom_local_folder = str(
-    configuration.get('main-data', 'DICOM_LOCAL_FOLDER'))
+local_drive = str(
+    configuration.get('mri', 'LOCAL_DRIVE'))
 
 # functions
 
@@ -71,8 +71,8 @@ dag = DAG(
 
 check_free_space = FreeSpaceSensor(
     task_id='check_free_space',
-    path=dicom_local_folder,
-    free_disk_threshold=min_free_space_local_folder,
+    path=local_drive,
+    free_drive_threshold=min_free_space_local_folder,
     retry_delay=timedelta(hours=1),
     retries=24 * 7,
     dag=dag
@@ -81,7 +81,7 @@ check_free_space = FreeSpaceSensor(
 check_free_space.doc_md = """\
 # Check free space
 
-Check that there is enough free space on the local disk for processing, wait otherwise.
+Check that there is enough free space on the local drive for processing, wait otherwise.
 """
 
 
