@@ -7,10 +7,10 @@ Initialise all the pipelines required to process different datasets containing M
 import logging
 
 from airflow import configuration
-from .mri_pipelines.continuously_preprocess_incoming import continuously_preprocess_incoming_dag
-from .mri_pipelines.daily_preprocess_incoming import daily_preprocess_incoming_dag
-from .mri_pipelines.flat_preprocess_incoming import flat_preprocess_incoming_dag
-from .mri_pipelines.pre_process_dicom import pre_process_dicom_dag
+from mri_pipelines.continuously_preprocess_incoming import continuously_preprocess_incoming_dag
+from mri_pipelines.daily_preprocess_incoming import daily_preprocess_incoming_dag
+from mri_pipelines.flat_preprocess_incoming import flat_preprocess_incoming_dag
+from mri_pipelines.pre_process_dicom import pre_process_dicom_dag
 
 
 def default_config(section, key, value):
