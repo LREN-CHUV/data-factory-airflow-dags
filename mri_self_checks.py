@@ -72,7 +72,7 @@ dag = DAG(
 check_free_space = FreeSpaceSensor(
     task_id='check_free_space',
     path=local_drive,
-    free_drive_threshold=min_free_space_local_folder,
+    free_disk_threshold=min_free_space_local_folder,
     retry_delay=timedelta(hours=1),
     retries=24 * 7,
     dag=dag
