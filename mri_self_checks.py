@@ -22,7 +22,7 @@ spm_config_folder = configuration.get('spm', 'SPM_DIR')
 min_free_space_local_folder = float(
     configuration.get('mri', 'MIN_FREE_SPACE_LOCAL_FOLDER'))
 dicom_local_folder = str(
-    configuration.get('mri', 'DICOM_LOCAL_FOLDER'))
+    configuration.get('main-data', 'DICOM_LOCAL_FOLDER'))
 
 # functions
 
