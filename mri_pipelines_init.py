@@ -22,8 +22,6 @@ def default_config(section, key, value):
 dataset_sections = configuration.get('mri', 'DATASETS')
 email_errors_to = configuration.get('mri', 'EMAIL_ERRORS_TO')
 
-logging.error("Datasets %s" % dataset_sections)
-
 for dataset_section in dataset_sections.split(','):
     # Set the default configuration for the dataset
     default_config(dataset_section, 'PREPROCESSING_SCANNERS', 'daily')
