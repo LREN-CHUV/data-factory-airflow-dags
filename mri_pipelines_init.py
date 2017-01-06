@@ -9,9 +9,9 @@ Initialise the DAGs for all the pipelines required to process different datasets
 import logging
 
 from airflow import configuration
-from mri_pipelines.continuously_preprocess_incoming import continuously_preprocess_incoming_dag
-from mri_pipelines.daily_preprocess_incoming import daily_preprocess_incoming_dag
-from mri_pipelines.flat_preprocess_incoming import flat_preprocess_incoming_dag
+from mri_pipelines.continuously_pre_process_incoming import continuously_preprocess_incoming_dag
+from mri_pipelines.daily_pre_process_incoming import daily_preprocess_incoming_dag
+from mri_pipelines.flat_pre_process_incoming import flat_preprocess_incoming_dag
 from mri_pipelines.pre_process_dicom import pre_process_dicom_dag
 
 
