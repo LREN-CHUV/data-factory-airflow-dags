@@ -106,7 +106,7 @@ for dataset_section in dataset_sections.split(','):
 
     check_free_space = FreeSpaceSensor(
         task_id='%s_check_free_space' % dataset.lower().replace(" ", "_"),
-        path=local_drive,
+        path=dicom_local_folder,
         free_disk_threshold=min_free_space_local_folder,
         retry_delay=timedelta(hours=1),
         retries=24 * 7,
