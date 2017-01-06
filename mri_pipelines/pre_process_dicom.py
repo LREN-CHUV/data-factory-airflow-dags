@@ -482,5 +482,4 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
 
     #endif
 
-    globals()[DAG_NAME] = dag
     return dag

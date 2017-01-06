@@ -46,17 +46,20 @@ for dataset_section in dataset_sections.split(','):
     logging.info("Create pipelines for dataset %s using scannners %s and pipelines %s" % (dataset, preprocessing_scanners, preprocessing_pipelines))
 
     if 'continuous' in preprocessing_scanners:
-        dag = continuously_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
+        name = '%s_continuous_dag' % dataset.lower().replace(" ", "_")
+        globals()[name] = continuously_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                              email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
-        logging.info("  Add DAG %s" % dag.dag_id)
+        logging.info("Add DAG %s" % globals()[name].dag_id)
     if 'daily' in preprocessing_scanners:
-        dag = daily_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
+        name = '%s_daily_dag' % dataset.lower().replace(" ", "_")
+        globals()[name] = daily_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                       email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
-        logging.info("  Add DAG %s" % dag.dag_id)
+        logging.info("Add DAG %s" % globals()[name].dag_id)
     if 'flat' in preprocessing_scanners:
-        dag = flat_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
+        name = '%s_flat_dag' % dataset.lower().replace(" ", "_")
+        globals()[name] = flat_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                      email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
-        logging.info("  Add DAG %s" % dag.dag_id)
+        logging.info("Add DAG %s" % globals()[name].dag_id)
 
     pipelines_path = configuration.get(dataset_section, 'PIPELINES_PATH')
     protocols_file = configuration.get(dataset_section, 'PROTOCOLS_FILE')
@@ -105,5 +108,6 @@ for dataset_section in dataset_sections.split(','):
         params['neuro_morphometric_atlas_server_folder'] = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER')
         params['neuro_morphometric_atlas_pipeline_path'] = pipelines_path + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
 
-    dag = pre_process_dicom_dag(**params)
-    logging.info("  Add DAG %s" % dag.dag_id)
+    name = '%s_preprocess_dag' % dataset.lower().replace(" ", "_")
+    globals()[name] = pre_process_dicom_dag(**params)
+    logging.info("Add DAG %s" % globals()[name].dag_id)
