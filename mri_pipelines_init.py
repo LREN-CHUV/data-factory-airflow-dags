@@ -29,8 +29,6 @@ for dataset_section in dataset_sections.split(','):
                    'dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')
     default_config(dataset_section, 'COPY_DICOM_TO_LOCAL', 'True')
     default_config(dataset_section, 'DICOM_ORGANIZER_SPM_FUNCTION', 'dicomOrganizer')
-    default_config(dataset_section, 'DICOM_ORGANIZER_DATA_STRUCTURE', 'PatientID:StudyID:SeriesDescription:SeriesDate')
-    default_config(dataset_section, 'DICOM_ORGANIZER_LOCAL_FOLDER', '/dev/null')
     default_config(dataset_section, 'NIFTI_SPM_FUNCTION', 'DCM2NII_LREN')
     default_config(dataset_section, 'MPM_MAPS_SPM_FUNCTION',
                    'Preproc_mpm_maps')
@@ -68,14 +66,6 @@ for dataset_section in dataset_sections.split(','):
         dataset_section, 'DICOM_LOCAL_FOLDER')
     copy_dicom_to_local = configuration.getboolean(
         dataset_section, 'COPY_DICOM_TO_LOCAL')
-    dicom_organizer = 'dicom_organizer' in preprocessing_pipelines
-    dicom_organizer_spm_function = configuration.get(
-        dataset_section, 'DICOM_ORGANIZER_SPM_FUNCTION')
-    dicom_organizer_local_folder = configuration.get(
-        dataset_section, 'DICOM_ORGANIZER_LOCAL_FOLDER')
-    dicom_organizer_data_structure = configuration.get(
-        dataset_section, 'DICOM_ORGANIZER_DATA_STRUCTURE')
-    dicom_organizer_pipeline_path = pipelines_path + '/DicomOrganizer_Pipeline'
     dicom_to_nifti_spm_function = configuration.get(
         dataset_section, 'NIFTI_SPM_FUNCTION')
     dicom_to_nifti_local_folder = configuration.get(
@@ -83,32 +73,33 @@ for dataset_section in dataset_sections.split(','):
     dicom_to_nifti_server_folder = configuration.get(
         dataset_section, 'NIFTI_SERVER_FOLDER')
     dicom_to_nifti_pipeline_path = pipelines_path + '/Nifti_Conversion_Pipeline'
+    dicom_organizer = 'dicom_organizer' in preprocessing_pipelines
     mpm_maps = 'mpm_maps' in preprocessing_pipelines
-    mpm_maps_spm_function = configuration.get(
-        dataset_section, 'MPM_MAPS_SPM_FUNCTION')
-    mpm_maps_local_folder = configuration.get(
-        dataset_section, 'MPM_MAPS_LOCAL_FOLDER')
-    mpm_maps_server_folder = configuration.get(
-        dataset_section, 'MPM_MAPS_SERVER_FOLDER')
-    mpm_maps_pipeline_path = pipelines_path + '/MPMs_Pipeline'
     neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
-    neuro_morphometric_atlas_spm_function = configuration.get(
-        dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION')
-    neuro_morphometric_atlas_local_folder = configuration.get(
-        dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_LOCAL_FOLDER')
-    neuro_morphometric_atlas_server_folder = configuration.get(
-        dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER')
-    neuro_morphometric_atlas_pipeline_path = pipelines_path + \
-        '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
 
-    dag = pre_process_dicom_dag(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, misc_library_path=misc_library_path,
+    params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, misc_library_path=misc_library_path,
                           min_free_space_local_folder=min_free_space_local_folder, dicom_local_folder=dicom_local_folder,
-                          copy_dicom_to_local=copy_dicom_to_local,
-                          dicom_organizer=dicom_organizer, dicom_organizer_spm_function=dicom_organizer_spm_function, dicom_organizer_pipeline_path=dicom_organizer_pipeline_path,
-                          dicom_organizer_local_folder=dicom_organizer_local_folder, dicom_organizer_data_structure=dicom_organizer_data_structure,
+                          copy_dicom_to_local=copy_dicom_to_local, dicom_organizer=dicom_organizer,
                           dicom_to_nifti_spm_function=dicom_to_nifti_spm_function, dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
                           dicom_to_nifti_local_folder=dicom_to_nifti_local_folder, dicom_to_nifti_server_folder=dicom_to_nifti_server_folder,
-                          mpm_maps=mpm_maps, mpm_maps_spm_function=mpm_maps_spm_function, mpm_maps_pipeline_path=mpm_maps_pipeline_path,
-                          mpm_maps_local_folder=mpm_maps_local_folder, mpm_maps_server_folder=mpm_maps_local_folder,
-                          neuro_morphometric_atlas=neuro_morphometric_atlas, neuro_morphometric_atlas_spm_function=neuro_morphometric_atlas_spm_function,
-                          neuro_morphometric_atlas_pipeline_path=neuro_morphometric_atlas_pipeline_path, neuro_morphometric_atlas_local_folder=neuro_morphometric_atlas_local_folder, neuro_morphometric_atlas_server_folder=neuro_morphometric_atlas_server_folder)
+                          mpm_maps=mpm_maps, neuro_morphometric_atlas=neuro_morphometric_atlas)
+
+    if dicom_organizer:
+        params['dicom_organizer_spm_function'] = configuration.get(dataset_section, 'DICOM_ORGANIZER_SPM_FUNCTION')
+        params['dicom_organizer_local_folder'] = configuration.get(dataset_section, 'DICOM_ORGANIZER_LOCAL_FOLDER')
+        params['dicom_organizer_data_structure'] = configuration.get(dataset_section, 'DICOM_ORGANIZER_DATA_STRUCTURE')
+        params['dicom_organizer_pipeline_path'] = pipelines_path + '/DicomOrganizer_Pipeline'
+
+    if mpm_maps:
+        params['mpm_maps_spm_function'] = configuration.get(dataset_section, 'MPM_MAPS_SPM_FUNCTION')
+        params['mpm_maps_local_folder'] = configuration.get(dataset_section, 'MPM_MAPS_LOCAL_FOLDER')
+        params['mpm_maps_server_folder'] = configuration.get(dataset_section, 'MPM_MAPS_SERVER_FOLDER')
+        params['mpm_maps_pipeline_path'] = pipelines_path + '/MPMs_Pipeline'
+
+    if neuro_morphometric_atlas:
+        params['neuro_morphometric_atlas_spm_function'] = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION')
+        params['neuro_morphometric_atlas_local_folder'] = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_LOCAL_FOLDER')
+        params['neuro_morphometric_atlas_server_folder'] = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER')
+        params['neuro_morphometric_atlas_pipeline_path'] = pipelines_path + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
+
+    dag = pre_process_dicom_dag(**params)
