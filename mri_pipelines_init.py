@@ -4,6 +4,8 @@ Initialise all the pipelines required to process different datasets containing M
 
 """
 
+import logging
+
 from airflow import configuration
 from .mri_pipelines.continuously_preprocess_incoming import continuously_preprocess_incoming_dag
 from .mri_pipelines.daily_preprocess_incoming import daily_preprocess_incoming_dag
@@ -17,6 +19,8 @@ def default_config(section, key, value):
 
 dataset_sections = configuration.get('mri', 'DATASETS')
 email_errors_to = configuration.get('mri', 'EMAIL_ERRORS_TO')
+
+logging.error("Datasets %s" % dataset_sections)
 
 for dataset_section in dataset_sections.split(','):
     # Set the default configuration for the dataset
@@ -37,7 +41,7 @@ for dataset_section in dataset_sections.split(','):
     preprocessing_data_folder = configuration.get(
         dataset_section, 'PREPROCESSING_DATA_FOLDER')
 
-    print("Create pipelines for dataset %s" % dataset)
+    logging.info("Create pipelines for dataset %s" % dataset)
 
     if 'continuous' in preprocessing_scanners:
         dag = continuously_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
