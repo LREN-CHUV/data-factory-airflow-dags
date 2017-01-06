@@ -46,15 +46,12 @@ for dataset_section in dataset_sections.split(','):
     if 'continuous' in preprocessing_scanners:
         dag = continuously_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                              email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
-        globals()[dag.dag_id] = dag
     if 'daily' in preprocessing_scanners:
         dag = daily_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                       email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
-        globals()[dag.dag_id] = dag
     if 'flat' in preprocessing_scanners:
         dag = flat_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                      email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
-        globals()[dag.dag_id] = dag
 
     pipelines_path = configuration.get(dataset_section, 'PIPELINES_PATH')
     protocols_file = configuration.get(dataset_section, 'PROTOCOLS_FILE')
@@ -113,5 +110,3 @@ for dataset_section in dataset_sections.split(','):
                           mpm_maps_local_folder=mpm_maps_local_folder, mpm_maps_server_folder=mpm_maps_local_folder,
                           neuro_morphometric_atlas=neuro_morphometric_atlas, neuro_morphometric_atlas_spm_function=neuro_morphometric_atlas_spm_function,
                           neuro_morphometric_atlas_pipeline_path=neuro_morphometric_atlas_pipeline_path, neuro_morphometric_atlas_local_folder=neuro_morphometric_atlas_local_folder, neuro_morphometric_atlas_server_folder=neuro_morphometric_atlas_server_folder)
-
-    globals()[dag.dag_id] = dag

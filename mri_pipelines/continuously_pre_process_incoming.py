@@ -66,4 +66,5 @@ def continuously_preprocess_incoming_dag(dataset, folder, email_errors_to, trigg
     will skip it if contains the marker file .processing indicating that processing has already started.
     """ % folder)
 
+    globals()[DAG_NAME] = dag
     return dag
