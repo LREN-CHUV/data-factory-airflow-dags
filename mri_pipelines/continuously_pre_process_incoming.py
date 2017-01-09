@@ -54,6 +54,7 @@ def continuously_preprocess_incoming_dag(dataset, folder, email_errors_to, trigg
         task_id='scan_dirs_ready_for_preprocessing',
         folder=folder,
         trigger_dag_id=trigger_dag_id,
+        execution_timeout=timedelta(minutes=10),
         dataset=dataset,
         dag=dag)
 

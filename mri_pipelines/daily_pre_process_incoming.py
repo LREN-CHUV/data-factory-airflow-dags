@@ -53,6 +53,7 @@ def daily_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_
         task_id='scan_dirs',
         folder=folder,
         trigger_dag_id=trigger_dag_id,
+        execution_timeout=timedelta(minutes=30),
         dataset=dataset,
         dag=dag)
 

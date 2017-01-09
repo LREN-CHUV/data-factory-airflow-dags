@@ -49,6 +49,7 @@ def flat_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_i
         folder=folder,
         trigger_dag_id=trigger_dag_id,
         dataset=dataset,
+        execution_timeout=timedelta(minutes=30),
         dag=dag)
 
     scan_dirs.doc_md = dedent("""\
