@@ -62,10 +62,11 @@ default_args = {
     'email_on_retry': True
 }
 
+# Run the self-checks hourly to keep some activity and make the scheduler health-check happy
 dag = DAG(
     dag_id=DAG_NAME,
     default_args=default_args,
-    schedule_interval='@once')
+    schedule_interval='@hourly')
 
 check_python = PythonOperator(
     task_id='check_python',
