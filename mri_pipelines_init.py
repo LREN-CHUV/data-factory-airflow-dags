@@ -85,7 +85,7 @@ for dataset_section in dataset_sections.split(','):
 
     params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, misc_library_path=misc_library_path,
                           min_free_space_local_folder=min_free_space_local_folder, dicom_local_folder=dicom_local_folder,
-                          copy_dicom_to_local=copy_dicom_to_local, dicom_organizer=dicom_organizer,
+                          copy_dicom_to_local=copy_dicom_to_local, dicom_organizer=dicom_organizer, protocols_file=protocols_file,
                           dicom_to_nifti_spm_function=dicom_to_nifti_spm_function, dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
                           dicom_to_nifti_local_folder=dicom_to_nifti_local_folder, dicom_to_nifti_server_folder=dicom_to_nifti_server_folder,
                           mpm_maps=mpm_maps, neuro_morphometric_atlas=neuro_morphometric_atlas)

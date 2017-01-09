@@ -27,7 +27,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
                           dicom_organizer=False, dicom_organizer_spm_function='dicomOrganizer', dicom_organizer_pipeline_path=None,
                           dicom_organizer_local_folder=None, dicom_organizer_data_structure='PatientID:StudyID:ProtocolName:SeriesNumber',
                           dicom_to_nifti_spm_function='DCM2NII_LREN', dicom_to_nifti_pipeline_path=None,
-                          dicom_to_nifti_local_folder=None, dicom_to_nifti_server_folder=None,
+                          dicom_to_nifti_local_folder=None, dicom_to_nifti_server_folder=None, protocols_file=None,
                           mpm_maps=True, mpm_maps_spm_function='Preproc_mpm_maps', mpm_maps_pipeline_path=None,
                           mpm_maps_local_folder=None, mpm_maps_server_folder=None,
                           neuro_morphometric_atlas=True, neuro_morphometric_atlas_spm_function='NeuroMorphometric_pipeline',
@@ -61,8 +61,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
         return [parent_data_folder,
                 dicom_organizer_local_folder,
                 session_id,
-                dicom_organizer_data_structure,
-                protocols_file]
+                dicom_organizer_data_structure]
 
     def dicom_to_nifti_arguments_fn(folder, session_id, participant_id, scan_date, **kwargs):
         """
