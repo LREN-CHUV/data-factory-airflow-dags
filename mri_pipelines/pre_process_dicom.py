@@ -23,7 +23,7 @@ from mri_meta_extract import nifti_import
 
 def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_library_path,
                           min_free_space_local_folder, dicom_local_folder,
-                          copy_dicom_to_local=True,
+                          copy_dicom_to_local=True, dicom_files_pattern='/**/MR.*',
                           dicom_organizer=False, dicom_organizer_spm_function='dicomOrganizer', dicom_organizer_pipeline_path=None,
                           dicom_organizer_local_folder=None, dicom_organizer_data_structure='PatientID:StudyID:ProtocolName:SeriesNumber',
                           dicom_to_nifti_spm_function='DCM2NII_LREN', dicom_to_nifti_pipeline_path=None,
@@ -43,7 +43,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
         """
         logging.info('folder %s, session_id %s' % (folder, session_id))
 
-        (participant_id, scan_date) = dicom_import.visit_info(folder)
+        (participant_id, scan_date) = dicom_import.visit_info(folder, files_pattern=dicom_files_pattern)
         dicom_import.dicom2db(folder)
 
         return {
