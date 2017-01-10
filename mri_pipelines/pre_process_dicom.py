@@ -23,9 +23,11 @@ from mri_meta_extract import nifti_import
 
 def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_library_path,
                           min_free_space_local_folder, dicom_local_folder,
-                          copy_dicom_to_local=True, dicom_files_pattern='/**/MR.*',
+                          copy_dicom_to_local=True, dicom_files_pattern='**/MR.*',
                           dicom_organizer=False, dicom_organizer_spm_function='dicomOrganizer', dicom_organizer_pipeline_path=None,
                           dicom_organizer_local_folder=None, dicom_organizer_data_structure='PatientID:StudyID:ProtocolName:SeriesNumber',
+                          dicom_select_T1=False,dicom_select_T1_spm_function='selectT1', dicom_select_T1_pipeline_path=None,
+                          dicom_select_T1_local_folder=None, dicom_select_T1_protocols_file=None,
                           dicom_to_nifti_spm_function='DCM2NII_LREN', dicom_to_nifti_pipeline_path=None,
                           dicom_to_nifti_local_folder=None, dicom_to_nifti_server_folder=None, protocols_file=None,
                           mpm_maps=True, mpm_maps_spm_function='Preproc_mpm_maps', mpm_maps_pipeline_path=None,
@@ -62,6 +64,18 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
                 dicom_organizer_local_folder,
                 session_id,
                 dicom_organizer_data_structure]
+
+    def dicom_select_T1_arguments_fn(folder, session_id, **kwargs):
+        """
+          Prepare the arguments for the pipeline that selects T1 files from DICOM.
+          It selects all T1 files located in the folder 'folder'
+        """
+        parent_data_folder = os.path.abspath(folder + '/..')
+
+        return [parent_data_folder,
+                dicom_organizer_local_folder,
+                session_id,
+                dicom_select_T1_protocols_file]
 
     def dicom_to_nifti_arguments_fn(folder, session_id, participant_id, scan_date, **kwargs):
         """
@@ -243,6 +257,44 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
 
         upstream = dicom_organizer_pipeline
         upstream_id = 'dicom_organizer_pipeline'
+
+    # endif
+
+    if dicom_select_T1:
+
+        dicom_select_T1_pipeline = SpmPipelineOperator(
+            task_id='dicom_select_T1_pipeline',
+            spm_function=dicom_select_T1_spm_function,
+            spm_arguments_callable=dicom_select_T1_arguments_fn,
+            matlab_paths=[misc_library_path, dicom_select_T1_pipeline_path],
+            output_folder_callable=lambda session_id, **kwargs: dicom_select_T1_local_folder + '/' + session_id,
+            pool='io_intensive',
+            parent_task=upstream_id,
+            priority_weight=20,
+            execution_timeout=timedelta(hours=24),
+            on_skip_trigger_dag_id='mri_notify_skipped_processing',
+            on_failure_trigger_dag_id='mri_notify_failed_processing',
+            dag=dag
+        )
+
+        dicom_select_T1_pipeline.set_upstream(upstream)
+
+        dicom_select_T1_pipeline.doc_md = dedent("""\
+        # select T1 DICOM pipeline
+
+        SPM function: __%s__
+
+        Selects only T1 images from a set of various DICOM images.
+
+        Selected DICOM files are stored the the following locations:
+
+        * Local folder: __%s__
+
+        Depends on: __%s__
+        """ % (dicom_select_T1_spm_function, dicom_select_T1_local_folder, upstream_id))
+
+        upstream = dicom_select_T1_pipeline
+        upstream_id = 'dicom_select_T1_pipeline'
 
     # endif
 

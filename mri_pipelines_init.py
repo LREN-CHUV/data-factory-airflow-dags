@@ -29,6 +29,7 @@ for dataset_section in dataset_sections.split(','):
                    'dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')
     default_config(dataset_section, 'COPY_DICOM_TO_LOCAL', 'True')
     default_config(dataset_section, 'DICOM_ORGANIZER_SPM_FUNCTION', 'dicomOrganizer')
+    default_config(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION', 'selectT1')
     default_config(dataset_section, 'NIFTI_SPM_FUNCTION', 'DCM2NII_LREN')
     default_config(dataset_section, 'MPM_MAPS_SPM_FUNCTION',
                    'Preproc_mpm_maps')
@@ -80,12 +81,13 @@ for dataset_section in dataset_sections.split(','):
         dataset_section, 'NIFTI_SERVER_FOLDER')
     dicom_to_nifti_pipeline_path = pipelines_path + '/Nifti_Conversion_Pipeline'
     dicom_organizer = 'dicom_organizer' in preprocessing_pipelines
+    dicom_select_T1 = 'dicom_select_T1' in preprocessing_pipelines
     mpm_maps = 'mpm_maps' in preprocessing_pipelines
     neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
 
     params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, misc_library_path=misc_library_path,
                           min_free_space_local_folder=min_free_space_local_folder, dicom_local_folder=dicom_local_folder,
-                          copy_dicom_to_local=copy_dicom_to_local, dicom_organizer=dicom_organizer, protocols_file=protocols_file,
+                          copy_dicom_to_local=copy_dicom_to_local, dicom_organizer=dicom_organizer, dicom_select_T1=dicom_select_T1, protocols_file=protocols_file,
                           dicom_to_nifti_spm_function=dicom_to_nifti_spm_function, dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
                           dicom_to_nifti_local_folder=dicom_to_nifti_local_folder, dicom_to_nifti_server_folder=dicom_to_nifti_server_folder,
                           mpm_maps=mpm_maps, neuro_morphometric_atlas=neuro_morphometric_atlas)
@@ -95,6 +97,12 @@ for dataset_section in dataset_sections.split(','):
         params['dicom_organizer_local_folder'] = configuration.get(dataset_section, 'DICOM_ORGANIZER_LOCAL_FOLDER')
         params['dicom_organizer_data_structure'] = configuration.get(dataset_section, 'DICOM_ORGANIZER_DATA_STRUCTURE')
         params['dicom_organizer_pipeline_path'] = pipelines_path + '/DicomOrganizer_Pipeline'
+
+    if dicom_select_T1:
+        params['dicom_select_T1_spm_function'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION')
+        params['dicom_select_T1_local_folder'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_LOCAL_FOLDER')
+        params['dicom_select_T1_protocols_file'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_PROTOCOLS_FILE')
+        params['dicom_select_T1_pipeline_path'] = pipelines_path + '/SelectT1_Pipeline'
 
     if mpm_maps:
         params['mpm_maps_spm_function'] = configuration.get(dataset_section, 'MPM_MAPS_SPM_FUNCTION')
