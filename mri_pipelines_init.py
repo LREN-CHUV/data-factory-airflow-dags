@@ -30,6 +30,7 @@ for dataset_section in dataset_sections.split(','):
     default_config(dataset_section, 'COPY_DICOM_TO_LOCAL', 'True')
     default_config(dataset_section, 'DICOM_ORGANIZER_SPM_FUNCTION', 'dicomOrganizer')
     default_config(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION', 'selectT1')
+    default_config(dataset_section, 'DICOM_FILES_PATTERN', '**/MR.*')
     default_config(dataset_section, 'NIFTI_SPM_FUNCTION', 'DCM2NII_LREN')
     default_config(dataset_section, 'MPM_MAPS_SPM_FUNCTION',
                    'Preproc_mpm_maps')
@@ -71,6 +72,8 @@ for dataset_section in dataset_sections.split(','):
         dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
     dicom_local_folder = configuration.get(
         dataset_section, 'DICOM_LOCAL_FOLDER')
+    dicom_files_pattern = configuration.get(
+        dataset_section, 'DICOM_FILES_PATTERN')
     copy_dicom_to_local = configuration.getboolean(
         dataset_section, 'COPY_DICOM_TO_LOCAL')
     dicom_to_nifti_spm_function = configuration.get(
@@ -86,7 +89,7 @@ for dataset_section in dataset_sections.split(','):
     neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
 
     params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, misc_library_path=misc_library_path,
-                          min_free_space_local_folder=min_free_space_local_folder, dicom_local_folder=dicom_local_folder,
+                          min_free_space_local_folder=min_free_space_local_folder, dicom_local_folder=dicom_local_folder, dicom_files_pattern=dicom_files_pattern,
                           copy_dicom_to_local=copy_dicom_to_local, dicom_organizer=dicom_organizer, dicom_select_T1=dicom_select_T1, protocols_file=protocols_file,
                           dicom_to_nifti_spm_function=dicom_to_nifti_spm_function, dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
                           dicom_to_nifti_local_folder=dicom_to_nifti_local_folder, dicom_to_nifti_server_folder=dicom_to_nifti_server_folder,
