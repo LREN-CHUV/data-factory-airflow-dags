@@ -73,7 +73,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
         parent_data_folder = os.path.abspath(folder + '/..')
 
         return [parent_data_folder,
-                dicom_organizer_local_folder,
+                dicom_select_T1_local_folder,
                 session_id,
                 dicom_select_T1_protocols_file]
 
