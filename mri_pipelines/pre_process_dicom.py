@@ -46,7 +46,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
         logging.info('folder %s, session_id %s' % (folder, session_id))
 
         (participant_id, scan_date) = dicom_import.visit_info(folder, files_pattern=dicom_files_pattern)
-        dicom_import.dicom2db(folder)
+        dicom_import.dicom2db(folder, files_pattern=dicom_files_pattern)
 
         return {
             'participant_id': participant_id,
