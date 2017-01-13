@@ -26,7 +26,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
                           copy_dicom_to_local=True, dicom_files_pattern='**/MR.*',
                           dicom_organizer=False, dicom_organizer_spm_function='dicomOrganizer', dicom_organizer_pipeline_path=None,
                           dicom_organizer_local_folder=None, dicom_organizer_data_structure='PatientID:StudyID:ProtocolName:SeriesNumber',
-                          dicom_select_T1=False,dicom_select_T1_spm_function='selectT1', dicom_select_T1_pipeline_path=None,
+                          dicom_select_T1=False, dicom_select_T1_spm_function='selectT1', dicom_select_T1_pipeline_path=None,
                           dicom_select_T1_local_folder=None, dicom_select_T1_protocols_file=None,
                           dicom_to_nifti_spm_function='DCM2NII_LREN', dicom_to_nifti_pipeline_path=None,
                           dicom_to_nifti_local_folder=None, dicom_to_nifti_server_folder=None, protocols_file=None,
@@ -43,9 +43,10 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
          The folder information should be given in the configuration parameter
          'folder' of the DAG run
         """
-        logging.info('folder %s, session_id %s' % (folder, session_id))
+        logging.info('folder %s, session_id %s', folder, session_id)
 
-        (participant_id, scan_date) = dicom_import.visit_info(folder, files_pattern=dicom_files_pattern)
+        (participant_id, scan_date) = dicom_import.visit_info(
+            folder, files_pattern=dicom_files_pattern)
         dicom_import.dicom2db(folder, files_pattern=dicom_files_pattern)
 
         return {
@@ -124,8 +125,8 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
           Extract information from the Nifti files located in the folder 'folder'
           parent_task should contain XCOM keys 'folder' and 'session_id'
         """
-        logging.info("NIFTI extract: session_id=%s, input_folder=%s" %
-                     (session_id, folder))
+        logging.info(
+            "NIFTI extract: session_id=%s, input_folder=%s", session_id, folder)
         nifti_import.nifti2db(folder, participant_id, scan_date)
         return "ok"
 
@@ -531,6 +532,6 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
 
         notify_success.set_upstream(extract_nifti_atlas_info)
 
-    #endif
+    # endif
 
     return dag

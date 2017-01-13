@@ -45,23 +45,24 @@ for dataset_section in dataset_sections.split(','):
     preprocessing_pipelines = configuration.get(
         dataset_section, 'PREPROCESSING_PIPELINES').split(',')
 
-    logging.info("Create pipelines for dataset %s using scannners %s and pipelines %s" % (dataset, preprocessing_scanners, preprocessing_pipelines))
+    logging.info("Create pipelines for dataset %s using scannners %s and pipelines %s",
+                 dataset, preprocessing_scanners, preprocessing_pipelines)
 
     if 'continuous' in preprocessing_scanners:
         name = '%s_continuous_dag' % dataset.lower().replace(" ", "_")
         globals()[name] = continuously_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
-                                             email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
-        logging.info("Add DAG %s" % globals()[name].dag_id)
+                                                               email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
+        logging.info("Add DAG %s", globals()[name].dag_id)
     if 'daily' in preprocessing_scanners:
         name = '%s_daily_dag' % dataset.lower().replace(" ", "_")
         globals()[name] = daily_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
-                                      email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
-        logging.info("Add DAG %s" % globals()[name].dag_id)
+                                                        email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
+        logging.info("Add DAG %s", globals()[name].dag_id)
     if 'flat' in preprocessing_scanners:
         name = '%s_flat_dag' % dataset.lower().replace(" ", "_")
         globals()[name] = flat_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
-                                     email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
-        logging.info("Add DAG %s" % globals()[name].dag_id)
+                                                       email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
+        logging.info("Add DAG %s", globals()[name].dag_id)
 
     pipelines_path = configuration.get(dataset_section, 'PIPELINES_PATH')
     protocols_file = configuration.get(dataset_section, 'PROTOCOLS_FILE')
@@ -89,11 +90,11 @@ for dataset_section in dataset_sections.split(','):
     neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
 
     params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, misc_library_path=misc_library_path,
-                          min_free_space_local_folder=min_free_space_local_folder, dicom_local_folder=dicom_local_folder, dicom_files_pattern=dicom_files_pattern,
-                          copy_dicom_to_local=copy_dicom_to_local, dicom_organizer=dicom_organizer, dicom_select_T1=dicom_select_T1, protocols_file=protocols_file,
-                          dicom_to_nifti_spm_function=dicom_to_nifti_spm_function, dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
-                          dicom_to_nifti_local_folder=dicom_to_nifti_local_folder, dicom_to_nifti_server_folder=dicom_to_nifti_server_folder,
-                          mpm_maps=mpm_maps, neuro_morphometric_atlas=neuro_morphometric_atlas)
+                  min_free_space_local_folder=min_free_space_local_folder, dicom_local_folder=dicom_local_folder, dicom_files_pattern=dicom_files_pattern,
+                  copy_dicom_to_local=copy_dicom_to_local, dicom_organizer=dicom_organizer, dicom_select_T1=dicom_select_T1, protocols_file=protocols_file,
+                  dicom_to_nifti_spm_function=dicom_to_nifti_spm_function, dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
+                  dicom_to_nifti_local_folder=dicom_to_nifti_local_folder, dicom_to_nifti_server_folder=dicom_to_nifti_server_folder,
+                  mpm_maps=mpm_maps, neuro_morphometric_atlas=neuro_morphometric_atlas)
 
     if dicom_organizer:
         params['dicom_organizer_spm_function'] = configuration.get(dataset_section, 'DICOM_ORGANIZER_SPM_FUNCTION')
@@ -114,11 +115,15 @@ for dataset_section in dataset_sections.split(','):
         params['mpm_maps_pipeline_path'] = pipelines_path + '/MPMs_Pipeline'
 
     if neuro_morphometric_atlas:
-        params['neuro_morphometric_atlas_spm_function'] = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION')
-        params['neuro_morphometric_atlas_local_folder'] = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_LOCAL_FOLDER')
-        params['neuro_morphometric_atlas_server_folder'] = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER')
-        params['neuro_morphometric_atlas_pipeline_path'] = pipelines_path + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
+        params['neuro_morphometric_atlas_spm_function'] = configuration.get(
+            dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION')
+        params['neuro_morphometric_atlas_local_folder'] = configuration.get(
+            dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_LOCAL_FOLDER')
+        params['neuro_morphometric_atlas_server_folder'] = configuration.get(
+            dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER')
+        params['neuro_morphometric_atlas_pipeline_path'] = pipelines_path + \
+            '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
 
     name = '%s_preprocess_dag' % dataset.lower().replace(" ", "_")
     globals()[name] = pre_process_dicom_dag(**params)
-    logging.info("Add DAG %s" % globals()[name].dag_id)
+    logging.info("Add DAG %s", globals()[name].dag_id)
