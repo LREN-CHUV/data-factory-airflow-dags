@@ -5,6 +5,7 @@ Runs self-checks
 """
 
 import os
+import logging
 
 from datetime import datetime, timedelta
 from textwrap import dedent
@@ -27,28 +28,26 @@ dataset_sections = configuration.get('mri', 'DATASETS')
 
 def check_python_fn():
     import socket
-    print("Hostname: %s" % socket.gethostname())
-    print("Environement:")
-    print("-------------")
+    logging.info("Hostname: %s", socket.gethostname())
+    logging.info("Environement:")
+    logging.info("-------------")
     for k, v in os.environ.items():
-        print("%s = %s" % (k, v))
-    print("-------------")
+        logging.info("%s = %s", k, v)
+    logging.info("-------------")
 
 
 def check_spm_fn(engine):
-    from error import RuntimeError
-
-    print("Checking Matlab...")
+    logging.info("Checking Matlab...")
     ret = engine.sqrt(4.0)
     if int(ret) != 2:
         raise RuntimeError("Matlab integration is not working")
-    print("sqrt(4) = %s" % ret)
-    print("[OK]")
-    print("Checking SPM...")
+    logging.info("sqrt(4) = %s", ret)
+    logging.info("[OK]")
+    logging.info("Checking SPM...")
     spm_dir = engine.spm('Dir')
     if spm_dir != spm_config_folder:
         raise RuntimeError("SPM integration is not working, found SPM in directory %s" % spm_dir)
-    print("[OK]")
+    logging.info("[OK]")
 
 
 # Define the DAG
