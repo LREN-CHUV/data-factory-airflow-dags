@@ -78,7 +78,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
                 session_id,
                 dicom_select_T1_protocols_file]
 
-    def dicom_to_nifti_arguments_fn(folder, session_id, participant_id, scan_date, **kwargs):
+    def dicom_to_nifti_arguments_fn(folder, session_id, **kwargs):
         """
           Prepare the arguments for conversion pipeline from DICOM to Nifti format.
           It converts all files located in the folder 'folder'
@@ -91,7 +91,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
                 dicom_to_nifti_server_folder,
                 protocols_file]
 
-    def neuro_morphometric_atlas_arguments_fn(folder, session_id, participant_id, scan_date, **kwargs):
+    def neuro_morphometric_atlas_arguments_fn(folder, session_id, **kwargs):
         """
           Prepare the arguments for the pipeline that builds a Neuro morphometric
           atlas from the Nitfi files located in the folder 'folder'
@@ -106,7 +106,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
                 protocols_file,
                 table_format]
 
-    def mpm_maps_arguments_fn(folder, session_id, participant_id, scan_date, pipeline_params_config_file='Preproc_mpm_maps_pipeline_config.txt', **kwargs):
+    def mpm_maps_arguments_fn(folder, session_id, pipeline_params_config_file='Preproc_mpm_maps_pipeline_config.txt', **kwargs):
         """
           Pipeline that builds the MPM maps from the Nitfi files located in the
           folder 'folder'

@@ -36,16 +36,18 @@ def check_python_fn():
 
 
 def check_spm_fn(engine):
+    from error import RuntimeError
+
     print("Checking Matlab...")
     ret = engine.sqrt(4.0)
     if int(ret) != 2:
-        raise RuntimeError("Matlab integration is not working") from error
+        raise RuntimeError("Matlab integration is not working")
     print("sqrt(4) = %s" % ret)
     print("[OK]")
     print("Checking SPM...")
     spm_dir = engine.spm('Dir')
     if spm_dir != spm_config_folder:
-        raise RuntimeError("SPM integration is not working, found SPM in directory %s" % spm_dir) from error
+        raise RuntimeError("SPM integration is not working, found SPM in directory %s" % spm_dir)
     print("[OK]")
 
 
