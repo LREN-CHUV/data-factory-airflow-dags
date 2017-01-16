@@ -7,6 +7,7 @@ Initialise the DAGs for all the pipelines required to process different datasets
 # Please keep keywords airflow and DAG in this file, otherwise the safe mode in DagBag may skip this file
 
 import logging
+import os
 
 from airflow import configuration
 from mri_pipelines.continuously_pre_process_incoming import continuously_preprocess_incoming_dag
@@ -36,6 +37,8 @@ for dataset_section in dataset_sections.split(','):
                    'Preproc_mpm_maps')
     default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION',
                    'NeuroMorphometric_pipeline')
+    default_config(dataset_section, 'MPM_MAPS_TPM_TEMPLATE',
+                   configuration.get('spm', 'SPM_DIR') + '/tpm/nwTPM_sl3.nii')
 
     dataset = configuration.get(dataset_section, 'DATASET')
     preprocessing_data_folder = configuration.get(
@@ -66,6 +69,9 @@ for dataset_section in dataset_sections.split(','):
 
     pipelines_path = configuration.get(dataset_section, 'PIPELINES_PATH')
     protocols_file = configuration.get(dataset_section, 'PROTOCOLS_FILE')
+
+    default_config(dataset_section, 'DCM2NII_PROGRAM', pipelines_path + '/Nifti_Conversion_Pipeline/dcm2nii')
+
     max_active_runs = int(configuration.get(
         dataset_section, 'MAX_ACTIVE_RUNS'))
     misc_library_path = pipelines_path + '/../Miscellaneous&Others'
@@ -84,6 +90,8 @@ for dataset_section in dataset_sections.split(','):
     dicom_to_nifti_server_folder = configuration.get(
         dataset_section, 'NIFTI_SERVER_FOLDER')
     dicom_to_nifti_pipeline_path = pipelines_path + '/Nifti_Conversion_Pipeline'
+    dcm2nii_program = configuration.get(
+        dataset_section, 'DCM2NII_PROGRAM')
     dicom_organizer = 'dicom_organizer' in preprocessing_pipelines
     dicom_select_T1 = 'dicom_select_T1' in preprocessing_pipelines
     mpm_maps = 'mpm_maps' in preprocessing_pipelines
@@ -94,7 +102,7 @@ for dataset_section in dataset_sections.split(','):
                   copy_dicom_to_local=copy_dicom_to_local, dicom_organizer=dicom_organizer, dicom_select_T1=dicom_select_T1, protocols_file=protocols_file,
                   dicom_to_nifti_spm_function=dicom_to_nifti_spm_function, dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
                   dicom_to_nifti_local_folder=dicom_to_nifti_local_folder, dicom_to_nifti_server_folder=dicom_to_nifti_server_folder,
-                  mpm_maps=mpm_maps, neuro_morphometric_atlas=neuro_morphometric_atlas)
+                  mpm_maps=mpm_maps, neuro_morphometric_atlas=neuro_morphometric_atlas, dcm2nii_program=dcm2nii_program)
 
     if dicom_organizer:
         params['dicom_organizer_spm_function'] = configuration.get(dataset_section, 'DICOM_ORGANIZER_SPM_FUNCTION')
@@ -112,6 +120,12 @@ for dataset_section in dataset_sections.split(','):
         params['mpm_maps_spm_function'] = configuration.get(dataset_section, 'MPM_MAPS_SPM_FUNCTION')
         params['mpm_maps_local_folder'] = configuration.get(dataset_section, 'MPM_MAPS_LOCAL_FOLDER')
         params['mpm_maps_server_folder'] = configuration.get(dataset_section, 'MPM_MAPS_SERVER_FOLDER')
+        params['mpm_maps_TPM_template'] = tpmTemplate = configuration.get(dataset_section, 'MPM_MAPS_TPM_TEMPLATE')
+        # check that file exists if absolute path
+        if len(tpmTemplate) > 0 and tpmTemplate[0] is '/':
+            if not os.path.isfile(tpmTemplate):
+                raise OSError("TPM template file %s does not exist" % tpmTemplate)
+
         params['mpm_maps_pipeline_path'] = pipelines_path + '/MPMs_Pipeline'
 
     if neuro_morphometric_atlas:
