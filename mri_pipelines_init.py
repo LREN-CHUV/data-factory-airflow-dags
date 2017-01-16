@@ -137,6 +137,7 @@ for dataset_section in dataset_sections.split(','):
             dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER')
         params['neuro_morphometric_atlas_pipeline_path'] = pipelines_path + \
             '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
+        params['mpm_maps_pipeline_path'] = pipelines_path + '/MPMs_Pipeline'
 
     name = '%s_preprocess_dag' % dataset.lower().replace(" ", "_")
     globals()[name] = pre_process_dicom_dag(**params)
