@@ -31,9 +31,10 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
                           dicom_to_nifti_spm_function='DCM2NII_LREN', dicom_to_nifti_pipeline_path=None,
                           dicom_to_nifti_local_folder=None, dicom_to_nifti_server_folder=None, protocols_file=None, dcm2nii_program=None,
                           mpm_maps=True, mpm_maps_spm_function='Preproc_mpm_maps', mpm_maps_pipeline_path=None,
-                          mpm_maps_local_folder=None, mpm_maps_server_folder=None, mpm_maps_TPM_template='nwTPM_sl3.nii',
+                          mpm_maps_local_folder=None, mpm_maps_server_folder=None,
                           neuro_morphometric_atlas=True, neuro_morphometric_atlas_spm_function='NeuroMorphometric_pipeline',
-                          neuro_morphometric_atlas_pipeline_path=None, neuro_morphometric_atlas_local_folder=None, neuro_morphometric_atlas_server_folder=None):
+                          neuro_morphometric_atlas_pipeline_path=None, neuro_morphometric_atlas_local_folder=None, neuro_morphometric_atlas_server_folder=None,
+                          neuro_morphometric_atlas_TPM_template='nwTPM_sl3.nii'):
 
     # functions used in the DAG
 
@@ -105,7 +106,8 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
                 neuro_morphometric_atlas_local_folder,
                 neuro_morphometric_atlas_server_folder,
                 protocols_file,
-                table_format]
+                table_format,
+                neuro_morphometric_atlas_TPM_template]
 
     def mpm_maps_arguments_fn(folder, session_id, pipeline_params_config_file='Preproc_mpm_maps_pipeline_config.txt', **kwargs):
         """

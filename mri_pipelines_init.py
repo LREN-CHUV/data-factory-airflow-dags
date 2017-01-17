@@ -37,7 +37,7 @@ for dataset_section in dataset_sections.split(','):
                    'Preproc_mpm_maps')
     default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION',
                    'NeuroMorphometric_pipeline')
-    default_config(dataset_section, 'MPM_MAPS_TPM_TEMPLATE',
+    default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE',
                    configuration.get('spm', 'SPM_DIR') + '/tpm/nwTPM_sl3.nii')
 
     dataset = configuration.get(dataset_section, 'DATASET')
@@ -120,11 +120,6 @@ for dataset_section in dataset_sections.split(','):
         params['mpm_maps_spm_function'] = configuration.get(dataset_section, 'MPM_MAPS_SPM_FUNCTION')
         params['mpm_maps_local_folder'] = configuration.get(dataset_section, 'MPM_MAPS_LOCAL_FOLDER')
         params['mpm_maps_server_folder'] = configuration.get(dataset_section, 'MPM_MAPS_SERVER_FOLDER')
-        params['mpm_maps_TPM_template'] = tpmTemplate = configuration.get(dataset_section, 'MPM_MAPS_TPM_TEMPLATE')
-        # check that file exists if absolute path
-        if len(tpmTemplate) > 0 and tpmTemplate[0] is '/':
-            if not os.path.isfile(tpmTemplate):
-                raise OSError("TPM template file %s does not exist" % tpmTemplate)
 
         params['mpm_maps_pipeline_path'] = pipelines_path + '/MPMs_Pipeline'
 
@@ -138,6 +133,11 @@ for dataset_section in dataset_sections.split(','):
         params['neuro_morphometric_atlas_pipeline_path'] = pipelines_path + \
             '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
         params['mpm_maps_pipeline_path'] = pipelines_path + '/MPMs_Pipeline'
+        params['neuro_morphometric_atlas_TPM_template'] = tpmTemplate = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE')
+        # check that file exists if absolute path
+        if len(tpmTemplate) > 0 and tpmTemplate[0] is '/':
+            if not os.path.isfile(tpmTemplate):
+                raise OSError("TPM template file %s does not exist" % tpmTemplate)
 
     name = '%s_preprocess_dag' % dataset.lower().replace(" ", "_")
     globals()[name] = pre_process_dicom_dag(**params)
