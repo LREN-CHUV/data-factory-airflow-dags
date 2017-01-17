@@ -121,8 +121,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
                 mpm_maps_local_folder,
                 protocols_file,
                 pipeline_params_config_file,
-                mpm_maps_server_folder,
-                mpm_maps_TPM_template]
+                mpm_maps_server_folder]
 
     def extract_nifti_info_fn(folder, session_id, participant_id, scan_date, **kwargs):
         """
