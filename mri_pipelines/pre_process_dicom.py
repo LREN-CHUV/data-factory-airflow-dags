@@ -172,6 +172,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
 
     upstream = check_free_space
     upstream_id = 'check_free_space'
+    priority_weight = 10
 
     if copy_dicom_to_local:
 
@@ -190,7 +191,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
             params={'local_output_folder': dicom_local_folder,
                     'min_free_space_local_folder': min_free_space_local_folder},
             pool='remote_file_copy',
-            priority_weight=10,
+            priority_weight=priority_weight,
             execution_timeout=timedelta(hours=3),
             dag=dag
         )
@@ -204,13 +205,14 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
 
         upstream = copy_dicom_to_local
         upstream_id = 'copy_dicom_to_local'
+        priority_weight = priority_weight + 5
 
     # endif
 
     prepare_pipeline = PreparePipelineOperator(
         task_id='prepare_pipeline',
         initial_root_folder=dicom_local_folder,
-        priority_weight=12,
+        priority_weight=priority_weight,
         execution_timeout=timedelta(minutes=10),
         dag=dag
     )
@@ -225,6 +227,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
 
     upstream = prepare_pipeline
     upstream_id = 'prepare_pipeline'
+    priority_weight = priority_weight + 5
 
     if dicom_organizer:
 
@@ -236,7 +239,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
             output_folder_callable=lambda session_id, **kwargs: dicom_organizer_local_folder + '/' + session_id,
             pool='io_intensive',
             parent_task=upstream_id,
-            priority_weight=20,
+            priority_weight=priority_weight,
             execution_timeout=timedelta(hours=24),
             on_skip_trigger_dag_id='mri_notify_skipped_processing',
             on_failure_trigger_dag_id='mri_notify_failed_processing',
@@ -261,6 +264,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
 
         upstream = dicom_organizer_pipeline
         upstream_id = 'dicom_organizer_pipeline'
+        priority_weight = priority_weight + 5
 
     # endif
 
@@ -274,7 +278,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
             output_folder_callable=lambda session_id, **kwargs: dicom_select_T1_local_folder + '/' + session_id,
             pool='io_intensive',
             parent_task=upstream_id,
-            priority_weight=20,
+            priority_weight=priority_weight,
             execution_timeout=timedelta(hours=24),
             on_skip_trigger_dag_id='mri_notify_skipped_processing',
             on_failure_trigger_dag_id='mri_notify_failed_processing',
@@ -299,6 +303,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
 
         upstream = dicom_select_T1_pipeline
         upstream_id = 'dicom_select_T1_pipeline'
+        priority_weight = priority_weight + 5
 
     # endif
 
@@ -307,7 +312,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
         python_callable=extract_dicom_info_fn,
         parent_task=upstream_id,
         pool='io_intensive',
-        priority_weight=15,
+        priority_weight=priority_weight,
         execution_timeout=timedelta(hours=6),
         dag=dag
     )
@@ -323,6 +328,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
     # and transfer it via XCOMs to the next SPM pipeline
     upstream = extract_dicom_info
     upstream_id = 'extract_dicom_info'
+    priority_weight = priority_weight + 5
 
     dicom_to_nifti_pipeline = SpmPipelineOperator(
         task_id='dicom_to_nifti_pipeline',
@@ -332,7 +338,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
         output_folder_callable=lambda session_id, **kwargs: dicom_to_nifti_local_folder + '/' + session_id,
         pool='io_intensive',
         parent_task=upstream_id,
-        priority_weight=20,
+        priority_weight=priority_weight,
         execution_timeout=timedelta(hours=24),
         on_skip_trigger_dag_id='mri_notify_skipped_processing',
         on_failure_trigger_dag_id='mri_notify_failed_processing',
@@ -359,6 +365,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
 
     upstream = dicom_to_nifti_pipeline
     upstream_id = 'dicom_to_nifti_pipeline'
+    priority_weight = priority_weight + 5
 
     cleanup_local_dicom_cmd = dedent("""
         rm -rf {{ params["local_folder"] }}/{{ dag_run.conf["session_id"] }}
@@ -368,11 +375,12 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
         task_id='cleanup_local_dicom',
         bash_command=cleanup_local_dicom_cmd,
         params={'local_folder': dicom_local_folder},
-        priority_weight=25,
+        priority_weight=priority_weight,
         execution_timeout=timedelta(hours=1),
         dag=dag
     )
     cleanup_local_dicom.set_upstream(upstream)
+    priority_weight = priority_weight + 5
 
     cleanup_local_dicom.doc_md = dedent("""\
     # Cleanup local DICOM files
@@ -380,17 +388,19 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
     Remove locally stored DICOM files as they have been processed already.
     """)
 
+
     extract_nifti_info = PythonPipelineOperator(
         task_id='extract_nifti_info',
         python_callable=extract_nifti_info_fn,
         parent_task=upstream_id,
         pool='io_intensive',
-        priority_weight=21,
+        priority_weight=priority_weight,
         execution_timeout=timedelta(hours=3),
         dag=dag
     )
 
     extract_nifti_info.set_upstream(dicom_to_nifti_pipeline)
+    priority_weight = priority_weight + 5
 
     extract_nifti_info.doc_md = dedent("""\
     # Extract information from NIFTI files converted from DICOM
@@ -402,7 +412,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
         task_id='notify_success',
         trigger_dag_id='mri_notify_successful_processing',
         python_callable=pipeline_trigger('extract_nifti_atlas_info'),
-        priority_weight=50,
+        priority_weight=999,
         dag=dag
     )
 
@@ -422,7 +432,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
             spm_arguments_callable=mpm_maps_arguments_fn,
             matlab_paths=[misc_library_path, mpm_maps_pipeline_path],
             output_folder_callable=lambda session_id, **kwargs: mpm_maps_local_folder + '/' + session_id,
-            priority_weight=30,
+            priority_weight=priority_weight,
             execution_timeout=timedelta(hours=24),
             pool='image_preprocessing',
             parent_task=upstream_id,
@@ -451,13 +461,14 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
 
         upstream = mpm_maps_pipeline
         upstream_id = 'mpm_maps_pipeline'
+        priority_weight = priority_weight + 5
 
         extract_nifti_mpm_info = PythonPipelineOperator(
             task_id='extract_nifti_mpm_info',
             python_callable=extract_nifti_info_fn,
             parent_task=upstream_id,
             pool='io_intensive',
-            priority_weight=35,
+            priority_weight=priority_weight,
             execution_timeout=timedelta(hours=3),
             dag=dag
         )
@@ -471,6 +482,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
         """ % mpm_maps_local_folder)
 
         notify_success.set_upstream(extract_nifti_mpm_info)
+        priority_weight = priority_weight + 5
 
     # endif
 
@@ -486,7 +498,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
             output_folder_callable=lambda session_id, **kwargs: neuro_morphometric_atlas_local_folder + '/' + session_id,
             pool='image_preprocessing',
             parent_task=upstream_id,
-            priority_weight=40,
+            priority_weight=priority_weight,
             execution_timeout=timedelta(hours=24),
             on_skip_trigger_dag_id='mri_notify_skipped_processing',
             on_failure_trigger_dag_id='mri_notify_failed_processing',
@@ -494,6 +506,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
         )
 
         neuro_morphometric_atlas_pipeline.set_upstream(upstream)
+        priority_weight = priority_weight + 5
 
         neuro_morphometric_atlas_pipeline.doc_md = dedent("""\
         # NeuroMorphometric Pipeline
@@ -520,7 +533,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
             python_callable=extract_nifti_info_fn,
             parent_task='neuro_morphometric_atlas_pipeline',
             pool='io_intensive',
-            priority_weight=45,
+            priority_weight=priority_weight,
             execution_timeout=timedelta(hours=3),
             dag=dag
         )
@@ -535,6 +548,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
         """ % neuro_morphometric_atlas_local_folder)
 
         notify_success.set_upstream(extract_nifti_atlas_info)
+        priority_weight = priority_weight + 5
 
     # endif
 
