@@ -25,6 +25,7 @@ email_errors_to = configuration.get('mri', 'EMAIL_ERRORS_TO')
 
 for dataset_section in dataset_sections.split(','):
     # Set the default configuration for the dataset
+    default_config(dataset_section, 'SESSION_ID_BY_PATIENT', 'False')
     default_config(dataset_section, 'PREPROCESSING_SCANNERS', 'daily')
     default_config(dataset_section, 'PREPROCESSING_PIPELINES',
                    'dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')
@@ -74,6 +75,8 @@ for dataset_section in dataset_sections.split(','):
 
     max_active_runs = int(configuration.get(
         dataset_section, 'MAX_ACTIVE_RUNS'))
+    session_id_by_patient = bool(configuration.get(
+        dataset_section, 'SESSION_ID_BY_PATIENT'))
     misc_library_path = pipelines_path + '/../Miscellaneous&Others'
     min_free_space_local_folder = configuration.getfloat(
         dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
@@ -97,7 +100,7 @@ for dataset_section in dataset_sections.split(','):
     mpm_maps = 'mpm_maps' in preprocessing_pipelines
     neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
 
-    params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, misc_library_path=misc_library_path,
+    params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, session_id_by_patient=session_id_by_patient, misc_library_path=misc_library_path,
                   min_free_space_local_folder=min_free_space_local_folder, dicom_local_folder=dicom_local_folder, dicom_files_pattern=dicom_files_pattern,
                   copy_dicom_to_local=copy_dicom_to_local, dicom_organizer=dicom_organizer, dicom_select_T1=dicom_select_T1, protocols_file=protocols_file,
                   dicom_to_nifti_spm_function=dicom_to_nifti_spm_function, dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,

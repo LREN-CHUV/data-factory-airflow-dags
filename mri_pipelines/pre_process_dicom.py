@@ -21,7 +21,7 @@ from mri_meta_extract import dicom_import
 from mri_meta_extract import nifti_import
 
 
-def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_library_path,
+def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_by_patient, misc_library_path,
                           min_free_space_local_folder, dicom_local_folder,
                           copy_dicom_to_local=True, dicom_files_pattern='**/MR.*',
                           dicom_organizer=False, dicom_organizer_spm_function='dicomOrganizer', dicom_organizer_pipeline_path=None,
@@ -243,6 +243,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
             execution_timeout=timedelta(hours=24),
             on_skip_trigger_dag_id='mri_notify_skipped_processing',
             on_failure_trigger_dag_id='mri_notify_failed_processing',
+            session_id_by_patient=session_id_by_patient,
             dag=dag
         )
 
@@ -282,6 +283,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
             execution_timeout=timedelta(hours=24),
             on_skip_trigger_dag_id='mri_notify_skipped_processing',
             on_failure_trigger_dag_id='mri_notify_failed_processing',
+            session_id_by_patient=session_id_by_patient,
             dag=dag
         )
 
@@ -342,6 +344,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
         execution_timeout=timedelta(hours=24),
         on_skip_trigger_dag_id='mri_notify_skipped_processing',
         on_failure_trigger_dag_id='mri_notify_failed_processing',
+        session_id_by_patient=session_id_by_patient,
         dag=dag
     )
 
@@ -438,6 +441,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
             parent_task=upstream_id,
             on_skip_trigger_dag_id='mri_notify_skipped_processing',
             on_failure_trigger_dag_id='mri_notify_failed_processing',
+            session_id_by_patient=session_id_by_patient,
             dag=dag
         )
 
@@ -502,6 +506,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, misc_librar
             execution_timeout=timedelta(hours=24),
             on_skip_trigger_dag_id='mri_notify_skipped_processing',
             on_failure_trigger_dag_id='mri_notify_failed_processing',
+            session_id_by_patient=session_id_by_patient,
             dag=dag
         )
 
