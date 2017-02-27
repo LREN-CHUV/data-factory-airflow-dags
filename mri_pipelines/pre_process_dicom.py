@@ -202,7 +202,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
               echo "Not enough space left, cannot continue"
               exit 1
             fi
-            rsync -av $AIRFLOW_INPUT_FOLDER/ $AIRFLOW_OUTPUT_FOLDER/
+            rsync -av $AIRFLOW_INPUT_DIR/ $AIRFLOW_OUTPUT_DIR/
         """)
 
         copy_dicom_to_local = BashPipelineOperator(
