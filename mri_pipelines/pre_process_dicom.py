@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from textwrap import dedent
 
 from airflow import DAG
-from airflow.operators import TriggerDagRunOperator
+from airflow.operators import BashOperator, TriggerDagRunOperator
 from airflow_spm.operators import SpmPipelineOperator
 from airflow_freespace.operators import FreeSpaceSensor
 from airflow_pipeline.operators import PreparePipelineOperator, BashPipelineOperator, PythonPipelineOperator
