@@ -1,141 +1,42 @@
 """
 
-Pre-process DICOM files in a study folder
+Take EHR data located in a study folder and convert it to I2B2
+
+Poll a base directory for incoming CSV files ready for processing. We assume that
+CSV files are already anonymised and organised with the following directory structure:
+
+  2016
+     _ 20160407
+        _ PR01471_CC082251
+           _ patients.csv
+           _ diseases.csv
+           _ ...
 
 """
 
-import logging
 import os
+import logging
 
 from datetime import datetime, timedelta
 from textwrap import dedent
 
 from airflow import DAG
 from airflow.operators import BashOperator, TriggerDagRunOperator
-from airflow_spm.operators import SpmPipelineOperator
 from airflow_freespace.operators import FreeSpaceSensor
-from airflow_pipeline.operators import PreparePipelineOperator, BashPipelineOperator, PythonPipelineOperator
+from airflow_pipeline.operators import PreparePipelineOperator, BashPipelineOperator, DockerPipelineOperator
 from airflow_pipeline.pipelines import pipeline_trigger
 
-from mri_meta_extract import dicom_import
-from mri_meta_extract import nifti_import
+def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs,
+                          min_free_space_local_folder, ehr_local_folder):
 
+    # constants
 
-def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_by_patient, misc_library_path,
-                          min_free_space_local_folder, dicom_local_folder,
-                          copy_dicom_to_local=True, dicom_files_pattern='**/MR.*',
-                          dicom_organizer=False, dicom_organizer_spm_function='dicomOrganizer', dicom_organizer_pipeline_path=None,
-                          dicom_organizer_local_folder=None, dicom_organizer_data_structure='PatientID:StudyID:ProtocolName:SeriesNumber',
-                          dicom_select_T1=False, dicom_select_T1_spm_function='selectT1', dicom_select_T1_pipeline_path=None,
-                          dicom_select_T1_local_folder=None, dicom_select_T1_protocols_file=None,
-                          dicom_to_nifti_spm_function='DCM2NII_LREN', dicom_to_nifti_pipeline_path=None,
-                          dicom_to_nifti_local_folder=None, dicom_to_nifti_server_folder=None, protocols_file=None, dcm2nii_program=None,
-                          mpm_maps=True, mpm_maps_spm_function='Preproc_mpm_maps', mpm_maps_pipeline_path=None,
-                          mpm_maps_local_folder=None, mpm_maps_server_folder=None,
-                          neuro_morphometric_atlas=True, neuro_morphometric_atlas_spm_function='NeuroMorphometric_pipeline',
-                          neuro_morphometric_atlas_pipeline_path=None, neuro_morphometric_atlas_local_folder=None, neuro_morphometric_atlas_server_folder=None,
-                          neuro_morphometric_atlas_TPM_template='nwTPM_sl3.nii'):
+    START = datetime.utcnow()
+    START = datetime.combine(START.date(), time(START.hour, 0))
 
-    # functions used in the DAG
-
-    def extract_dicom_info_fn(folder, session_id, **kwargs):
-        """
-         Extract the information from DICOM files located inside a folder.
-         The folder information should be given in the configuration parameter
-         'folder' of the DAG run
-        """
-        logging.info('folder %s, session_id %s', folder, session_id)
-
-        (participant_id, scan_date) = dicom_import.visit_info(
-            folder, files_pattern=dicom_files_pattern)
-        dicom_import.dicom2db(folder, files_pattern=dicom_files_pattern)
-
-        return {
-            'participant_id': participant_id,
-            'scan_date': scan_date
-        }
-
-    def dicom_organizer_arguments_fn(folder, session_id, **kwargs):
-        """
-          Prepare the arguments for conversion pipeline from DICOM to Nifti format.
-          It converts all files located in the folder 'folder'
-        """
-        parent_data_folder = os.path.abspath(folder + '/..')
-
-        return [parent_data_folder,
-                dicom_organizer_local_folder,
-                session_id,
-                dicom_organizer_data_structure]
-
-    def dicom_select_T1_arguments_fn(folder, session_id, **kwargs):
-        """
-          Prepare the arguments for the pipeline that selects T1 files from DICOM.
-          It selects all T1 files located in the folder 'folder'
-        """
-        parent_data_folder = os.path.abspath(folder + '/..')
-
-        return [parent_data_folder,
-                dicom_select_T1_local_folder,
-                session_id,
-                dicom_select_T1_protocols_file]
-
-    def dicom_to_nifti_arguments_fn(folder, session_id, **kwargs):
-        """
-          Prepare the arguments for conversion pipeline from DICOM to Nifti format.
-          It converts all files located in the folder 'folder'
-        """
-        parent_data_folder = os.path.abspath(folder + '/..')
-
-        return [parent_data_folder,
-                session_id,
-                dicom_to_nifti_local_folder,
-                dicom_to_nifti_server_folder,
-                protocols_file,
-                dcm2nii_program]
-
-    def neuro_morphometric_atlas_arguments_fn(folder, session_id, **kwargs):
-        """
-          Prepare the arguments for the pipeline that builds a Neuro morphometric
-          atlas from the Nitfi files located in the folder 'folder'
-        """
-        parent_data_folder = os.path.abspath(folder + '/..')
-        table_format = 'csv'
-
-        return [session_id,
-                parent_data_folder,
-                neuro_morphometric_atlas_local_folder,
-                neuro_morphometric_atlas_server_folder,
-                protocols_file,
-                table_format,
-                neuro_morphometric_atlas_TPM_template]
-
-    def mpm_maps_arguments_fn(folder, session_id, pipeline_params_config_file='Preproc_mpm_maps_pipeline_config.txt', **kwargs):
-        """
-          Pipeline that builds the MPM maps from the Nitfi files located in the
-          folder 'folder'
-        """
-        parent_data_folder = os.path.abspath(folder + '/..')
-
-        return [parent_data_folder,
-                session_id,
-                mpm_maps_local_folder,
-                protocols_file,
-                pipeline_params_config_file,
-                mpm_maps_server_folder]
-
-    def extract_nifti_info_fn(folder, session_id, participant_id, scan_date, **kwargs):
-        """
-          Extract information from the Nifti files located in the folder 'folder'
-          parent_task should contain XCOM keys 'folder' and 'session_id'
-        """
-        logging.info(
-            "NIFTI extract: session_id=%s, input_folder=%s", session_id, folder)
-        nifti_import.nifti2db(folder, participant_id, scan_date)
-        return "ok"
+    DAG_NAME = '%s_ehr_to_i2b2' % dataset.lower().replace(" ", "_")
 
     # Define the DAG
-
-    DAG_NAME = '%s_mri_pre_process_dicom' % dataset.lower().replace(" ", "_")
 
     default_args = {
         'owner': 'airflow',
@@ -156,11 +57,10 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
 
     check_free_space = FreeSpaceSensor(
         task_id='check_free_space',
-        path=dicom_local_folder,
+        path=ehr_local_folder,
         free_disk_threshold=min_free_space_local_folder,
         retry_delay=timedelta(hours=1),
         retries=24 * 7,
-        pool='remote_file_copy',
         dag=dag
     )
 
@@ -176,7 +76,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
 
     prepare_pipeline = PreparePipelineOperator(
         task_id='prepare_pipeline',
-        include_spm_facts=True,
+        include_spm_facts=False,
         priority_weight=priority_weight,
         execution_timeout=timedelta(minutes=10),
         dag=dag
@@ -194,72 +94,33 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
     upstream_id = 'prepare_pipeline'
     priority_weight = priority_weight + 5
 
-    if copy_dicom_to_local:
+    copy_ehr_to_local_cmd = dedent("""
+        rsync -av $AIRFLOW_INPUT_DIR/ $AIRFLOW_OUTPUT_DIR/
+    """)
 
-        copy_dicom_to_local_cmd = dedent("""
-            used="$(df -h /home | grep '/' | grep -Po '[^ ]*(?=%)')"
-            if (( 101 - used < {{ params['min_free_space_local_folder']|float * 100 }} )); then
-              echo "Not enough space left, cannot continue"
-              exit 1
-            fi
-            rsync -av $AIRFLOW_INPUT_DIR/ $AIRFLOW_OUTPUT_DIR/
-        """)
+    copy_ehr_to_local = BashPipelineOperator(
+        task_id='copy_ehr_to_local',
+        bash_command=copy_ehr_to_local_cmd,
+        params={'min_free_space_local_folder': min_free_space_local_folder},
+        output_folder_callable=lambda scan_date, session_id, **kwargs: "%s/%s/%s" % (ehr_local_folder, scan_date, session_id),
+        parent_task=upstream_id,
+        priority_weight=priority_weight,
+        execution_timeout=timedelta(hours=3),
+        on_failure_trigger_dag_id='mri_notify_failed_processing',
+        session_id_by_patient=session_id_by_patient,
+        dag=dag
+    )
+    copy_ehr_to_local.set_upstream(upstream)
 
-        copy_dicom_to_local = BashPipelineOperator(
-            task_id='copy_dicom_to_local',
-            bash_command=copy_dicom_to_local_cmd,
-            params={'min_free_space_local_folder': min_free_space_local_folder},
-            output_folder_callable=lambda session_id, **kwargs: dicom_local_folder + '/' + session_id,
-            pool='remote_file_copy',
-            parent_task=upstream_id,
-            priority_weight=priority_weight,
-            execution_timeout=timedelta(hours=3),
-            on_failure_trigger_dag_id='mri_notify_failed_processing',
-            session_id_by_patient=session_id_by_patient,
-            dag=dag
-        )
-        copy_dicom_to_local.set_upstream(upstream)
+    copy_ehr_to_local.doc_md = dedent("""\
+    # Copy EHR files to local %s folder
 
-        copy_dicom_to_local.doc_md = dedent("""\
-        # Copy DICOM files to local %s folder
+    Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
+    """ % dicom_local_folder)
 
-        Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
-        """ % dicom_local_folder)
-
-        upstream = copy_dicom_to_local
-        upstream_id = 'copy_dicom_to_local'
-        priority_weight = priority_weight + 5
-
-    else:
-
-        # Register local data into the Data catalog/provenance tables
-
-        register_local_cmd = ";"
-
-        register_local = BashPipelineOperator(
-            task_id='register_local',
-            bash_command=register_local_cmd,
-            params={},
-            parent_task=upstream_id,
-            priority_weight=priority_weight,
-            execution_timeout=timedelta(hours=3),
-            on_failure_trigger_dag_id='mri_notify_failed_processing',
-            session_id_by_patient=session_id_by_patient,
-            dag=dag
-        )
-        register_local.set_upstream(upstream)
-
-        register_local.doc_md = dedent("""\
-        # Register incoming files for provenance
-
-        This step does nothing except register the files in the input folder for provenance.
-        """ % dicom_local_folder)
-
-        upstream = register_local
-        upstream_id = 'register_local'
-        priority_weight = priority_weight + 5
-
-    # endif
+    upstream = copy_ehr_to_local
+    upstream_id = 'copy_ehr_to_local'
+    priority_weight = priority_weight + 5
 
     if dicom_organizer:
 
