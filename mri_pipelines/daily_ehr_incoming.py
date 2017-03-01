@@ -5,10 +5,9 @@ CSV files are already anonymised and organised with the following directory stru
 
   2016
      _ 20160407
-        _ PR01471_CC082251
-           _ patients.csv
-           _ diseases.csv
-           _ ...
+        _ patients.csv
+        _ diseases.csv
+        _ ...
 
 We are looking for the presence of the .ready marker file indicating that file operations are complete,
 or a date folder with a date older than today.
@@ -18,7 +17,7 @@ or a date folder with a date older than today.
 from datetime import datetime, timedelta, time
 from textwrap import dedent
 from airflow import DAG
-from airflow_scan_folder.operators import ScanDailyFolderOperator
+from airflow_scan_folder.operators import DailyFolderOperator
 
 def daily_ehr_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):
     # Folder to scan for new incoming daily EHR-extract folders containing CSV files and other kinds of clinical data.
@@ -47,7 +46,7 @@ def daily_ehr_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):
               default_args=default_args,
               schedule_interval='@daily')
 
-    scan_dirs = ScanDailyFolderOperator(
+    scan_dirs = DailyFolderOperator(
         task_id='scan_dirs',
         folder=folder,
         trigger_dag_id=trigger_dag_id,
@@ -58,7 +57,7 @@ def daily_ehr_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):
     scan_dirs.doc_md = dedent("""\
     # Scan directories for processing
 
-    Scan the session folders located inside folder %s (defined by variable __ehr_data_folder__) and organised by daily folders.
+    Scan the daily folders located inside folder %s (defined by variable __ehr_data_folder__).
 
     Daily folders older than today are always processed, and today's folder content is skipped unless a .ready marker file is found.
     """ % folder)

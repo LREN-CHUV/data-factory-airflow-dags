@@ -14,6 +14,8 @@ from mri_pipelines.continuously_pre_process_incoming import continuously_preproc
 from mri_pipelines.daily_pre_process_incoming import daily_preprocess_incoming_dag
 from mri_pipelines.flat_pre_process_incoming import flat_preprocess_incoming_dag
 from mri_pipelines.pre_process_dicom import pre_process_dicom_dag
+from mri_pipelines.daily_ehr_incoming import daily_ehr_incoming_dag
+from mri_pipelines.ehr_to_i2b2 import ehr_to_i2b2_dag
 
 
 def default_config(section, key, value):
@@ -40,6 +42,7 @@ for dataset_section in dataset_sections.split(','):
                    'NeuroMorphometric_pipeline')
     default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE',
                    configuration.get('spm', 'SPM_DIR') + '/tpm/nwTPM_sl3.nii')
+    default_config(dataset_section, 'EHR_SCANNERS', '')
 
     dataset = configuration.get(dataset_section, 'DATASET')
     preprocessing_data_folder = configuration.get(
@@ -53,17 +56,17 @@ for dataset_section in dataset_sections.split(','):
                  dataset, preprocessing_scanners, preprocessing_pipelines)
 
     if 'continuous' in preprocessing_scanners:
-        name = '%s_continuous_dag' % dataset.lower().replace(" ", "_")
+        name = '%s_continuous_prepro_dag' % dataset.lower().replace(" ", "_")
         globals()[name] = continuously_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                                                email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
         logging.info("Add DAG %s", globals()[name].dag_id)
     if 'daily' in preprocessing_scanners:
-        name = '%s_daily_dag' % dataset.lower().replace(" ", "_")
+        name = '%s_daily_prepro_dag' % dataset.lower().replace(" ", "_")
         globals()[name] = daily_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                                         email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
         logging.info("Add DAG %s", globals()[name].dag_id)
     if 'flat' in preprocessing_scanners:
-        name = '%s_flat_dag' % dataset.lower().replace(" ", "_")
+        name = '%s_flat_prepro_dag' % dataset.lower().replace(" ", "_")
         globals()[name] = flat_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
                                                        email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
         logging.info("Add DAG %s", globals()[name].dag_id)
@@ -145,3 +148,14 @@ for dataset_section in dataset_sections.split(','):
     name = '%s_preprocess_dag' % dataset.lower().replace(" ", "_")
     globals()[name] = pre_process_dicom_dag(**params)
     logging.info("Add DAG %s", globals()[name].dag_id)
+
+    ehr_scanners = configuration.get(dataset_section, 'EHR_SCANNERS').split(',')
+
+    if ehr_scanners != '':
+        ehr_data_folder = configuration.get(dataset_section, 'EHR_DATA_FOLDER')
+
+        if 'daily' in ehr_scanners:
+            name = '%s_daily_ehr_dag' % dataset.lower().replace(" ", "_")
+            globals()[name] = daily_ehr_incoming_dag(dataset=dataset, folder=ehr_data_folder,
+                                                            email_errors_to=email_errors_to, trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower())
+            logging.info("Add DAG %s", globals()[name].dag_id)
