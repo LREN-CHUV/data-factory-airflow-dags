@@ -133,10 +133,13 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs,
 
     # Next: call MipMap on versioned folder
 
-    if dicom_organizer:
+    map_ehr_to_i2b2_docker_image = 'hbpmip/mipmap'
 
-        dicom_organizer_pipeline = SpmPipelineOperator(
-            task_id='dicom_organizer_pipeline',
+    map_ehr_to_i2b2 = DockerPipelineOperator(
+            task_id='map_ehr_to_i2b2',
+            image=map_ehr_to_i2b2_docker_image,
+            cpus=1,
+            mem_limit='256m',
             spm_function=dicom_organizer_spm_function,
             spm_arguments_callable=dicom_organizer_arguments_fn,
             matlab_paths=[misc_library_path, dicom_organizer_pipeline_path],
@@ -149,316 +152,22 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs,
             on_failure_trigger_dag_id='mri_notify_failed_processing',
             session_id_by_patient=session_id_by_patient,
             dag=dag
-        )
-
-        dicom_organizer_pipeline.set_upstream(upstream)
-
-        dicom_organizer_pipeline.doc_md = dedent("""\
-        # DICOM organizer pipeline
-
-        SPM function: __%s__
-
-        Reorganise DICOM files to fit the structure expected by the following pipelines.
-
-        Reorganised DICOM files are stored the the following locations:
-
-        * Local folder: __%s__
-
-        Depends on: __%s__
-        """ % (dicom_organizer_spm_function, dicom_organizer_local_folder, upstream_id))
-
-        upstream = dicom_organizer_pipeline
-        upstream_id = 'dicom_organizer_pipeline'
-        priority_weight = priority_weight + 5
-
-    # endif
-
-    if dicom_select_T1:
-
-        dicom_select_T1_pipeline = SpmPipelineOperator(
-            task_id='dicom_select_T1_pipeline',
-            spm_function=dicom_select_T1_spm_function,
-            spm_arguments_callable=dicom_select_T1_arguments_fn,
-            matlab_paths=[misc_library_path, dicom_select_T1_pipeline_path],
-            output_folder_callable=lambda session_id, **kwargs: dicom_select_T1_local_folder + '/' + session_id,
-            pool='io_intensive',
-            parent_task=upstream_id,
-            priority_weight=priority_weight,
-            execution_timeout=timedelta(hours=24),
-            on_skip_trigger_dag_id='mri_notify_skipped_processing',
-            on_failure_trigger_dag_id='mri_notify_failed_processing',
-            session_id_by_patient=session_id_by_patient,
-            dag=dag
-        )
-
-        dicom_select_T1_pipeline.set_upstream(upstream)
-
-        dicom_select_T1_pipeline.doc_md = dedent("""\
-        # select T1 DICOM pipeline
-
-        SPM function: __%s__
-
-        Selects only T1 images from a set of various DICOM images.
-
-        Selected DICOM files are stored the the following locations:
-
-        * Local folder: __%s__
-
-        Depends on: __%s__
-        """ % (dicom_select_T1_spm_function, dicom_select_T1_local_folder, upstream_id))
-
-        upstream = dicom_select_T1_pipeline
-        upstream_id = 'dicom_select_T1_pipeline'
-        priority_weight = priority_weight + 5
-
-    # endif
-
-    extract_dicom_info = PythonPipelineOperator(
-        task_id='extract_dicom_info',
-        python_callable=extract_dicom_info_fn,
-        parent_task=upstream_id,
-        pool='io_intensive',
-        priority_weight=priority_weight,
-        execution_timeout=timedelta(hours=6),
-        dag=dag
-    )
-    extract_dicom_info.set_upstream(upstream)
-
-    extract_dicom_info.doc_md = dedent("""\
-    # Extract DICOM information
-
-    Read DICOM information from the files stored in the session folder and store that information into the database.
-    """)
-
-    # This upstream is required as we need to extract additional information from the DICOM files (participant_id, scan_date)
-    # and transfer it via XCOMs to the next SPM pipeline
-    upstream = extract_dicom_info
-    upstream_id = 'extract_dicom_info'
-    priority_weight = priority_weight + 5
-
-    dicom_to_nifti_pipeline = SpmPipelineOperator(
-        task_id='dicom_to_nifti_pipeline',
-        spm_function=dicom_to_nifti_spm_function,
-        spm_arguments_callable=dicom_to_nifti_arguments_fn,
-        matlab_paths=[misc_library_path, dicom_to_nifti_pipeline_path],
-        output_folder_callable=lambda session_id, **kwargs: dicom_to_nifti_local_folder + '/' + session_id,
-        pool='io_intensive',
-        parent_task=upstream_id,
-        priority_weight=priority_weight,
-        execution_timeout=timedelta(hours=24),
-        on_skip_trigger_dag_id='mri_notify_skipped_processing',
-        on_failure_trigger_dag_id='mri_notify_failed_processing',
-        session_id_by_patient=session_id_by_patient,
-        dag=dag
     )
 
-    dicom_to_nifti_pipeline.set_upstream(upstream)
+    map_ehr_to_i2b2.set_upstream(upstream)
 
-    dicom_to_nifti_pipeline.doc_md = dedent("""\
-    # DICOM to Nitfi Pipeline
+    map_ehr_to_i2b2.doc_md = dedent("""\
+    # MipMap ETL: map EHR data to I2B2
 
-    SPM function: __%s__
-
-    This function convert the dicom files to Nifti format using the SPM tools and
-    [dcm2nii](http://www.mccauslandcenter.sc.edu/mricro/mricron/dcm2nii.html) tool developed by Chris Rorden.
-
-    Nifti files are stored the the following locations:
+    Docker image: __%s__
 
     * Local folder: __%s__
-    * Remote folder: __%s__
 
     Depends on: __%s__
-    """ % (dicom_to_nifti_spm_function, dicom_to_nifti_local_folder, dicom_to_nifti_server_folder, upstream_id))
+    """ % (map_ehr_to_i2b2_docker_image, dicom_organizer_local_folder, upstream_id))
 
-    upstream = dicom_to_nifti_pipeline
-    upstream_id = 'dicom_to_nifti_pipeline'
+    upstream = map_ehr_to_i2b2
+    upstream_id = 'map_ehr_to_i2b2'
     priority_weight = priority_weight + 5
-
-    cleanup_local_dicom_cmd = dedent("""
-        rm -rf {{ params["local_folder"] }}/{{ dag_run.conf["session_id"] }}
-    """)
-
-    cleanup_local_dicom = BashOperator(
-        task_id='cleanup_local_dicom',
-        bash_command=cleanup_local_dicom_cmd,
-        params={'local_folder': dicom_local_folder},
-        priority_weight=priority_weight,
-        execution_timeout=timedelta(hours=1),
-        dag=dag
-    )
-    cleanup_local_dicom.set_upstream(upstream)
-    priority_weight = priority_weight + 5
-
-    cleanup_local_dicom.doc_md = dedent("""\
-    # Cleanup local DICOM files
-
-    Remove locally stored DICOM files as they have been processed already.
-    """)
-
-
-    extract_nifti_info = PythonPipelineOperator(
-        task_id='extract_nifti_info',
-        python_callable=extract_nifti_info_fn,
-        parent_task=upstream_id,
-        pool='io_intensive',
-        priority_weight=priority_weight,
-        execution_timeout=timedelta(hours=3),
-        dag=dag
-    )
-
-    extract_nifti_info.set_upstream(dicom_to_nifti_pipeline)
-    priority_weight = priority_weight + 5
-
-    extract_nifti_info.doc_md = dedent("""\
-    # Extract information from NIFTI files converted from DICOM
-
-    Read NIFTI information from directory %s containing nifti files freshly converted from DICOM and store that information into the database.
-    """ % dicom_to_nifti_local_folder)
-
-    notify_success = TriggerDagRunOperator(
-        task_id='notify_success',
-        trigger_dag_id='mri_notify_successful_processing',
-        python_callable=pipeline_trigger('extract_nifti_atlas_info'),
-        priority_weight=999,
-        dag=dag
-    )
-
-    notify_success.set_upstream(extract_nifti_info)
-
-    notify_success.doc_md = dedent("""\
-    # Notify successful processing
-
-    Notify successful processing of this MRI scan session.
-    """)
-
-    if mpm_maps:
-
-        mpm_maps_pipeline = SpmPipelineOperator(
-            task_id='mpm_maps_pipeline',
-            spm_function=mpm_maps_spm_function,
-            spm_arguments_callable=mpm_maps_arguments_fn,
-            matlab_paths=[misc_library_path, mpm_maps_pipeline_path],
-            output_folder_callable=lambda session_id, **kwargs: mpm_maps_local_folder + '/' + session_id,
-            priority_weight=priority_weight,
-            execution_timeout=timedelta(hours=24),
-            pool='image_preprocessing',
-            parent_task=upstream_id,
-            on_skip_trigger_dag_id='mri_notify_skipped_processing',
-            on_failure_trigger_dag_id='mri_notify_failed_processing',
-            session_id_by_patient=session_id_by_patient,
-            dag=dag
-        )
-
-        mpm_maps_pipeline.set_upstream(upstream)
-
-        mpm_maps_pipeline.doc_md = dedent("""\
-        # MPM Maps Pipeline
-
-        SPM function: __%s__
-
-        This function computes the Multiparametric Maps (MPMs) (R2*, R1, MT, PD) and brain segmentation in different tissue maps.
-        All computation was programmed based on the LREN database structure.
-
-        The MPMs are calculated locally and finally copied to a remote folder:
-
-        * Local folder: __%s__
-        * Remote folder: __%s__
-
-        Depends on: __%s__
-        """ % (mpm_maps_spm_function, mpm_maps_local_folder, mpm_maps_server_folder, upstream_id))
-
-        upstream = mpm_maps_pipeline
-        upstream_id = 'mpm_maps_pipeline'
-        priority_weight = priority_weight + 5
-
-        extract_nifti_mpm_info = PythonPipelineOperator(
-            task_id='extract_nifti_mpm_info',
-            python_callable=extract_nifti_info_fn,
-            parent_task=upstream_id,
-            pool='io_intensive',
-            priority_weight=priority_weight,
-            execution_timeout=timedelta(hours=3),
-            dag=dag
-        )
-
-        extract_nifti_mpm_info.set_upstream(upstream)
-
-        extract_nifti_mpm_info.doc_md = dedent("""\
-        # Extract information from NIFTI files generated by MPM pipeline
-
-        Read NIFTI information from directory %s containing the Nifti files created by MPM pipeline and store that information in the database.
-        """ % mpm_maps_local_folder)
-
-        notify_success.set_upstream(extract_nifti_mpm_info)
-        priority_weight = priority_weight + 5
-
-    # endif
-
-    if neuro_morphometric_atlas:
-
-        neuro_morphometric_atlas_pipeline = SpmPipelineOperator(
-            task_id='neuro_morphometric_atlas_pipeline',
-            spm_function=neuro_morphometric_atlas_spm_function,
-            spm_arguments_callable=neuro_morphometric_atlas_arguments_fn,
-            matlab_paths=[misc_library_path,
-                          neuro_morphometric_atlas_pipeline_path,
-                          mpm_maps_pipeline_path],
-            output_folder_callable=lambda session_id, **kwargs: neuro_morphometric_atlas_local_folder + '/' + session_id,
-            pool='image_preprocessing',
-            parent_task=upstream_id,
-            priority_weight=priority_weight,
-            execution_timeout=timedelta(hours=24),
-            on_skip_trigger_dag_id='mri_notify_skipped_processing',
-            on_failure_trigger_dag_id='mri_notify_failed_processing',
-            session_id_by_patient=session_id_by_patient,
-            dag=dag
-        )
-
-        neuro_morphometric_atlas_pipeline.set_upstream(upstream)
-        priority_weight = priority_weight + 5
-
-        neuro_morphometric_atlas_pipeline.doc_md = dedent("""\
-        # NeuroMorphometric Pipeline
-
-        SPM function: __%s__
-
-        This function computes an individual Atlas based on the NeuroMorphometrics Atlas. This is based on the NeuroMorphometrics Toolbox.
-        This delivers three files:
-
-        1. Atlas File (*.nii);
-        2. Volumes of the Morphometric Atlas structures (*.txt);
-        3. CSV File (.csv) containing the volume, globals, and Multiparametric Maps (R2*, R1, MT, PD) for each structure defined in the Subject Atlas.
-
-        The atlas is calculated locally and finally copied to a remote folder:
-
-        * Local folder: %s
-        * Remote folder: %s
-
-        Depends on: __%s__
-        """ % (neuro_morphometric_atlas_spm_function, neuro_morphometric_atlas_local_folder, neuro_morphometric_atlas_server_folder, upstream_id))
-
-        extract_nifti_atlas_info = PythonPipelineOperator(
-            task_id='extract_nifti_atlas_info',
-            python_callable=extract_nifti_info_fn,
-            parent_task='neuro_morphometric_atlas_pipeline',
-            pool='io_intensive',
-            priority_weight=priority_weight,
-            execution_timeout=timedelta(hours=3),
-            dag=dag
-        )
-
-        extract_nifti_atlas_info.set_upstream(
-            neuro_morphometric_atlas_pipeline)
-
-        extract_nifti_atlas_info.doc_md = dedent("""\
-        # Extract information from NIFTI files generated by Neuro Morphometrics Atlas pipeline
-
-        Read NIFTI information from directory %s containing the Nifti files created by Neuro Morphometrics Atlas pipeline and store that information in the database.
-        """ % neuro_morphometric_atlas_local_folder)
-
-        notify_success.set_upstream(extract_nifti_atlas_info)
-        priority_weight = priority_weight + 5
-
-    # endif
 
     return dag
