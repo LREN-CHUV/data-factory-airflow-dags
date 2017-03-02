@@ -27,7 +27,7 @@ from airflow_pipeline.operators import PreparePipelineOperator, BashPipelineOper
 from airflow_pipeline.pipelines import pipeline_trigger
 
 def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs,
-                          min_free_space_local_folder, ehr_local_folder):
+                          min_free_space_local_folder, ehr_versioned_folder):
 
     # constants
 
@@ -57,7 +57,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs,
 
     check_free_space = FreeSpaceSensor(
         task_id='check_free_space',
-        path=ehr_local_folder,
+        path=ehr_versioned_folder,
         free_disk_threshold=min_free_space_local_folder,
         retry_delay=timedelta(hours=1),
         retries=24 * 7,
@@ -94,15 +94,22 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs,
     upstream_id = 'prepare_pipeline'
     priority_weight = priority_weight + 5
 
-    copy_ehr_to_local_cmd = dedent("""
+    version_incoming_ehr_cmd = dedent("""
+        mkdir -p {{ params['ehr_versioned_folder'] }}
+        [ -d {{ params['ehr_versioned_folder'] }}/.git ] || git init {{ params['ehr_versioned_folder'] }}
         rsync -av $AIRFLOW_INPUT_DIR/ $AIRFLOW_OUTPUT_DIR/
+        git add $AIRFLOW_OUTPUT_DIR/
+        git commit -m "Add EHR acquired on {{ task_instance.xcom_pull(key='relative_context_path', task_ids='prepare_pipeline') }}"
+        git rev-parse HEAD
     """)
 
-    copy_ehr_to_local = BashPipelineOperator(
-        task_id='copy_ehr_to_local',
-        bash_command=copy_ehr_to_local_cmd,
-        params={'min_free_space_local_folder': min_free_space_local_folder},
-        output_folder_callable=lambda scan_date, session_id, **kwargs: "%s/%s/%s" % (ehr_local_folder, scan_date, session_id),
+    version_incoming_ehr = BashPipelineOperator(
+        task_id='version_incoming_ehr',
+        bash_command=version_incoming_ehr_cmd,
+        params={'min_free_space_local_folder': min_free_space_local_folder,
+            'ehr_versioned_folder': ehr_versioned_folder
+        },
+        output_folder_callable=lambda relative_context_path, **kwargs: "%s/%s" % (ehr_versioned_folder, relative_context_path),
         parent_task=upstream_id,
         priority_weight=priority_weight,
         execution_timeout=timedelta(hours=3),
@@ -110,17 +117,21 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs,
         session_id_by_patient=session_id_by_patient,
         dag=dag
     )
-    copy_ehr_to_local.set_upstream(upstream)
+    version_incoming_ehr.set_upstream(upstream)
 
-    copy_ehr_to_local.doc_md = dedent("""\
+    version_incoming_ehr.doc_md = dedent("""\
     # Copy EHR files to local %s folder
 
     Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
     """ % dicom_local_folder)
 
-    upstream = copy_ehr_to_local
-    upstream_id = 'copy_ehr_to_local'
+    upstream = version_incoming_ehr
+    upstream_id = 'version_incoming_ehr'
     priority_weight = priority_weight + 5
+
+    # Next: Python to build provenance_details
+
+    # Next: call MipMap on versioned folder
 
     if dicom_organizer:
 

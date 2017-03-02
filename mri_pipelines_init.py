@@ -153,9 +153,18 @@ for dataset_section in dataset_sections.split(','):
 
     if ehr_scanners != '':
         ehr_data_folder = configuration.get(dataset_section, 'EHR_DATA_FOLDER')
+        ehr_versioned_folder = configuration.get(dataset_section, 'EHR_VERSIONED_FOLDER')
 
         if 'daily' in ehr_scanners:
             name = '%s_daily_ehr_dag' % dataset.lower().replace(" ", "_")
             globals()[name] = daily_ehr_incoming_dag(dataset=dataset, folder=ehr_data_folder,
                                                             email_errors_to=email_errors_to, trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower())
             logging.info("Add DAG %s", globals()[name].dag_id)
+
+        params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs,
+                      min_free_space_local_folder=min_free_space_local_folder,
+                      ehr_versioned_folder=ehr_versioned_folder)
+
+        name = '%s_ehr_to_i2b2_dag' % dataset.lower().replace(" ", "_")
+        globals()[name] = ehr_to_i2b2_dag(**params)
+        logging.info("Add DAG %s", globals()[name].dag_id)
