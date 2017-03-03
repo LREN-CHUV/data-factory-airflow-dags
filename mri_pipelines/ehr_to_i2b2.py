@@ -67,7 +67,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
     # Check free space
 
     Check that there is enough free space on the disk hosting folder %s for processing, wait otherwise.
-    """ % dicom_local_folder)
+    """ % ehr_versioned_folder)
 
     upstream = check_free_space
     upstream_id = 'check_free_space'
