@@ -33,9 +33,6 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
 
     # constants
 
-    START = datetime.utcnow()
-    START = datetime.combine(START.date(), time(START.hour, 0))
-
     DAG_NAME = '%s_ehr_to_i2b2' % dataset.lower().replace(" ", "_")
 
     # Define the DAG
