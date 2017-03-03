@@ -46,6 +46,7 @@ for dataset_section in dataset_sections.split(','):
     default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE',
                    configuration.get('spm', 'SPM_DIR') + '/tpm/nwTPM_sl3.nii')
     default_config(dataset_section, 'EHR_SCANNERS', '')
+    default_config(dataset_section, 'EHR_DATA_FOLDER_DEPTH', '1')
 
     dataset = configuration.get(dataset_section, 'DATASET')
     preprocessing_data_folder = configuration.get(
@@ -142,7 +143,8 @@ for dataset_section in dataset_sections.split(','):
         params['neuro_morphometric_atlas_pipeline_path'] = pipelines_path + \
             '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
         params['mpm_maps_pipeline_path'] = pipelines_path + '/MPMs_Pipeline'
-        params['neuro_morphometric_atlas_TPM_template'] = tpmTemplate = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE')
+        params['neuro_morphometric_atlas_TPM_template'] = tpmTemplate = configuration.get(
+            dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE')
         # check that file exists if absolute path
         if len(tpmTemplate) > 0 and tpmTemplate[0] is '/':
             if not os.path.isfile(tpmTemplate):
@@ -164,15 +166,22 @@ for dataset_section in dataset_sections.split(','):
         if 'daily' in ehr_scanners:
             name = '%s_daily_ehr_dag' % dataset.lower().replace(" ", "_")
             globals()[name] = daily_ehr_incoming_dag(dataset=dataset, folder=ehr_data_folder,
-                                                            email_errors_to=email_errors_to, trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower())
+                                                     email_errors_to=email_errors_to, trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower())
             logging.info("Add DAG %s", globals()[name].dag_id)
 
-        params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs,
-                      min_free_space_local_folder=min_free_space_local_folder,
-                      mipmap_db_confile_file=mipmap_db_confile_file,
-                      ehr_versioned_folder=ehr_versioned_folder,
-                      ehr_to_i2b2_capture_docker_image=ehr_to_i2b2_capture_docker_image, ehr_to_i2b2_capture_folder=ehr_to_i2b2_capture_folder)
+        if 'flat' in ehr_scanners:
+            ehr_data_folder_depth = int(configuration.get(dataset_section, 'EHR_DATA_FOLDER_DEPTH'))
+            name = '%s_flat_ehr_dag' % dataset.lower().replace(" ", "_")
+            globals()[name] = flat_ehr_incoming_dag(dataset=dataset, folder=ehr_data_folder, depth=ehr_data_folder_depth,
+                                                    email_errors_to=email_errors_to, trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower())
+            logging.info("Add DAG %s", globals()[name].dag_id)
 
-        name = '%s_ehr_to_i2b2_dag' % dataset.lower().replace(" ", "_")
-        globals()[name] = ehr_to_i2b2_dag(**params)
-        logging.info("Add DAG %s", globals()[name].dag_id)
+    params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs,
+                  min_free_space_local_folder=min_free_space_local_folder,
+                  mipmap_db_confile_file=mipmap_db_confile_file,
+                  ehr_versioned_folder=ehr_versioned_folder,
+                  ehr_to_i2b2_capture_docker_image=ehr_to_i2b2_capture_docker_image, ehr_to_i2b2_capture_folder=ehr_to_i2b2_capture_folder)
+
+    name = '%s_ehr_to_i2b2_dag' % dataset.lower().replace(" ", "_")
+    globals()[name] = ehr_to_i2b2_dag(**params)
+    logging.info("Add DAG %s", globals()[name].dag_id)
