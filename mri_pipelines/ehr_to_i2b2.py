@@ -29,7 +29,7 @@ from airflow_pipeline.pipelines import pipeline_trigger
 
 def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_local_folder,
                     mipmap_db_confile_file, ehr_versioned_folder,
-                    ehr_to_i2b2_capture_docker_image, ehr_i2b2_capture_folder):
+                    ehr_to_i2b2_capture_docker_image, ehr_to_i2b2_capture_folder):
 
     # constants
 
@@ -148,7 +148,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
         container_input_dir='/inputs',
         container_output_dir='/outputs',
         output_folder_callable=lambda relative_context_path, **kwargs: "%s/%s" % (
-            ehr_i2b2_capture_folder, relative_context_path),
+            ehr_to_i2b2_capture_folder, relative_context_path),
         user=None,
         volumes=None,
         pool='io_intensive',

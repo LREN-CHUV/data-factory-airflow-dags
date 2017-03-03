@@ -22,8 +22,11 @@ def default_config(section, key, value):
     if not configuration.has_option(section, key):
         configuration.set(section, key, value)
 
+default_config('mri', 'MIPMAP_DB_CONFILE_FILE', '/dev/null')
+
 dataset_sections = configuration.get('mri', 'DATASETS')
 email_errors_to = configuration.get('mri', 'EMAIL_ERRORS_TO')
+mipmap_db_confile_file = configuration.get('mri', 'MIPMAP_DB_CONFILE_FILE')
 
 for dataset_section in dataset_sections.split(','):
     # Set the default configuration for the dataset
@@ -31,7 +34,7 @@ for dataset_section in dataset_sections.split(','):
     default_config(dataset_section, 'PREPROCESSING_SCANNERS', 'daily')
     default_config(dataset_section, 'PREPROCESSING_PIPELINES',
                    'dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')
-    default_config(dataset_section, 'COPY_DICOM_TO_LOCAL', 'True')
+    default_config(dataset_section, 'DICOM_COPY_TO_LOCAL', 'True')
     default_config(dataset_section, 'DICOM_ORGANIZER_SPM_FUNCTION', 'dicomOrganizer')
     default_config(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION', 'selectT1')
     default_config(dataset_section, 'DICOM_FILES_PATTERN', '**/MR.*')
@@ -87,8 +90,8 @@ for dataset_section in dataset_sections.split(','):
         dataset_section, 'DICOM_LOCAL_FOLDER')
     dicom_files_pattern = configuration.get(
         dataset_section, 'DICOM_FILES_PATTERN')
-    copy_dicom_to_local = configuration.getboolean(
-        dataset_section, 'COPY_DICOM_TO_LOCAL')
+    dicom_copy_to_local = configuration.getboolean(
+        dataset_section, 'DICOM_COPY_TO_LOCAL')
     dicom_to_nifti_spm_function = configuration.get(
         dataset_section, 'NIFTI_SPM_FUNCTION')
     dicom_to_nifti_local_folder = configuration.get(
@@ -105,7 +108,7 @@ for dataset_section in dataset_sections.split(','):
 
     params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, session_id_by_patient=session_id_by_patient, misc_library_path=misc_library_path,
                   min_free_space_local_folder=min_free_space_local_folder, dicom_local_folder=dicom_local_folder, dicom_files_pattern=dicom_files_pattern,
-                  copy_dicom_to_local=copy_dicom_to_local, dicom_organizer=dicom_organizer, dicom_select_T1=dicom_select_T1, protocols_file=protocols_file,
+                  dicom_copy_to_local=dicom_copy_to_local, dicom_organizer=dicom_organizer, dicom_select_T1=dicom_select_T1, protocols_file=protocols_file,
                   dicom_to_nifti_spm_function=dicom_to_nifti_spm_function, dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
                   dicom_to_nifti_local_folder=dicom_to_nifti_local_folder, dicom_to_nifti_server_folder=dicom_to_nifti_server_folder,
                   mpm_maps=mpm_maps, neuro_morphometric_atlas=neuro_morphometric_atlas, dcm2nii_program=dcm2nii_program)
@@ -149,14 +152,14 @@ for dataset_section in dataset_sections.split(','):
     globals()[name] = pre_process_dicom_dag(**params)
     logging.info("Add DAG %s", globals()[name].dag_id)
 
-    ehr_scanners = configuration.get(dataset_section, 'EHR_SCANNERS').split(',')
+    ehr_scanners = configuration.get(dataset_section, 'EHR_SCANNERS')
 
     if ehr_scanners != '':
+        ehr_scanners = ehr_scanners.split(',')
         ehr_data_folder = configuration.get(dataset_section, 'EHR_DATA_FOLDER')
         ehr_versioned_folder = configuration.get(dataset_section, 'EHR_VERSIONED_FOLDER')
-        mipmap_db_confile_file = configuration.get(dataset_section, 'MIPMAP_DB_CONFILE_FILE')
         ehr_to_i2b2_capture_docker_image = configuration.get(dataset_section, 'EHR_TO_I2B2_CAPTURE_DOCKER_IMAGE')
-        ehr_i2b2_capture_folder = configuration.get(dataset_section, 'EHR_TO_I2B2_CAPTURE_FOLDER')
+        ehr_to_i2b2_capture_folder = configuration.get(dataset_section, 'EHR_TO_I2B2_CAPTURE_FOLDER')
 
         if 'daily' in ehr_scanners:
             name = '%s_daily_ehr_dag' % dataset.lower().replace(" ", "_")
@@ -168,7 +171,7 @@ for dataset_section in dataset_sections.split(','):
                       min_free_space_local_folder=min_free_space_local_folder,
                       mipmap_db_confile_file=mipmap_db_confile_file,
                       ehr_versioned_folder=ehr_versioned_folder,
-                      ehr_to_i2b2_capture_docker_image=ehr_to_i2b2_capture_docker_image, ehr_i2b2_capture_folder=ehr_i2b2_capture_folder)
+                      ehr_to_i2b2_capture_docker_image=ehr_to_i2b2_capture_docker_image, ehr_to_i2b2_capture_folder=ehr_to_i2b2_capture_folder)
 
         name = '%s_ehr_to_i2b2_dag' % dataset.lower().replace(" ", "_")
         globals()[name] = ehr_to_i2b2_dag(**params)

@@ -23,7 +23,7 @@ from mri_meta_extract import nifti_import
 
 def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_by_patient, misc_library_path,
                           min_free_space_local_folder, dicom_local_folder,
-                          copy_dicom_to_local=True, dicom_files_pattern='**/MR.*',
+                          dicom_copy_to_local=True, dicom_files_pattern='**/MR.*',
                           dicom_organizer=False, dicom_organizer_spm_function='dicomOrganizer', dicom_organizer_pipeline_path=None,
                           dicom_organizer_local_folder=None, dicom_organizer_data_structure='PatientID:StudyID:ProtocolName:SeriesNumber',
                           dicom_select_T1=False, dicom_select_T1_spm_function='selectT1', dicom_select_T1_pipeline_path=None,
@@ -194,7 +194,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
     upstream_id = 'prepare_pipeline'
     priority_weight = priority_weight + 5
 
-    if copy_dicom_to_local:
+    if dicom_copy_to_local:
 
         copy_dicom_to_local_cmd = dedent("""
             used="$(df -h /home | grep '/' | grep -Po '[^ ]*(?=%)')"
