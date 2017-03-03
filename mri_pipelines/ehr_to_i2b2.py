@@ -165,7 +165,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
     * Local folder: __%s__
 
     Depends on: __%s__
-    """ % (ehr_to_i2b2_capture_docker_image, dicom_organizer_local_folder, upstream_id))
+    """ % (ehr_to_i2b2_capture_docker_image, ehr_to_i2b2_capture_folder, upstream_id))
 
     upstream = map_ehr_to_i2b2_capture
     upstream_id = 'map_ehr_to_i2b2_capture'
