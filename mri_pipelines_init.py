@@ -154,6 +154,9 @@ for dataset_section in dataset_sections.split(','):
     if ehr_scanners != '':
         ehr_data_folder = configuration.get(dataset_section, 'EHR_DATA_FOLDER')
         ehr_versioned_folder = configuration.get(dataset_section, 'EHR_VERSIONED_FOLDER')
+        mipmap_db_confile_file = configuration.get(dataset_section, 'MIPMAP_DB_CONFILE_FILE')
+        ehr_to_i2b2_capture_docker_image = configuration.get(dataset_section, 'EHR_TO_I2B2_CAPTURE_DOCKER_IMAGE')
+        ehr_i2b2_capture_folder = configuration.get(dataset_section, 'EHR_TO_I2B2_CAPTURE_FOLDER')
 
         if 'daily' in ehr_scanners:
             name = '%s_daily_ehr_dag' % dataset.lower().replace(" ", "_")
@@ -163,7 +166,9 @@ for dataset_section in dataset_sections.split(','):
 
         params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs,
                       min_free_space_local_folder=min_free_space_local_folder,
-                      ehr_versioned_folder=ehr_versioned_folder)
+                      mipmap_db_confile_file=mipmap_db_confile_file,
+                      ehr_versioned_folder=ehr_versioned_folder,
+                      ehr_to_i2b2_capture_docker_image=ehr_to_i2b2_capture_docker_image, ehr_i2b2_capture_folder=ehr_i2b2_capture_folder)
 
         name = '%s_ehr_to_i2b2_dag' % dataset.lower().replace(" ", "_")
         globals()[name] = ehr_to_i2b2_dag(**params)

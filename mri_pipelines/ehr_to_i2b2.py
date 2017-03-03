@@ -26,8 +26,10 @@ from airflow_freespace.operators import FreeSpaceSensor
 from airflow_pipeline.operators import PreparePipelineOperator, BashPipelineOperator, DockerPipelineOperator
 from airflow_pipeline.pipelines import pipeline_trigger
 
-def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs,
-                          min_free_space_local_folder, ehr_versioned_folder):
+
+def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_local_folder,
+                    mipmap_db_confile_file, ehr_versioned_folder,
+                    ehr_to_i2b2_capture_docker_image, ehr_i2b2_capture_folder):
 
     # constants
 
@@ -107,9 +109,10 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs,
         task_id='version_incoming_ehr',
         bash_command=version_incoming_ehr_cmd,
         params={'min_free_space_local_folder': min_free_space_local_folder,
-            'ehr_versioned_folder': ehr_versioned_folder
-        },
-        output_folder_callable=lambda relative_context_path, **kwargs: "%s/%s" % (ehr_versioned_folder, relative_context_path),
+                'ehr_versioned_folder': ehr_versioned_folder
+                },
+        output_folder_callable=lambda relative_context_path, **kwargs: "%s/%s" % (
+            ehr_versioned_folder, relative_context_path),
         parent_task=upstream_id,
         priority_weight=priority_weight,
         execution_timeout=timedelta(hours=3),
@@ -133,30 +136,32 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs,
 
     # Next: call MipMap on versioned folder
 
-    map_ehr_to_i2b2_docker_image = 'hbpmip/mipmap'
-
-    map_ehr_to_i2b2 = DockerPipelineOperator(
-            task_id='map_ehr_to_i2b2',
-            image=map_ehr_to_i2b2_docker_image,
-            cpus=1,
-            mem_limit='256m',
-            spm_function=dicom_organizer_spm_function,
-            spm_arguments_callable=dicom_organizer_arguments_fn,
-            matlab_paths=[misc_library_path, dicom_organizer_pipeline_path],
-            output_folder_callable=lambda session_id, **kwargs: dicom_organizer_local_folder + '/' + session_id,
-            pool='io_intensive',
-            parent_task=upstream_id,
-            priority_weight=priority_weight,
-            execution_timeout=timedelta(hours=24),
-            on_skip_trigger_dag_id='mri_notify_skipped_processing',
-            on_failure_trigger_dag_id='mri_notify_failed_processing',
-            session_id_by_patient=session_id_by_patient,
-            dag=dag
+    map_ehr_to_i2b2_capture = DockerPipelineOperator(
+        task_id='map_ehr_to_i2b2_capture',
+        image=ehr_to_i2b2_capture_docker_image,
+        force_pull=False,
+        command=None,
+        environment=None,
+        cpus=1,
+        mem_limit='256m',
+        container_tmp_dir='/tmp/airflow',
+        container_input_dir='/inputs',
+        container_output_dir='/outputs',
+        output_folder_callable=lambda relative_context_path, **kwargs: "%s/%s" % (
+            ehr_i2b2_capture_folder, relative_context_path),
+        user=None,
+        volumes=None,
+        pool='io_intensive',
+        parent_task=upstream_id,
+        priority_weight=priority_weight,
+        execution_timeout=timedelta(hours=24),
+        on_failure_trigger_dag_id='mri_notify_failed_processing',
+        dag=dag
     )
 
-    map_ehr_to_i2b2.set_upstream(upstream)
+    map_ehr_to_i2b2_capture.set_upstream(upstream)
 
-    map_ehr_to_i2b2.doc_md = dedent("""\
+    map_ehr_to_i2b2_capture.doc_md = dedent("""\
     # MipMap ETL: map EHR data to I2B2
 
     Docker image: __%s__
@@ -164,10 +169,10 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs,
     * Local folder: __%s__
 
     Depends on: __%s__
-    """ % (map_ehr_to_i2b2_docker_image, dicom_organizer_local_folder, upstream_id))
+    """ % (ehr_to_i2b2_capture_docker_image, dicom_organizer_local_folder, upstream_id))
 
-    upstream = map_ehr_to_i2b2
-    upstream_id = 'map_ehr_to_i2b2'
+    upstream = map_ehr_to_i2b2_capture
+    upstream_id = 'map_ehr_to_i2b2_capture'
     priority_weight = priority_weight + 5
 
     return dag
