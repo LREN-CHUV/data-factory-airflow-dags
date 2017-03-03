@@ -114,7 +114,6 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
         priority_weight=priority_weight,
         execution_timeout=timedelta(hours=3),
         on_failure_trigger_dag_id='mri_notify_failed_processing',
-        session_id_by_patient=session_id_by_patient,
         dag=dag
     )
     version_incoming_ehr.set_upstream(upstream)
