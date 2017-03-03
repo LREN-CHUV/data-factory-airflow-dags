@@ -103,12 +103,14 @@ for dataset_section in dataset_sections.split(','):
         dataset_section, 'DCM2NII_PROGRAM')
     dicom_organizer = 'dicom_organizer' in preprocessing_pipelines
     dicom_select_T1 = 'dicom_select_T1' in preprocessing_pipelines
+    images_selection = 'images_selection' in preprocessing_pipelines
     mpm_maps = 'mpm_maps' in preprocessing_pipelines
     neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
 
-    params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, session_id_by_patient=session_id_by_patient, misc_library_path=misc_library_path,
-                  min_free_space_local_folder=min_free_space_local_folder, dicom_local_folder=dicom_local_folder, dicom_files_pattern=dicom_files_pattern,
-                  dicom_copy_to_local=dicom_copy_to_local, dicom_organizer=dicom_organizer, dicom_select_T1=dicom_select_T1, protocols_file=protocols_file,
+    params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, session_id_by_patient=session_id_by_patient,
+                  misc_library_path=misc_library_path, min_free_space_local_folder=min_free_space_local_folder, dicom_local_folder=dicom_local_folder,
+                  dicom_files_pattern=dicom_files_pattern, dicom_copy_to_local=dicom_copy_to_local, dicom_organizer=dicom_organizer,
+                  dicom_select_T1=dicom_select_T1, images_selection=images_selection, protocols_file=protocols_file,
                   dicom_to_nifti_spm_function=dicom_to_nifti_spm_function, dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
                   dicom_to_nifti_local_folder=dicom_to_nifti_local_folder, dicom_to_nifti_server_folder=dicom_to_nifti_server_folder,
                   mpm_maps=mpm_maps, neuro_morphometric_atlas=neuro_morphometric_atlas, dcm2nii_program=dcm2nii_program)
@@ -118,6 +120,11 @@ for dataset_section in dataset_sections.split(','):
         params['dicom_organizer_local_folder'] = configuration.get(dataset_section, 'DICOM_ORGANIZER_LOCAL_FOLDER')
         params['dicom_organizer_data_structure'] = configuration.get(dataset_section, 'DICOM_ORGANIZER_DATA_STRUCTURE')
         params['dicom_organizer_pipeline_path'] = pipelines_path + '/DicomOrganizer_Pipeline'
+
+    if images_selection:
+        params['images_selection_local_folder'] = configuration.get(dataset_section, 'IMAGES_SELECTION_LOCAL_FOLDER')
+        params['images_selection_file_path'] = configuration.get(dataset_section, 'IMAGES_SELECTION_FILE_PATH')
+        params['images_selection_pipeline_path'] = pipelines_path + '/ImagesSelection_Pipeline'
 
     if dicom_select_T1:
         params['dicom_select_T1_spm_function'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION')
@@ -129,7 +136,6 @@ for dataset_section in dataset_sections.split(','):
         params['mpm_maps_spm_function'] = configuration.get(dataset_section, 'MPM_MAPS_SPM_FUNCTION')
         params['mpm_maps_local_folder'] = configuration.get(dataset_section, 'MPM_MAPS_LOCAL_FOLDER')
         params['mpm_maps_server_folder'] = configuration.get(dataset_section, 'MPM_MAPS_SERVER_FOLDER')
-
         params['mpm_maps_pipeline_path'] = pipelines_path + '/MPMs_Pipeline'
 
     if neuro_morphometric_atlas:
