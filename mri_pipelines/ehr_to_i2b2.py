@@ -122,7 +122,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
     # Copy EHR files to local %s folder
 
     Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
-    """ % dicom_local_folder)
+    """ % ehr_versioned_folder)
 
     upstream = version_incoming_ehr
     upstream_id = 'version_incoming_ehr'
