@@ -15,6 +15,7 @@ from mri_pipelines.daily_pre_process_incoming import daily_preprocess_incoming_d
 from mri_pipelines.flat_pre_process_incoming import flat_preprocess_incoming_dag
 from mri_pipelines.pre_process_dicom import pre_process_dicom_dag
 from mri_pipelines.daily_ehr_incoming import daily_ehr_incoming_dag
+from mri_pipelines.flat_ehr_incoming import flat_ehr_incoming_dag
 from mri_pipelines.ehr_to_i2b2 import ehr_to_i2b2_dag
 
 
