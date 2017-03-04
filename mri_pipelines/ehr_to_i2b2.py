@@ -94,12 +94,13 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
     priority_weight = priority_weight + 5
 
     version_incoming_ehr_cmd = dedent("""
+        export HOME=/usr/local/airflow
         mkdir -p {{ params['ehr_versioned_folder'] }}
         [ -d {{ params['ehr_versioned_folder'] }}/.git ] || git init {{ params['ehr_versioned_folder'] }}
         rsync -av $AIRFLOW_INPUT_DIR/ $AIRFLOW_OUTPUT_DIR/
         cd {{ params['ehr_versioned_folder'] }}
         git add $AIRFLOW_OUTPUT_DIR/
-        git commit --author="Airflow <airflow@localhost>" -m "Add EHR acquired on {{ task_instance.xcom_pull(key='relative_context_path', task_ids='prepare_pipeline') }}"
+        git commit -m "Add EHR acquired on {{ task_instance.xcom_pull(key='relative_context_path', task_ids='prepare_pipeline') }}"
         git rev-parse HEAD
     """)
 
