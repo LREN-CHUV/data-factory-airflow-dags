@@ -138,6 +138,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
         task_id='map_ehr_to_i2b2_capture',
         image=ehr_to_i2b2_capture_docker_image,
         force_pull=False,
+        api_version="1.18",
         command=None,
         environment=None,
         cpus=1,
