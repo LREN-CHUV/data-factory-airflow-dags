@@ -132,7 +132,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
 
     # Next: Python to build provenance_details
 
-    # Next: call MipMap on versioned folder
+    # Call MipMap on versioned folder
 
     map_ehr_to_i2b2_capture = DockerPipelineOperator(
         task_id='map_ehr_to_i2b2_capture',
@@ -143,12 +143,14 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
         cpus=1,
         mem_limit='256m',
         container_tmp_dir='/tmp/airflow',
-        container_input_dir='/inputs',
-        container_output_dir='/outputs',
+        container_input_dir='/opt/source',
+        container_output_dir='/opt/target',
         output_folder_callable=lambda relative_context_path, **kwargs: "%s/%s" % (
             ehr_to_i2b2_capture_folder, relative_context_path),
         user=None,
-        volumes=None,
+        volumes=[
+            "/opt/postgresdb.properties:/etc/mipmap/postgresdb.properties"
+        ],
         pool='io_intensive',
         parent_task=upstream_id,
         priority_weight=priority_weight,
