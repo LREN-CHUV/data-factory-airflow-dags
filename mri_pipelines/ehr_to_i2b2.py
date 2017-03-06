@@ -33,9 +33,6 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
 
     # constants
 
-    START = datetime.utcnow()
-    START = datetime.combine(START.date(), time(START.hour, 0))
-
     DAG_NAME = '%s_ehr_to_i2b2' % dataset.lower().replace(" ", "_")
 
     # Define the DAG
@@ -70,7 +67,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
     # Check free space
 
     Check that there is enough free space on the disk hosting folder %s for processing, wait otherwise.
-    """ % dicom_local_folder)
+    """ % ehr_versioned_folder)
 
     upstream = check_free_space
     upstream_id = 'check_free_space'
@@ -97,9 +94,11 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
     priority_weight = priority_weight + 5
 
     version_incoming_ehr_cmd = dedent("""
+        export HOME=/usr/local/airflow
         mkdir -p {{ params['ehr_versioned_folder'] }}
         [ -d {{ params['ehr_versioned_folder'] }}/.git ] || git init {{ params['ehr_versioned_folder'] }}
         rsync -av $AIRFLOW_INPUT_DIR/ $AIRFLOW_OUTPUT_DIR/
+        cd {{ params['ehr_versioned_folder'] }}
         git add $AIRFLOW_OUTPUT_DIR/
         git commit -m "Add EHR acquired on {{ task_instance.xcom_pull(key='relative_context_path', task_ids='prepare_pipeline') }}"
         git rev-parse HEAD
@@ -117,7 +116,6 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
         priority_weight=priority_weight,
         execution_timeout=timedelta(hours=3),
         on_failure_trigger_dag_id='mri_notify_failed_processing',
-        session_id_by_patient=session_id_by_patient,
         dag=dag
     )
     version_incoming_ehr.set_upstream(upstream)
@@ -126,7 +124,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
     # Copy EHR files to local %s folder
 
     Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
-    """ % dicom_local_folder)
+    """ % ehr_versioned_folder)
 
     upstream = version_incoming_ehr
     upstream_id = 'version_incoming_ehr'
@@ -134,7 +132,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
 
     # Next: Python to build provenance_details
 
-    # Next: call MipMap on versioned folder
+    # Call MipMap on versioned folder
 
     map_ehr_to_i2b2_capture = DockerPipelineOperator(
         task_id='map_ehr_to_i2b2_capture',
@@ -145,12 +143,14 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
         cpus=1,
         mem_limit='256m',
         container_tmp_dir='/tmp/airflow',
-        container_input_dir='/inputs',
-        container_output_dir='/outputs',
+        container_input_dir='/opt/source',
+        container_output_dir='/opt/target',
         output_folder_callable=lambda relative_context_path, **kwargs: "%s/%s" % (
             ehr_to_i2b2_capture_folder, relative_context_path),
         user=None,
-        volumes=None,
+        volumes=[
+            "/opt/postgresdb.properties:/etc/mipmap/postgresdb.properties"
+        ],
         pool='io_intensive',
         parent_task=upstream_id,
         priority_weight=priority_weight,
@@ -169,7 +169,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
     * Local folder: __%s__
 
     Depends on: __%s__
-    """ % (ehr_to_i2b2_capture_docker_image, dicom_organizer_local_folder, upstream_id))
+    """ % (ehr_to_i2b2_capture_docker_image, ehr_to_i2b2_capture_folder, upstream_id))
 
     upstream = map_ehr_to_i2b2_capture
     upstream_id = 'map_ehr_to_i2b2_capture'
