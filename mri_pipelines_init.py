@@ -34,8 +34,7 @@ for dataset_section in dataset_sections.split(','):
     default_config(dataset_section, 'SESSION_ID_BY_PATIENT', 'False')
     default_config(dataset_section, 'PREPROCESSING_SCANNERS', 'daily')
     default_config(dataset_section, 'PREPROCESSING_PIPELINES',
-                   'dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')
-    default_config(dataset_section, 'DICOM_COPY_TO_LOCAL', 'True')
+                   'copy_to_local,dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')
     default_config(dataset_section, 'DICOM_ORGANIZER_SPM_FUNCTION', 'dicomOrganizer')
     default_config(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION', 'selectT1')
     default_config(dataset_section, 'DICOM_FILES_PATTERN', '**/MR.*')
@@ -88,12 +87,10 @@ for dataset_section in dataset_sections.split(','):
     misc_library_path = pipelines_path + '/../Miscellaneous&Others'
     min_free_space_local_folder = configuration.getfloat(
         dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
-    dicom_local_folder = configuration.get(
-        dataset_section, 'DICOM_LOCAL_FOLDER')
+    copy_to_local_folder = configuration.get(
+        dataset_section, 'COPY_TO_LOCAL_FOLDER')
     dicom_files_pattern = configuration.get(
         dataset_section, 'DICOM_FILES_PATTERN')
-    dicom_copy_to_local = configuration.getboolean(
-        dataset_section, 'DICOM_COPY_TO_LOCAL')
     dicom_to_nifti_spm_function = configuration.get(
         dataset_section, 'NIFTI_SPM_FUNCTION')
     dicom_to_nifti_local_folder = configuration.get(
@@ -103,6 +100,7 @@ for dataset_section in dataset_sections.split(','):
     dicom_to_nifti_pipeline_path = pipelines_path + '/Nifti_Conversion_Pipeline'
     dcm2nii_program = configuration.get(
         dataset_section, 'DCM2NII_PROGRAM')
+    copy_to_local = 'copy_to_local' in preprocessing_pipelines
     dicom_organizer = 'dicom_organizer' in preprocessing_pipelines
     dicom_select_T1 = 'dicom_select_T1' in preprocessing_pipelines
     images_selection = 'images_selection' in preprocessing_pipelines
@@ -110,8 +108,8 @@ for dataset_section in dataset_sections.split(','):
     neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
 
     params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, session_id_by_patient=session_id_by_patient,
-                  misc_library_path=misc_library_path, min_free_space_local_folder=min_free_space_local_folder, dicom_local_folder=dicom_local_folder,
-                  dicom_files_pattern=dicom_files_pattern, dicom_copy_to_local=dicom_copy_to_local, dicom_organizer=dicom_organizer,
+                  misc_library_path=misc_library_path, min_free_space_local_folder=min_free_space_local_folder, copy_to_local_folder=copy_to_local_folder,
+                  copy_to_local=copy_to_local, dicom_files_pattern=dicom_files_pattern, dicom_organizer=dicom_organizer,
                   dicom_select_T1=dicom_select_T1, images_selection=images_selection, protocols_file=protocols_file,
                   dicom_to_nifti_spm_function=dicom_to_nifti_spm_function, dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
                   dicom_to_nifti_local_folder=dicom_to_nifti_local_folder, dicom_to_nifti_server_folder=dicom_to_nifti_server_folder,

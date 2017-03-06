@@ -22,8 +22,8 @@ from mri_meta_extract import nifti_import
 
 
 def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_by_patient, misc_library_path,
-                          min_free_space_local_folder, dicom_local_folder,
-                          dicom_copy_to_local=True, dicom_files_pattern='**/MR.*',
+                          min_free_space_local_folder, copy_to_local_folder,
+                          copy_to_local=True, dicom_files_pattern='**/MR.*',
                           dicom_organizer=False, dicom_organizer_spm_function='dicomOrganizer', dicom_organizer_pipeline_path=None,
                           dicom_organizer_local_folder=None, dicom_organizer_data_structure='PatientID:StudyID:ProtocolName:SeriesNumber',
                           images_selection=False, images_selection_local_folder=None, images_selection_pipeline_path=None, images_selection_file_path=None,
@@ -186,7 +186,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
 
     check_free_space = FreeSpaceSensor(
         task_id='check_free_space',
-        path=dicom_local_folder,
+        path=copy_to_local_folder,
         free_disk_threshold=min_free_space_local_folder,
         retry_delay=timedelta(hours=1),
         retries=24 * 7,
@@ -198,7 +198,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
     # Check free space
 
     Check that there is enough free space on the disk hosting folder %s for processing, wait otherwise.
-    """ % dicom_local_folder)
+    """ % copy_to_local_folder)
 
     upstream = check_free_space
     upstream_id = 'check_free_space'
@@ -224,7 +224,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
     upstream_id = 'prepare_pipeline'
     priority_weight = priority_weight + 5
 
-    if dicom_copy_to_local:
+    if copy_to_local:
 
         copy_dicom_to_local_cmd = dedent("""
             used="$(df -h /home | grep '/' | grep -Po '[^ ]*(?=%)')"
@@ -239,7 +239,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
             task_id='copy_dicom_to_local',
             bash_command=copy_dicom_to_local_cmd,
             params={'min_free_space_local_folder': min_free_space_local_folder},
-            output_folder_callable=lambda session_id, **kwargs: dicom_local_folder + '/' + session_id,
+            output_folder_callable=lambda session_id, **kwargs: copy_to_local_folder + '/' + session_id,
             pool='remote_file_copy',
             parent_task=upstream_id,
             priority_weight=priority_weight,
@@ -254,7 +254,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
         # Copy DICOM files to local %s folder
 
         Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
-        """ % dicom_local_folder)
+        """ % copy_to_local_folder)
 
         upstream = copy_dicom_to_local
         upstream_id = 'copy_dicom_to_local'
@@ -283,7 +283,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
         # Register incoming files for provenance
 
         This step does nothing except register the files in the input folder for provenance.
-        """ % dicom_local_folder)
+        """)
 
         upstream = register_local
         upstream_id = 'register_local'
@@ -466,26 +466,27 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
     upstream_id = 'dicom_to_nifti_pipeline'
     priority_weight = priority_weight + 5
 
-    cleanup_local_dicom_cmd = dedent("""
-        rm -rf {{ params["local_folder"] }}/{{ dag_run.conf["session_id"] }}
-    """)
+    if copy_to_local:
+        cleanup_local_dicom_cmd = dedent("""
+            rm -rf {{ params["local_folder"] }}/{{ dag_run.conf["session_id"] }}
+        """)
 
-    cleanup_local_dicom = BashOperator(
-        task_id='cleanup_local_dicom',
-        bash_command=cleanup_local_dicom_cmd,
-        params={'local_folder': dicom_local_folder},
-        priority_weight=priority_weight,
-        execution_timeout=timedelta(hours=1),
-        dag=dag
-    )
-    cleanup_local_dicom.set_upstream(upstream)
-    priority_weight = priority_weight + 5
+        cleanup_local_dicom = BashOperator(
+            task_id='cleanup_local_dicom',
+            bash_command=cleanup_local_dicom_cmd,
+            params={'local_folder': copy_to_local_folder},
+            priority_weight=priority_weight,
+            execution_timeout=timedelta(hours=1),
+            dag=dag
+        )
+        cleanup_local_dicom.set_upstream(upstream)
+        priority_weight = priority_weight + 5
 
-    cleanup_local_dicom.doc_md = dedent("""\
-    # Cleanup local DICOM files
+        cleanup_local_dicom.doc_md = dedent("""\
+        # Cleanup local DICOM files
 
-    Remove locally stored DICOM files as they have been processed already.
-    """)
+        Remove locally stored DICOM files as they have been processed already.
+        """)
 
 
     extract_nifti_info = PythonPipelineOperator(

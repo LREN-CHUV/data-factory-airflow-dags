@@ -26,10 +26,9 @@ Requirements:
    * MIPMAP_DB_CONFILE_FILE: optional, path to the configuration file used by MipMap to connect to its work database.
 
 * For each dataset, add a [<dataset>] section, replacing <dataset> with the actual name of the dataset and define the following entries:
+   * COPY_TO_LOCAL_FOLDER: path containing the anonymised files coming from the MRI scanner and already anonymised by a tool
    * DATASET: Name of the dataset
-   * DICOM_COPY_TO_LOCAL: when True, copies all DICOM files to DICOM_LOCAL_FOLDER. Default: True
    * DICOM_FILES_PATTERN: pattern used to identify DICOM files. Default: ```**/MR.*```
-   * DICOM_LOCAL_FOLDER: path containing the anonymised DICOM files coming from the MRI scanner and already anonymised by a tool
    * dicom_organizer_data_structure = PatientID:AcquisitionDate:SeriesDescription:SeriesDate
    * dicom_organizer_local_folder = /data/organizer
    * DICOM_ORGANIZER_SPM_FUNCTION: dicomOrganizer
@@ -57,7 +56,8 @@ Requirements:
    * NIFTI_SPM_FUNCTION: DCM2NII_LREN'
    * PIPELINES_PATH: path to the root folder containing the Matlab scripts for the pipelines
    * PREPROCESSING_DATA_FOLDER:
-   * PREPROCESSING_PIPELINES: comma-separated list of values in dicom_to_nifti, mpm_maps, neuro_morphometric_atlas
+   * PREPROCESSING_PIPELINES: comma-separated list of values in copy_to_local, dicom_to_nifti, mpm_maps, neuro_morphometric_atlas
+     * copy_to_local: copies all DICOM files to COPY_TO_LOCAL_FOLDER.
    * PREPROCESSING_SCANNERS: comma-separated list of values in continuous, daily, flat to select how the preprocessing data folder is scanned for new work.
    * PROTOCOLS_FILE: path to the MRI acquisition protocol file
    * SESSION_ID_BY_PATIENT = False
