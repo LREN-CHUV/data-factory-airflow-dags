@@ -49,6 +49,8 @@ for dataset_section in dataset_sections.split(','):
     default_config(dataset_section, 'EHR_DATA_FOLDER_DEPTH', '1')
 
     dataset = configuration.get(dataset_section, 'DATASET')
+    dataset_type = configuration.get(dataset_section, 'DATASET_TYPE')
+    dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
     preprocessing_data_folder = configuration.get(
         dataset_section, 'PREPROCESSING_DATA_FOLDER')
     preprocessing_scanners = configuration.get(
@@ -92,8 +94,6 @@ for dataset_section in dataset_sections.split(','):
         dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
     copy_to_local_folder = configuration.get(
         dataset_section, 'COPY_TO_LOCAL_FOLDER')
-    dicom_files_pattern = configuration.get(
-        dataset_section, 'DICOM_FILES_PATTERN')
     dicom_to_nifti_spm_function = configuration.get(
         dataset_section, 'NIFTI_SPM_FUNCTION')
     dicom_to_nifti_local_folder = configuration.get(
@@ -104,33 +104,33 @@ for dataset_section in dataset_sections.split(','):
     dcm2nii_program = configuration.get(
         dataset_section, 'DCM2NII_PROGRAM')
     copy_to_local = 'copy_to_local' in preprocessing_pipelines
-    dicom_organizer = 'dicom_organizer' in preprocessing_pipelines
+    images_organizer = 'dicom_organizer' in preprocessing_pipelines
     dicom_select_T1 = 'dicom_select_T1' in preprocessing_pipelines
     images_selection = 'images_selection' in preprocessing_pipelines
     mpm_maps = 'mpm_maps' in preprocessing_pipelines
     neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
 
-    params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs,
+    params = dict(dataset=dataset, dataset_type=dataset_type, dataset_config=dataset_config,
+                  email_errors_to=email_errors_to, max_active_runs=max_active_runs,
                   session_id_by_patient=session_id_by_patient, misc_library_path=misc_library_path,
                   min_free_space_local_folder=min_free_space_local_folder, copy_to_local_folder=copy_to_local_folder,
-                  copy_to_local=copy_to_local, dicom_files_pattern=dicom_files_pattern, dicom_organizer=dicom_organizer,
-                  dicom_select_T1=dicom_select_T1, images_selection=images_selection, protocols_file=protocols_file,
+                  copy_to_local=copy_to_local, dicom_select_T1=dicom_select_T1,
+                  images_selection=images_selection, protocols_file=protocols_file,
                   dicom_to_nifti_spm_function=dicom_to_nifti_spm_function,
                   dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
                   dicom_to_nifti_local_folder=dicom_to_nifti_local_folder,
                   dicom_to_nifti_server_folder=dicom_to_nifti_server_folder, mpm_maps=mpm_maps,
                   neuro_morphometric_atlas=neuro_morphometric_atlas, dcm2nii_program=dcm2nii_program)
 
-    if dicom_organizer:
-        params['dicom_organizer_spm_function'] = configuration.get(dataset_section, 'DICOM_ORGANIZER_SPM_FUNCTION')
-        params['dicom_organizer_local_folder'] = configuration.get(dataset_section, 'DICOM_ORGANIZER_LOCAL_FOLDER')
-        params['dicom_organizer_data_structure'] = configuration.get(dataset_section, 'DICOM_ORGANIZER_DATA_STRUCTURE')
-        params['dicom_organizer_pipeline_path'] = pipelines_path + '/DicomOrganizer_Pipeline'
+    if images_organizer:
+        params['hierarchizer_image'] = configuration.get(dataset_section, 'HIERARCHIZER_IMAGE')
+        params['hierarchizer_version'] = configuration.get(dataset_section, 'HIERARCHIZER_VERSION')
+        params['images_organizer_local_folder'] = configuration.get(dataset_section, 'IMAGES_ORGANIZER_LOCAL_FOLDER')
+        params['images_organizer_data_structure'] = configuration.get(dataset_section, 'IMAGE_ORGANIZER_DATA_STRUCTURE')
 
     if images_selection:
         params['images_selection_local_folder'] = configuration.get(dataset_section, 'IMAGES_SELECTION_LOCAL_FOLDER')
-        params['images_selection_file_path'] = configuration.get(dataset_section, 'IMAGES_SELECTION_FILE_PATH')
-        params['images_selection_pipeline_path'] = pipelines_path + '/ImagesSelection_Pipeline'
+        params['images_selection_csv_path'] = configuration.get(dataset_section, 'IMAGES_SELECTION_CSV_PATH')
 
     if dicom_select_T1:
         params['dicom_select_T1_spm_function'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION')

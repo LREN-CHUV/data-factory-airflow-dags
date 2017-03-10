@@ -14,19 +14,20 @@ from airflow import DAG
 from airflow.operators import BashOperator, TriggerDagRunOperator
 from airflow_spm.operators import SpmPipelineOperator
 from airflow_freespace.operators import FreeSpaceSensor
-from airflow_pipeline.operators import PreparePipelineOperator, BashPipelineOperator, PythonPipelineOperator
+from airflow_pipeline.operators import PreparePipelineOperator, BashPipelineOperator, PythonPipelineOperator, \
+    DockerPipelineOperator
 from airflow_pipeline.pipelines import pipeline_trigger
 
 from mri_meta_extract.files_recording import create_provenance
 from mri_meta_extract.files_recording import visit
 
 
-def pre_process_dicom_dag(dataset, dataset_config, email_errors_to, max_active_runs, session_id_by_patient,
-                          misc_library_path, min_free_space_local_folder, copy_to_local_folder, copy_to_local=True,
-                          dicom_organizer=False, dicom_organizer_spm_function='dicomOrganizer',
-                          dicom_organizer_pipeline_path=None, dicom_organizer_local_folder=None,
-                          dicom_organizer_data_structure='PatientID:StudyID:ProtocolName:SeriesNumber',
-                          images_selection=False, images_selection_local_folder=None, images_selection_file_path=None,
+def pre_process_dicom_dag(dataset, dataset_type, dataset_config, email_errors_to, max_active_runs,
+                          session_id_by_patient, misc_library_path, min_free_space_local_folder, copy_to_local_folder,
+                          copy_to_local=True, images_organizer=False, hierarchizer_image='hbpmip/hierarchizer',
+                          hierarchizer_version='latest', images_organizer_local_folder=None,
+                          images_organizer_data_structure='PatientID:StudyID:SeriesDescription:SeriesNumber',
+                          images_selection=False, images_selection_local_folder=None, images_selection_csv_path=None,
                           dicom_select_t1=False, dicom_select_t1_spm_function='selectT1',
                           dicom_select_t1_pipeline_path=None, dicom_select_t1_local_folder=None,
                           dicom_select_t1_protocols_file=None, dicom_to_nifti_spm_function='DCM2NII_LREN',
@@ -54,18 +55,6 @@ def pre_process_dicom_dag(dataset, dataset_config, email_errors_to, max_active_r
 
         return step
 
-    def dicom_organizer_arguments_fn(folder, session_id, **kwargs):
-        """
-          Prepare the arguments for conversion pipeline from DICOM to Nifti format.
-          It converts all files located in the folder 'folder'
-        """
-        parent_data_folder = os.path.abspath(folder + '/..')
-
-        return [parent_data_folder,
-                dicom_organizer_local_folder,
-                session_id,
-                dicom_organizer_data_structure]
-
     def images_selection_fn(folder, session_id, **kwargs):
         """
           Selects files from DICOM/NIFTI that match criterion in CSV file.
@@ -78,7 +67,7 @@ def pre_process_dicom_dag(dataset, dataset_config, email_errors_to, max_active_r
         from os.path import join
         from shutil import copy2
 
-        with open(images_selection_file_path, mode='r', newline='') as csvfile:
+        with open(images_selection_csv_path, mode='r', newline='') as csvfile:
             filereader = csv.reader(csvfile, delimiter=',')
             for row in filereader:
                 for folder in iglob(join(folder, row[0], "**/", row[1]), recursive=True):
@@ -89,12 +78,7 @@ def pre_process_dicom_dag(dataset, dataset_config, email_errors_to, max_active_r
                     for file_ in listdir(folder):
                         copy2(join(folder, file_), join(repetition_folder, file_))
 
-        parent_data_folder = os.path.abspath(folder + '/..')
-
-        return [parent_data_folder,
-                images_selection_local_folder,
-                session_id,
-                images_selection_file_path]
+        return "ok"
 
     def dicom_select_t1_arguments_fn(folder, session_id, **kwargs):
         """
@@ -280,47 +264,49 @@ def pre_process_dicom_dag(dataset, dataset_config, email_errors_to, max_active_r
 
     # endif
 
-    if dicom_organizer:
+    if images_organizer:
 
-        dicom_organizer_pipeline = SpmPipelineOperator(
-            task_id='dicom_organizer_pipeline',
-            spm_function=dicom_organizer_spm_function,
-            spm_arguments_callable=dicom_organizer_arguments_fn,
-            matlab_paths=[misc_library_path, dicom_organizer_pipeline_path],
-            output_folder_callable=lambda session_id, **kwargs: dicom_organizer_local_folder + '/' + session_id,
+        dataset_param = "--dataset " + dataset
+        type_of_images_param = "--type " + dataset_type
+        structure_param = "--attributes " + str(images_organizer_data_structure.split(':'))
+
+        images_organizer_pipeline = DockerPipelineOperator(
+            task_id='images_organizer_pipeline',
+            output_folder_callable=lambda session_id, **kwargs: images_organizer_local_folder + '/' + session_id,
             pool='io_intensive',
             parent_task=upstream_id,
             priority_weight=priority_weight,
             execution_timeout=timedelta(hours=24),
             on_skip_trigger_dag_id='mri_notify_skipped_processing',
             on_failure_trigger_dag_id='mri_notify_failed_processing',
-            session_id_by_patient=session_id_by_patient,
-            dag=dag
+            dag=dag,
+            image=hierarchizer_image+':'+hierarchizer_version,
+            command=[dataset_param, type_of_images_param, structure_param],
+            volumes=[copy_to_local_folder + ':/input_folder:ro', images_organizer_local_folder + ':/output_folder']
         )
 
-        dicom_organizer_pipeline.set_upstream(upstream)
+        images_organizer_pipeline.set_upstream(upstream)
 
-        dicom_organizer_pipeline.doc_md = dedent("""\
-        # DICOM organizer pipeline
+        images_organizer_pipeline.doc_md = dedent("""\
+        # Images organizer pipeline
 
-        SPM function: __%s__
+        Reorganise DICOM/NIFTI files to fit the structure expected by the following pipelines.
 
-        Reorganise DICOM files to fit the structure expected by the following pipelines.
-
-        Reorganised DICOM files are stored the the following locations:
+        Reorganised DICOM/NIFTI files are stored the the following locations:
 
         * Local folder: __%s__
 
         Depends on: __%s__
-        """ % (dicom_organizer_spm_function, dicom_organizer_local_folder, upstream_id))
+        """ % (images_organizer_local_folder, upstream_id))
 
-        upstream = dicom_organizer_pipeline
-        upstream_id = 'dicom_organizer_pipeline'
+        upstream = images_organizer_pipeline
+        upstream_id = 'images_organizer_pipeline'
         priority_weight += 5
 
     # endif
 
     if images_selection:
+
         images_selection_pipeline = PythonPipelineOperator(
             task_id='images_selection_pipeline',
             python_callable=images_selection_fn,
@@ -339,7 +325,8 @@ def pre_process_dicom_dag(dataset, dataset_config, email_errors_to, max_active_r
         images_selection_pipeline.doc_md = dedent("""\
         # select DICOM/NIFTI pipeline
 
-        Selects only images matching criterion defined in a CSV file from a set of various DICOM/NIFTI images.
+        Selects only images matching criterion defined in a CSV file from a set of various DICOM/NIFTI images. For
+        example we might want to keep only the baseline visits and T1 images.
 
         Selected DICOM/NIFTI files are stored the the following locations:
 
