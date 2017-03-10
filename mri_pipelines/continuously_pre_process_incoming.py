@@ -61,7 +61,8 @@ def continuously_preprocess_incoming_dag(dataset, folder, email_errors_to, trigg
     scan_ready_dirs.doc_md = dedent("""\
     # Scan directories ready for processing
 
-    Scan the session folders located inside folder %s (defined by variable __preprocessing_data_folder__) and organised by daily folders.
+    Scan the session folders located inside folder %s (defined by variable __preprocessing_data_folder__) and organised
+    by daily folders.
 
     It looks for the presence of a .ready marker file to mark that session folder as ready for processing, but it
     will skip it if contains the marker file .processing indicating that processing has already started.

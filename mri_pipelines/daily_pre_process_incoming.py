@@ -22,6 +22,7 @@ from textwrap import dedent
 from airflow import DAG
 from airflow_scan_folder.operators import ScanDailyFolderOperator
 
+
 def daily_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):
     # Folder to scan for new incoming session folders containing DICOM images.
 
@@ -60,9 +61,11 @@ def daily_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_
     scan_dirs.doc_md = dedent("""\
     # Scan directories for processing
 
-    Scan the session folders located inside folder %s (defined by variable __preprocessing_data_folder__) and organised by daily folders.
+    Scan the session folders located inside folder %s (defined by variable __preprocessing_data_folder__) and organised
+    by daily folders.
 
-    Daily folders older than today are always processed, and today's folder content is skipped unless a .ready marker file is found.
+    Daily folders older than today are always processed, and today's folder content is skipped unless a .ready marker
+    file is found.
     """ % folder)
 
     return dag

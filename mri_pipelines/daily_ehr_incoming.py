@@ -19,6 +19,7 @@ from textwrap import dedent
 from airflow import DAG
 from airflow_scan_folder.operators import DailyFolderOperator
 
+
 def daily_ehr_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):
     # Folder to scan for new incoming daily EHR-extract folders containing CSV files and other kinds of clinical data.
 
@@ -59,7 +60,8 @@ def daily_ehr_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):
 
     Scan the daily folders located inside folder %s (defined by variable __ehr_data_folder__).
 
-    Daily folders older than today are always processed, and today's folder content is skipped unless a .ready marker file is found.
+    Daily folders older than today are always processed, and today's folder content is skipped unless a .ready marker
+    file is found.
     """ % folder)
 
     return dag

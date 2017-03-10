@@ -17,6 +17,7 @@ from textwrap import dedent
 from airflow import DAG
 from airflow_scan_folder.operators import ScanFolderOperator
 
+
 def flat_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):
     # Folder to scan for new incoming session folders containing DICOM images.
 

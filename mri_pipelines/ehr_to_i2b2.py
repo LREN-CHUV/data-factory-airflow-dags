@@ -14,17 +14,12 @@ CSV files are already anonymised and organised with the following directory stru
 
 """
 
-import os
-import logging
-
 from datetime import datetime, timedelta
 from textwrap import dedent
 
 from airflow import DAG
-from airflow.operators import BashOperator, TriggerDagRunOperator
 from airflow_freespace.operators import FreeSpaceSensor
 from airflow_pipeline.operators import PreparePipelineOperator, BashPipelineOperator, DockerPipelineOperator
-from airflow_pipeline.pipelines import pipeline_trigger
 
 
 def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_local_folder,
@@ -76,6 +71,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
     prepare_pipeline = PreparePipelineOperator(
         task_id='prepare_pipeline',
         include_spm_facts=False,
+        parent_task=upstream_id,
         priority_weight=priority_weight,
         execution_timeout=timedelta(minutes=10),
         dag=dag
@@ -91,7 +87,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
 
     upstream = prepare_pipeline
     upstream_id = 'prepare_pipeline'
-    priority_weight = priority_weight + 5
+    priority_weight += 5
 
     version_incoming_ehr_cmd = dedent("""
         export HOME=/usr/local/airflow
@@ -128,7 +124,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
 
     upstream = version_incoming_ehr
     upstream_id = 'version_incoming_ehr'
-    priority_weight = priority_weight + 5
+    priority_weight += 5
 
     # Next: Python to build provenance_details
 
@@ -171,9 +167,5 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
 
     Depends on: __%s__
     """ % (ehr_to_i2b2_capture_docker_image, ehr_to_i2b2_capture_folder, upstream_id))
-
-    upstream = map_ehr_to_i2b2_capture
-    upstream_id = 'map_ehr_to_i2b2_capture'
-    priority_weight = priority_weight + 5
 
     return dag

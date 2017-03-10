@@ -19,6 +19,7 @@ from textwrap import dedent
 from airflow import DAG
 from airflow_scan_folder.operators import FlatFolderOperator
 
+
 def flat_ehr_incoming_dag(dataset, folder, depth, email_errors_to, trigger_dag_id):
     # Folder to scan for new incoming daily EHR-extract folders containing CSV files and other kinds of clinical data.
 
