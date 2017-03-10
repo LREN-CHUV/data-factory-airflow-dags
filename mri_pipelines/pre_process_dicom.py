@@ -17,44 +17,42 @@ from airflow_freespace.operators import FreeSpaceSensor
 from airflow_pipeline.operators import PreparePipelineOperator, BashPipelineOperator, PythonPipelineOperator
 from airflow_pipeline.pipelines import pipeline_trigger
 
-from mri_meta_extract import dicom_import
-from mri_meta_extract import nifti_import
+from mri_meta_extract.files_recording import create_provenance
+from mri_meta_extract.files_recording import visit
 
 
-def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_by_patient, misc_library_path,
-                          min_free_space_local_folder, copy_to_local_folder,
-                          copy_to_local=True, dicom_files_pattern='**/MR.*',
-                          dicom_organizer=False, dicom_organizer_spm_function='dicomOrganizer', dicom_organizer_pipeline_path=None,
-                          dicom_organizer_local_folder=None, dicom_organizer_data_structure='PatientID:StudyID:ProtocolName:SeriesNumber',
-                          images_selection=False, images_selection_local_folder=None, images_selection_pipeline_path=None, images_selection_file_path=None,
-                          dicom_select_T1=False, dicom_select_T1_spm_function='selectT1', dicom_select_T1_pipeline_path=None,
-                          dicom_select_T1_local_folder=None, dicom_select_T1_protocols_file=None,
-                          dicom_to_nifti_spm_function='DCM2NII_LREN', dicom_to_nifti_pipeline_path=None,
-                          dicom_to_nifti_local_folder=None, dicom_to_nifti_server_folder=None, protocols_file=None, dcm2nii_program=None,
-                          mpm_maps=True, mpm_maps_spm_function='Preproc_mpm_maps', mpm_maps_pipeline_path=None,
-                          mpm_maps_local_folder=None, mpm_maps_server_folder=None,
-                          neuro_morphometric_atlas=True, neuro_morphometric_atlas_spm_function='NeuroMorphometric_pipeline',
-                          neuro_morphometric_atlas_pipeline_path=None, neuro_morphometric_atlas_local_folder=None, neuro_morphometric_atlas_server_folder=None,
-                          neuro_morphometric_atlas_TPM_template='nwTPM_sl3.nii'):
+def pre_process_dicom_dag(dataset, dataset_config, email_errors_to, max_active_runs, session_id_by_patient,
+                          misc_library_path, min_free_space_local_folder, copy_to_local_folder, copy_to_local=True,
+                          dicom_organizer=False, dicom_organizer_spm_function='dicomOrganizer',
+                          dicom_organizer_pipeline_path=None, dicom_organizer_local_folder=None,
+                          dicom_organizer_data_structure='PatientID:StudyID:ProtocolName:SeriesNumber',
+                          images_selection=False, images_selection_local_folder=None, images_selection_file_path=None,
+                          dicom_select_t1=False, dicom_select_t1_spm_function='selectT1',
+                          dicom_select_t1_pipeline_path=None, dicom_select_t1_local_folder=None,
+                          dicom_select_t1_protocols_file=None, dicom_to_nifti_spm_function='DCM2NII_LREN',
+                          dicom_to_nifti_pipeline_path=None, dicom_to_nifti_local_folder=None,
+                          dicom_to_nifti_server_folder=None, protocols_file=None, dcm2nii_program=None, mpm_maps=True,
+                          mpm_maps_spm_function='Preproc_mpm_maps', mpm_maps_pipeline_path=None,
+                          mpm_maps_local_folder=None, mpm_maps_server_folder=None, neuro_morphometric_atlas=True,
+                          neuro_morphometric_atlas_spm_function='NeuroMorphometric_pipeline',
+                          neuro_morphometric_atlas_pipeline_path=None, neuro_morphometric_atlas_local_folder=None,
+                          neuro_morphometric_atlas_server_folder=None,
+                          neuro_morphometric_atlas_tpm_template='nwTPM_sl3.nii'):
 
     # functions used in the DAG
 
-    def extract_dicom_info_fn(folder, session_id, **kwargs):
+    def extract_images_info_fn(folder, session_id, step_name, software_versions=None, **kwargs):
         """
-         Extract the information from DICOM files located inside a folder.
+         Extract the information from DICOM/NIFTI files located inside a folder.
          The folder information should be given in the configuration parameter
          'folder' of the DAG run
         """
         logging.info('folder %s, session_id %s', folder, session_id)
 
-        (participant_id, scan_date) = dicom_import.visit_info(
-            folder, files_pattern=dicom_files_pattern)
-        dicom_import.dicom2db(folder, files_pattern=dicom_files_pattern)
+        provenance = create_provenance(dataset, software_versions=software_versions)
+        step = visit(folder, provenance, step_name, config=dataset_config)
 
-        return {
-            'participant_id': participant_id,
-            'scan_date': scan_date
-        }
+        return step
 
     def dicom_organizer_arguments_fn(folder, session_id, **kwargs):
         """
@@ -85,7 +83,8 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
             for row in filereader:
                 for folder in iglob(join(folder, row[0], "**/", row[1]), recursive=True):
                     path_elements = folder.split('/')
-                    repetition_folder = join(images_selection_local_folder, row[0], path_elements[-3], path_elements[-2], row[1])
+                    repetition_folder = join(images_selection_local_folder, row[0], path_elements[-3],
+                                             path_elements[-2], row[1])
                     makedirs(repetition_folder, exist_ok=True)
                     for file_ in listdir(folder):
                         copy2(join(folder, file_), join(repetition_folder, file_))
@@ -97,7 +96,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
                 session_id,
                 images_selection_file_path]
 
-    def dicom_select_T1_arguments_fn(folder, session_id, **kwargs):
+    def dicom_select_t1_arguments_fn(folder, session_id, **kwargs):
         """
           Prepare the arguments for the pipeline that selects T1 files from DICOM.
           It selects all T1 files located in the folder 'folder'
@@ -105,9 +104,9 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
         parent_data_folder = os.path.abspath(folder + '/..')
 
         return [parent_data_folder,
-                dicom_select_T1_local_folder,
+                dicom_select_t1_local_folder,
                 session_id,
-                dicom_select_T1_protocols_file]
+                dicom_select_t1_protocols_file]
 
     def dicom_to_nifti_arguments_fn(folder, session_id, **kwargs):
         """
@@ -137,9 +136,10 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
                 neuro_morphometric_atlas_server_folder,
                 protocols_file,
                 table_format,
-                neuro_morphometric_atlas_TPM_template]
+                neuro_morphometric_atlas_tpm_template]
 
-    def mpm_maps_arguments_fn(folder, session_id, pipeline_params_config_file='Preproc_mpm_maps_pipeline_config.txt', **kwargs):
+    def mpm_maps_arguments_fn(folder, session_id, pipeline_params_config_file='Preproc_mpm_maps_pipeline_config.txt',
+                              **kwargs):
         """
           Pipeline that builds the MPM maps from the Nitfi files located in the
           folder 'folder'
@@ -153,19 +153,9 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
                 pipeline_params_config_file,
                 mpm_maps_server_folder]
 
-    def extract_nifti_info_fn(folder, session_id, participant_id, scan_date, **kwargs):
-        """
-          Extract information from the Nifti files located in the folder 'folder'
-          parent_task should contain XCOM keys 'folder' and 'session_id'
-        """
-        logging.info(
-            "NIFTI extract: session_id=%s, input_folder=%s", session_id, folder)
-        nifti_import.nifti2db(folder, participant_id, scan_date)
-        return "ok"
-
     # Define the DAG
 
-    DAG_NAME = '%s_mri_pre_process_dicom' % dataset.lower().replace(" ", "_")
+    dag_name = '%s_mri_pre_process_dicom' % dataset.lower().replace(" ", "_")
 
     default_args = {
         'owner': 'airflow',
@@ -179,7 +169,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
     }
 
     dag = DAG(
-        dag_id=DAG_NAME,
+        dag_id=dag_name,
         default_args=default_args,
         schedule_interval=None,
         max_active_runs=max_active_runs)
@@ -201,7 +191,6 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
     """ % copy_to_local_folder)
 
     upstream = check_free_space
-    upstream_id = 'check_free_space'
     priority_weight = 10
 
     prepare_pipeline = PreparePipelineOperator(
@@ -222,7 +211,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
 
     upstream = prepare_pipeline
     upstream_id = 'prepare_pipeline'
-    priority_weight = priority_weight + 5
+    priority_weight += 5
 
     if copy_to_local:
 
@@ -258,7 +247,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
 
         upstream = copy_dicom_to_local
         upstream_id = 'copy_dicom_to_local'
-        priority_weight = priority_weight + 5
+        priority_weight += 5
 
     else:
 
@@ -287,7 +276,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
 
         upstream = register_local
         upstream_id = 'register_local'
-        priority_weight = priority_weight + 5
+        priority_weight += 5
 
     # endif
 
@@ -327,7 +316,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
 
         upstream = dicom_organizer_pipeline
         upstream_id = 'dicom_organizer_pipeline'
-        priority_weight = priority_weight + 5
+        priority_weight += 5
 
     # endif
 
@@ -361,18 +350,18 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
 
         upstream = images_selection_pipeline
         upstream_id = 'images_selection_pipeline'
-        priority_weight = priority_weight + 5
+        priority_weight += 5
 
     # endif
 
-    if dicom_select_T1:
+    if dicom_select_t1:
 
-        dicom_select_T1_pipeline = SpmPipelineOperator(
+        dicom_select_t1_pipeline = SpmPipelineOperator(
             task_id='dicom_select_T1_pipeline',
-            spm_function=dicom_select_T1_spm_function,
-            spm_arguments_callable=dicom_select_T1_arguments_fn,
-            matlab_paths=[misc_library_path, dicom_select_T1_pipeline_path],
-            output_folder_callable=lambda session_id, **kwargs: dicom_select_T1_local_folder + '/' + session_id,
+            spm_function=dicom_select_t1_spm_function,
+            spm_arguments_callable=dicom_select_t1_arguments_fn,
+            matlab_paths=[misc_library_path, dicom_select_t1_pipeline_path],
+            output_folder_callable=lambda session_id, **kwargs: dicom_select_t1_local_folder + '/' + session_id,
             pool='io_intensive',
             parent_task=upstream_id,
             priority_weight=priority_weight,
@@ -383,9 +372,9 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
             dag=dag
         )
 
-        dicom_select_T1_pipeline.set_upstream(upstream)
+        dicom_select_t1_pipeline.set_upstream(upstream)
 
-        dicom_select_T1_pipeline.doc_md = dedent("""\
+        dicom_select_t1_pipeline.doc_md = dedent("""\
         # select T1 DICOM pipeline
 
         SPM function: __%s__
@@ -397,17 +386,17 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
         * Local folder: __%s__
 
         Depends on: __%s__
-        """ % (dicom_select_T1_spm_function, dicom_select_T1_local_folder, upstream_id))
+        """ % (dicom_select_t1_spm_function, dicom_select_t1_local_folder, upstream_id))
 
-        upstream = dicom_select_T1_pipeline
+        upstream = dicom_select_t1_pipeline
         upstream_id = 'dicom_select_T1_pipeline'
-        priority_weight = priority_weight + 5
+        priority_weight += 5
 
     # endif
 
     extract_dicom_info = PythonPipelineOperator(
         task_id='extract_dicom_info',
-        python_callable=extract_dicom_info_fn,
+        python_callable=extract_images_info_fn,
         parent_task=upstream_id,
         pool='io_intensive',
         priority_weight=priority_weight,
@@ -422,11 +411,11 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
     Read DICOM information from the files stored in the session folder and store that information into the database.
     """)
 
-    # This upstream is required as we need to extract additional information from the DICOM files (participant_id, scan_date)
-    # and transfer it via XCOMs to the next SPM pipeline
+    # This upstream is required as we need to extract additional information from the DICOM files (participant_id,
+    # scan_date) and transfer it via XCOMs to the next SPM pipeline
     upstream = extract_dicom_info
     upstream_id = 'extract_dicom_info'
-    priority_weight = priority_weight + 5
+    priority_weight += 5
 
     dicom_to_nifti_pipeline = SpmPipelineOperator(
         task_id='dicom_to_nifti_pipeline',
@@ -464,7 +453,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
 
     upstream = dicom_to_nifti_pipeline
     upstream_id = 'dicom_to_nifti_pipeline'
-    priority_weight = priority_weight + 5
+    priority_weight += 5
 
     if copy_to_local:
         cleanup_local_dicom_cmd = dedent("""
@@ -480,7 +469,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
             dag=dag
         )
         cleanup_local_dicom.set_upstream(upstream)
-        priority_weight = priority_weight + 5
+        priority_weight += 5
 
         cleanup_local_dicom.doc_md = dedent("""\
         # Cleanup local DICOM files
@@ -488,10 +477,9 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
         Remove locally stored DICOM files as they have been processed already.
         """)
 
-
     extract_nifti_info = PythonPipelineOperator(
         task_id='extract_nifti_info',
-        python_callable=extract_nifti_info_fn,
+        python_callable=extract_images_info_fn,
         parent_task=upstream_id,
         pool='io_intensive',
         priority_weight=priority_weight,
@@ -500,12 +488,13 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
     )
 
     extract_nifti_info.set_upstream(dicom_to_nifti_pipeline)
-    priority_weight = priority_weight + 5
+    priority_weight += 5
 
     extract_nifti_info.doc_md = dedent("""\
     # Extract information from NIFTI files converted from DICOM
 
-    Read NIFTI information from directory %s containing nifti files freshly converted from DICOM and store that information into the database.
+    Read NIFTI information from directory %s containing nifti files freshly converted from DICOM and store that
+    information into the database.
     """ % dicom_to_nifti_local_folder)
 
     notify_success = TriggerDagRunOperator(
@@ -549,7 +538,8 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
 
         SPM function: __%s__
 
-        This function computes the Multiparametric Maps (MPMs) (R2*, R1, MT, PD) and brain segmentation in different tissue maps.
+        This function computes the Multiparametric Maps (MPMs) (R2*, R1, MT, PD) and brain segmentation in different
+        tissue maps.
         All computation was programmed based on the LREN database structure.
 
         The MPMs are calculated locally and finally copied to a remote folder:
@@ -562,11 +552,11 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
 
         upstream = mpm_maps_pipeline
         upstream_id = 'mpm_maps_pipeline'
-        priority_weight = priority_weight + 5
+        priority_weight += 5
 
         extract_nifti_mpm_info = PythonPipelineOperator(
             task_id='extract_nifti_mpm_info',
-            python_callable=extract_nifti_info_fn,
+            python_callable=extract_images_info_fn,
             parent_task=upstream_id,
             pool='io_intensive',
             priority_weight=priority_weight,
@@ -579,11 +569,12 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
         extract_nifti_mpm_info.doc_md = dedent("""\
         # Extract information from NIFTI files generated by MPM pipeline
 
-        Read NIFTI information from directory %s containing the Nifti files created by MPM pipeline and store that information in the database.
+        Read NIFTI information from directory %s containing the Nifti files created by MPM pipeline and store that
+        information in the database.
         """ % mpm_maps_local_folder)
 
         notify_success.set_upstream(extract_nifti_mpm_info)
-        priority_weight = priority_weight + 5
+        priority_weight += 5
 
     # endif
 
@@ -596,7 +587,8 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
             matlab_paths=[misc_library_path,
                           neuro_morphometric_atlas_pipeline_path,
                           mpm_maps_pipeline_path],
-            output_folder_callable=lambda session_id, **kwargs: neuro_morphometric_atlas_local_folder + '/' + session_id,
+            output_folder_callable=lambda session_id, **kwargs: (neuro_morphometric_atlas_local_folder + '/' +
+                                                                 session_id),
             pool='image_preprocessing',
             parent_task=upstream_id,
             priority_weight=priority_weight,
@@ -608,19 +600,21 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
         )
 
         neuro_morphometric_atlas_pipeline.set_upstream(upstream)
-        priority_weight = priority_weight + 5
+        priority_weight += 5
 
         neuro_morphometric_atlas_pipeline.doc_md = dedent("""\
         # NeuroMorphometric Pipeline
 
         SPM function: __%s__
 
-        This function computes an individual Atlas based on the NeuroMorphometrics Atlas. This is based on the NeuroMorphometrics Toolbox.
+        This function computes an individual Atlas based on the NeuroMorphometrics Atlas. This is based on the
+        NeuroMorphometrics Toolbox.
         This delivers three files:
 
         1. Atlas File (*.nii);
         2. Volumes of the Morphometric Atlas structures (*.txt);
-        3. CSV File (.csv) containing the volume, globals, and Multiparametric Maps (R2*, R1, MT, PD) for each structure defined in the Subject Atlas.
+        3. CSV File (.csv) containing the volume, globals, and Multiparametric Maps (R2*, R1, MT, PD) for each
+        structure defined in the Subject Atlas.
 
         The atlas is calculated locally and finally copied to a remote folder:
 
@@ -628,11 +622,12 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
         * Remote folder: %s
 
         Depends on: __%s__
-        """ % (neuro_morphometric_atlas_spm_function, neuro_morphometric_atlas_local_folder, neuro_morphometric_atlas_server_folder, upstream_id))
+        """ % (neuro_morphometric_atlas_spm_function, neuro_morphometric_atlas_local_folder,
+               neuro_morphometric_atlas_server_folder, upstream_id))
 
         extract_nifti_atlas_info = PythonPipelineOperator(
             task_id='extract_nifti_atlas_info',
-            python_callable=extract_nifti_info_fn,
+            python_callable=extract_images_info_fn,
             parent_task='neuro_morphometric_atlas_pipeline',
             pool='io_intensive',
             priority_weight=priority_weight,
@@ -646,11 +641,12 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs, session_id_
         extract_nifti_atlas_info.doc_md = dedent("""\
         # Extract information from NIFTI files generated by Neuro Morphometrics Atlas pipeline
 
-        Read NIFTI information from directory %s containing the Nifti files created by Neuro Morphometrics Atlas pipeline and store that information in the database.
+        Read NIFTI information from directory %s containing the Nifti files created by Neuro Morphometrics Atlas
+        pipeline and store that information in the database.
         """ % neuro_morphometric_atlas_local_folder)
 
         notify_success.set_upstream(extract_nifti_atlas_info)
-        priority_weight = priority_weight + 5
+        priority_weight += 5
 
     # endif
 

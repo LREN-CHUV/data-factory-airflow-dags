@@ -61,18 +61,21 @@ for dataset_section in dataset_sections.split(','):
 
     if 'continuous' in preprocessing_scanners:
         name = '%s_continuous_prepro_dag' % dataset.lower().replace(" ", "_")
-        globals()[name] = continuously_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
-                                                               email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
+        globals()[name] = continuously_preprocess_incoming_dag(
+            dataset=dataset, folder=preprocessing_data_folder, email_errors_to=email_errors_to,
+            trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
         logging.info("Add DAG %s", globals()[name].dag_id)
     if 'daily' in preprocessing_scanners:
         name = '%s_daily_prepro_dag' % dataset.lower().replace(" ", "_")
-        globals()[name] = daily_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
-                                                        email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
+        globals()[name] = daily_preprocess_incoming_dag(
+            dataset=dataset, folder=preprocessing_data_folder, email_errors_to=email_errors_to,
+            trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
         logging.info("Add DAG %s", globals()[name].dag_id)
     if 'flat' in preprocessing_scanners:
         name = '%s_flat_prepro_dag' % dataset.lower().replace(" ", "_")
-        globals()[name] = flat_preprocess_incoming_dag(dataset=dataset, folder=preprocessing_data_folder,
-                                                       email_errors_to=email_errors_to, trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
+        globals()[name] = flat_preprocess_incoming_dag(
+            dataset=dataset, folder=preprocessing_data_folder, email_errors_to=email_errors_to,
+            trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
         logging.info("Add DAG %s", globals()[name].dag_id)
 
     pipelines_path = configuration.get(dataset_section, 'PIPELINES_PATH')
@@ -107,13 +110,16 @@ for dataset_section in dataset_sections.split(','):
     mpm_maps = 'mpm_maps' in preprocessing_pipelines
     neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
 
-    params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs, session_id_by_patient=session_id_by_patient,
-                  misc_library_path=misc_library_path, min_free_space_local_folder=min_free_space_local_folder, copy_to_local_folder=copy_to_local_folder,
+    params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs,
+                  session_id_by_patient=session_id_by_patient, misc_library_path=misc_library_path,
+                  min_free_space_local_folder=min_free_space_local_folder, copy_to_local_folder=copy_to_local_folder,
                   copy_to_local=copy_to_local, dicom_files_pattern=dicom_files_pattern, dicom_organizer=dicom_organizer,
                   dicom_select_T1=dicom_select_T1, images_selection=images_selection, protocols_file=protocols_file,
-                  dicom_to_nifti_spm_function=dicom_to_nifti_spm_function, dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
-                  dicom_to_nifti_local_folder=dicom_to_nifti_local_folder, dicom_to_nifti_server_folder=dicom_to_nifti_server_folder,
-                  mpm_maps=mpm_maps, neuro_morphometric_atlas=neuro_morphometric_atlas, dcm2nii_program=dcm2nii_program)
+                  dicom_to_nifti_spm_function=dicom_to_nifti_spm_function,
+                  dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
+                  dicom_to_nifti_local_folder=dicom_to_nifti_local_folder,
+                  dicom_to_nifti_server_folder=dicom_to_nifti_server_folder, mpm_maps=mpm_maps,
+                  neuro_morphometric_atlas=neuro_morphometric_atlas, dcm2nii_program=dcm2nii_program)
 
     if dicom_organizer:
         params['dicom_organizer_spm_function'] = configuration.get(dataset_section, 'DICOM_ORGANIZER_SPM_FUNCTION')
@@ -161,6 +167,10 @@ for dataset_section in dataset_sections.split(','):
 
     ehr_scanners = configuration.get(dataset_section, 'EHR_SCANNERS')
 
+    ehr_versioned_folder = None
+    ehr_to_i2b2_capture_docker_image = None
+    ehr_to_i2b2_capture_folder = None
+
     if ehr_scanners != '':
         ehr_scanners = ehr_scanners.split(',')
         ehr_data_folder = configuration.get(dataset_section, 'EHR_DATA_FOLDER')
@@ -170,22 +180,25 @@ for dataset_section in dataset_sections.split(','):
 
         if 'daily' in ehr_scanners:
             name = '%s_daily_ehr_dag' % dataset.lower().replace(" ", "_")
-            globals()[name] = daily_ehr_incoming_dag(dataset=dataset, folder=ehr_data_folder,
-                                                     email_errors_to=email_errors_to, trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower())
+            globals()[name] = daily_ehr_incoming_dag(
+                dataset=dataset, folder=ehr_data_folder, email_errors_to=email_errors_to,
+                trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower())
             logging.info("Add DAG %s", globals()[name].dag_id)
 
         if 'flat' in ehr_scanners:
             ehr_data_folder_depth = int(configuration.get(dataset_section, 'EHR_DATA_FOLDER_DEPTH'))
             name = '%s_flat_ehr_dag' % dataset.lower().replace(" ", "_")
-            globals()[name] = flat_ehr_incoming_dag(dataset=dataset, folder=ehr_data_folder, depth=ehr_data_folder_depth,
-                                                    email_errors_to=email_errors_to, trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower())
+            globals()[name] = flat_ehr_incoming_dag(
+                dataset=dataset, folder=ehr_data_folder, depth=ehr_data_folder_depth, email_errors_to=email_errors_to,
+                trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower())
             logging.info("Add DAG %s", globals()[name].dag_id)
 
     params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs,
                   min_free_space_local_folder=min_free_space_local_folder,
                   mipmap_db_confile_file=mipmap_db_confile_file,
                   ehr_versioned_folder=ehr_versioned_folder,
-                  ehr_to_i2b2_capture_docker_image=ehr_to_i2b2_capture_docker_image, ehr_to_i2b2_capture_folder=ehr_to_i2b2_capture_folder)
+                  ehr_to_i2b2_capture_docker_image=ehr_to_i2b2_capture_docker_image,
+                  ehr_to_i2b2_capture_folder=ehr_to_i2b2_capture_folder)
 
     name = '%s_ehr_to_i2b2_dag' % dataset.lower().replace(" ", "_")
     globals()[name] = ehr_to_i2b2_dag(**params)
