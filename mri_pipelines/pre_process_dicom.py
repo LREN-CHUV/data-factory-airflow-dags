@@ -23,8 +23,10 @@ from mri_meta_extract.files_recording import visit
 
 from i2b2_import import features_csv_import
 
+from .pre_process_step.copy_to_local import copy_to_local_cfg
+from .pre_process_step.register_local import register_local_cfg
 
-def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs,
+def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs,
                           misc_library_path, min_free_space_local_folder, copy_to_local_folder,
                           dataset_config=None, copy_to_local=True, images_organizer=False,
                           hierarchizer_dataset_type='DICOM', hierarchizer_image='hbpmip/hierarchizer',
@@ -209,70 +211,9 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs,
     priority_weight += 5
 
     if copy_to_local:
-
-        copy_dicom_to_local_cmd = dedent("""
-            used="$(df -h /home | grep '/' | grep -Po '[^ ]*(?=%)')"
-            if (( 101 - used < {{ params['min_free_space_local_folder']|float * 100 }} )); then
-              echo "Not enough space left, cannot continue"
-              exit 1
-            fi
-            rsync -av $AIRFLOW_INPUT_DIR/ $AIRFLOW_OUTPUT_DIR/
-        """)
-
-        copy_dicom_to_local = BashPipelineOperator(
-            task_id='copy_dicom_to_local',
-            bash_command=copy_dicom_to_local_cmd,
-            params={'min_free_space_local_folder': min_free_space_local_folder},
-            output_folder_callable=lambda session_id, **kwargs: copy_to_local_folder + '/' + session_id,
-            pool='remote_file_copy',
-            parent_task=upstream_id,
-            priority_weight=priority_weight,
-            execution_timeout=timedelta(hours=3),
-            on_failure_trigger_dag_id='mri_notify_failed_processing',
-            dataset_config=dataset_config,
-            dag=dag
-        )
-        copy_dicom_to_local.set_upstream(upstream)
-
-        copy_dicom_to_local.doc_md = dedent("""\
-        # Copy DICOM files to local %s folder
-
-        Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
-        """ % copy_to_local_folder)
-
-        upstream = copy_dicom_to_local
-        upstream_id = 'copy_dicom_to_local'
-        priority_weight += 5
-
+        upstream, upstream_id, priority_weight = copy_to_local_cfg(upstream, upstream_id, priority_weight, dataset_section)
     else:
-
-        # Register local data into the Data catalog/provenance tables
-
-        register_local_cmd = ";"
-
-        register_local = BashPipelineOperator(
-            task_id='register_local',
-            bash_command=register_local_cmd,
-            params={},
-            parent_task=upstream_id,
-            priority_weight=priority_weight,
-            execution_timeout=timedelta(hours=3),
-            on_failure_trigger_dag_id='mri_notify_failed_processing',
-            dataset_config=dataset_config,
-            dag=dag
-        )
-        register_local.set_upstream(upstream)
-
-        register_local.doc_md = dedent("""\
-        # Register incoming files for provenance
-
-        This step does nothing except register the files in the input folder for provenance.
-        """)
-
-        upstream = register_local
-        upstream_id = 'register_local'
-        priority_weight += 5
-
+        upstream, upstream_id, priority_weight = register_local_cfg(upstream, upstream_id, priority_weight, dataset_section)
     # endif
 
     if images_organizer:

@@ -8,10 +8,11 @@
 from datetime import timedelta
 from textwrap import dedent
 
+from airflow import configuration
 from airflow_pipeline.operators import BashPipelineOperator
 
 
-def register_local_cfg(upstream, upstream_id, priority_weight, configuration):
+def register_local_cfg(upstream, upstream_id, priority_weight, dataset_section):
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
 
     return register_local(upstream, upstream_id, priority_weight, dataset_config)

@@ -8,10 +8,11 @@
 from datetime import timedelta
 from textwrap import dedent
 
+from airflow import configuration
 from airflow_pipeline.operators import BashPipelineOperator
 
 
-def copy_to_local_cfg(upstream, upstream_id, priority_weight, configuration):
+def copy_to_local_cfg(upstream, upstream_id, priority_weight, dataset_section):
     min_free_space_local_folder = configuration.getfloat(dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
     copy_to_local_folder = configuration.get(dataset_section, 'COPY_TO_LOCAL_FOLDER')
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
