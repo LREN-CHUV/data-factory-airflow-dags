@@ -28,6 +28,7 @@ Requirements:
 * For each dataset, add a [<dataset>] section, replacing <dataset> with the actual name of the dataset and define the following entries:
    * COPY_TO_LOCAL_FOLDER: path containing the anonymised files coming from the MRI scanner and already anonymised by a tool
    * DATASET: Name of the dataset
+   * DATASET_CONFIG: TODO
    * DICOM_FILES_PATTERN: pattern used to identify DICOM files. Default: ```**/MR.*```
    * dicom_organizer_data_structure = PatientID:AcquisitionDate:SeriesDescription:SeriesDate
    * dicom_organizer_local_folder = /data/organizer
@@ -60,4 +61,3 @@ Requirements:
      * copy_to_local: copies all DICOM files to COPY_TO_LOCAL_FOLDER.
    * PREPROCESSING_SCANNERS: comma-separated list of values in continuous, daily, flat to select how the preprocessing data folder is scanned for new work.
    * PROTOCOLS_FILE: path to the MRI acquisition protocol file
-   * SESSION_ID_BY_PATIENT = False
