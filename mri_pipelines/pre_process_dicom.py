@@ -28,7 +28,7 @@ from pre_process_steps.copy_to_local import copy_to_local_cfg
 from pre_process_steps.register_local import register_local_cfg
 
 def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs,
-                          misc_library_path, min_free_space_local_folder, copy_to_local_folder,
+                          misc_library_path, copy_to_local_folder,
                           dataset_config=None, copy_to_local=True, images_organizer=False,
                           hierarchizer_dataset_type='DICOM', hierarchizer_image='hbpmip/hierarchizer',
                           hierarchizer_version='latest', images_organizer_local_folder=None,
@@ -172,7 +172,7 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
         schedule_interval=None,
         max_active_runs=max_active_runs)
 
-    upstream, upstream_id, priority_weight = check_free_space_local_cfg(None, None, 0, dataset_section)
+    upstream, upstream_id, priority_weight = check_free_space_local_cfg(None, None, 0, dataset_section, "DICOM_LOCAL_FOLDER")
 
     prepare_pipeline = PreparePipelineOperator(
         task_id='prepare_pipeline',
@@ -195,7 +195,7 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
     priority_weight += 5
 
     if copy_to_local:
-        upstream, upstream_id, priority_weight = copy_to_local_cfg(upstream, upstream_id, priority_weight, dataset_section)
+        upstream, upstream_id, priority_weight = copy_to_local_cfg(upstream, upstream_id, priority_weight, dataset_section, "DICOM_LOCAL_FOLDER")
     else:
         upstream, upstream_id, priority_weight = register_local_cfg(upstream, upstream_id, priority_weight, dataset_section)
     # endif

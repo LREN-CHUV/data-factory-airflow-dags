@@ -12,8 +12,8 @@ from airflow import configuration
 from airflow.operators import BashOperator
 
 
-def cleanup_cfg(upstream, upstream_id, priority_weight, dataset_section):
-    copy_to_local_folder = configuration.get(dataset_section, 'COPY_TO_LOCAL_FOLDER')
+def cleanup_cfg(upstream, upstream_id, priority_weight, dataset_section, local_folder_config_key):
+    copy_to_local_folder = configuration.get(dataset_section, local_folder_config_key)
 
     return cleanup_local(upstream, upstream_id, priority_weight, copy_to_local_folder)
 

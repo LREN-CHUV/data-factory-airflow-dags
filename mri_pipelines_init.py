@@ -87,10 +87,6 @@ for dataset_section in dataset_sections.split(','):
     max_active_runs = int(configuration.get(
         dataset_section, 'MAX_ACTIVE_RUNS'))
     misc_library_path = pipelines_path + '/../Miscellaneous&Others'
-    min_free_space_local_folder = configuration.getfloat(
-        dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
-    copy_to_local_folder = configuration.get(
-        dataset_section, 'COPY_TO_LOCAL_FOLDER')
     dicom_to_nifti_spm_function = configuration.get(
         dataset_section, 'NIFTI_SPM_FUNCTION')
     dicom_to_nifti_local_folder = configuration.get(
@@ -110,7 +106,6 @@ for dataset_section in dataset_sections.split(','):
     params = dict(dataset=dataset, dataset_section=dataset_section, dataset_config=dataset_config,
                   email_errors_to=email_errors_to, max_active_runs=max_active_runs,
                   misc_library_path=misc_library_path,
-                  min_free_space_local_folder=min_free_space_local_folder, copy_to_local_folder=copy_to_local_folder,
                   copy_to_local=copy_to_local, dicom_select_t1=dicom_select_t1,
                   images_selection=images_selection, protocols_file=protocols_file,
                   dicom_to_nifti_spm_function=dicom_to_nifti_spm_function,
@@ -190,6 +185,9 @@ for dataset_section in dataset_sections.split(','):
                 dataset=dataset, folder=ehr_data_folder, depth=ehr_data_folder_depth, email_errors_to=email_errors_to,
                 trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower())
             logging.info("Add DAG %s", globals()[name].dag_id)
+
+    min_free_space_local_folder = configuration.getfloat(
+        dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
 
     params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs,
                   min_free_space_local_folder=min_free_space_local_folder,
