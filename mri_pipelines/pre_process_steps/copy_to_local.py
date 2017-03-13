@@ -54,6 +54,6 @@ def copy_to_local(upstream, upstream_id, priority_weight, min_free_space_local_f
 
     upstream = copy_to_local
     upstream_id = 'copy_to_local'
-    priority_weight += 5
+    priority_weight += 10
 
     return (upstream, upstream_id, priority_weight)

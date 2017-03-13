@@ -23,6 +23,7 @@ from mri_meta_extract.files_recording import visit
 
 from i2b2_import import features_csv_import
 
+from .pre_process_step.check_free_space import check_free_space_local_cfg
 from .pre_process_step.copy_to_local import copy_to_local_cfg
 from .pre_process_step.register_local import register_local_cfg
 
@@ -171,24 +172,7 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
         schedule_interval=None,
         max_active_runs=max_active_runs)
 
-    check_free_space = FreeSpaceSensor(
-        task_id='check_free_space',
-        path=copy_to_local_folder,
-        free_disk_threshold=min_free_space_local_folder,
-        retry_delay=timedelta(hours=1),
-        retries=24 * 7,
-        pool='remote_file_copy',
-        dag=dag
-    )
-
-    check_free_space.doc_md = dedent("""\
-    # Check free space
-
-    Check that there is enough free space on the disk hosting folder %s for processing, wait otherwise.
-    """ % copy_to_local_folder)
-
-    upstream = check_free_space
-    priority_weight = 10
+    upstream, upstream_id, priority_weight = check_free_space_local_cfg(None, None, 0, dataset_section)
 
     prepare_pipeline = PreparePipelineOperator(
         task_id='prepare_pipeline',

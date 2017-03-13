@@ -33,7 +33,6 @@ def cleanup_local(upstream, upstream_id, priority_weight, min_free_space_local_f
         dag=dag
     )
     cleanup_local.set_upstream(upstream)
-    priority_weight += 5
 
     cleanup_local.doc_md = dedent("""\
         # Cleanup local files

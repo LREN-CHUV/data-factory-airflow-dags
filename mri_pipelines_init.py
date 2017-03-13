@@ -106,7 +106,7 @@ for dataset_section in dataset_sections.split(','):
     mpm_maps = 'mpm_maps' in preprocessing_pipelines
     neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
 
-    params = dict(dataset=dataset, dataset_config=dataset_config,
+    params = dict(dataset=dataset, dataset_section=dataset_section, dataset_config=dataset_config,
                   email_errors_to=email_errors_to, max_active_runs=max_active_runs,
                   misc_library_path=misc_library_path,
                   min_free_space_local_folder=min_free_space_local_folder, copy_to_local_folder=copy_to_local_folder,

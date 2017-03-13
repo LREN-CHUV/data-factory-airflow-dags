@@ -45,6 +45,6 @@ def register_local(upstream, upstream_id, priority_weight, dataset_config):
 
     upstream = register_local
     upstream_id = 'register_local'
-    priority_weight += 5
+    priority_weight += 10
 
     return (upstream, upstream_id, priority_weight)
