@@ -49,7 +49,6 @@ for dataset_section in dataset_sections.split(','):
     default_config(dataset_section, 'EHR_DATA_FOLDER_DEPTH', '1')
 
     dataset = configuration.get(dataset_section, 'DATASET')
-    hierarchizer_dataset_type = configuration.get(dataset_section, 'DATASET_TYPE')
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
     preprocessing_data_folder = configuration.get(
         dataset_section, 'PREPROCESSING_DATA_FOLDER')
@@ -110,7 +109,7 @@ for dataset_section in dataset_sections.split(','):
     mpm_maps = 'mpm_maps' in preprocessing_pipelines
     neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
 
-    params = dict(dataset=dataset, hierarchizer_dataset_type=hierarchizer_dataset_type, dataset_config=dataset_config,
+    params = dict(dataset=dataset, dataset_config=dataset_config,
                   email_errors_to=email_errors_to, max_active_runs=max_active_runs,
                   session_id_by_patient=session_id_by_patient, misc_library_path=misc_library_path,
                   min_free_space_local_folder=min_free_space_local_folder, copy_to_local_folder=copy_to_local_folder,
@@ -127,6 +126,7 @@ for dataset_section in dataset_sections.split(','):
         params['hierarchizer_version'] = configuration.get(dataset_section, 'HIERARCHIZER_VERSION')
         params['images_organizer_local_folder'] = configuration.get(dataset_section, 'IMAGES_ORGANIZER_LOCAL_FOLDER')
         params['images_organizer_data_structure'] = configuration.get(dataset_section, 'IMAGE_ORGANIZER_DATA_STRUCTURE')
+        params['hierarchizer_dataset_type'] = configuration.get(dataset_section, 'HIERARCHIZER_DATASET_TYPE')
 
     if images_selection:
         params['images_selection_local_folder'] = configuration.get(dataset_section, 'IMAGES_SELECTION_LOCAL_FOLDER')
