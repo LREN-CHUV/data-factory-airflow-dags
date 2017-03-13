@@ -105,7 +105,7 @@ for dataset_section in dataset_sections.split(','):
         dataset_section, 'DCM2NII_PROGRAM')
     copy_to_local = 'copy_to_local' in preprocessing_pipelines
     images_organizer = 'dicom_organizer' in preprocessing_pipelines
-    dicom_select_T1 = 'dicom_select_T1' in preprocessing_pipelines
+    dicom_select_t1 = 'dicom_select_T1' in preprocessing_pipelines
     images_selection = 'images_selection' in preprocessing_pipelines
     mpm_maps = 'mpm_maps' in preprocessing_pipelines
     neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
@@ -114,7 +114,7 @@ for dataset_section in dataset_sections.split(','):
                   email_errors_to=email_errors_to, max_active_runs=max_active_runs,
                   session_id_by_patient=session_id_by_patient, misc_library_path=misc_library_path,
                   min_free_space_local_folder=min_free_space_local_folder, copy_to_local_folder=copy_to_local_folder,
-                  copy_to_local=copy_to_local, dicom_select_T1=dicom_select_T1,
+                  copy_to_local=copy_to_local, dicom_select_t1=dicom_select_t1,
                   images_selection=images_selection, protocols_file=protocols_file,
                   dicom_to_nifti_spm_function=dicom_to_nifti_spm_function,
                   dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
@@ -132,7 +132,7 @@ for dataset_section in dataset_sections.split(','):
         params['images_selection_local_folder'] = configuration.get(dataset_section, 'IMAGES_SELECTION_LOCAL_FOLDER')
         params['images_selection_csv_path'] = configuration.get(dataset_section, 'IMAGES_SELECTION_CSV_PATH')
 
-    if dicom_select_T1:
+    if dicom_select_t1:
         params['dicom_select_T1_spm_function'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION')
         params['dicom_select_T1_local_folder'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_LOCAL_FOLDER')
         params['dicom_select_T1_protocols_file'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_PROTOCOLS_FILE')
