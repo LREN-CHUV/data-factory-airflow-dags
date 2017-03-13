@@ -31,7 +31,6 @@ mipmap_db_confile_file = configuration.get('mri', 'MIPMAP_DB_CONFILE_FILE')
 
 for dataset_section in dataset_sections.split(','):
     # Set the default configuration for the dataset
-    default_config(dataset_section, 'SESSION_ID_BY_PATIENT', 'False')
     default_config(dataset_section, 'PREPROCESSING_SCANNERS', 'daily')
     default_config(dataset_section, 'PREPROCESSING_PIPELINES',
                    'copy_to_local,dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')
@@ -86,8 +85,6 @@ for dataset_section in dataset_sections.split(','):
 
     max_active_runs = int(configuration.get(
         dataset_section, 'MAX_ACTIVE_RUNS'))
-    session_id_by_patient = bool(configuration.get(
-        dataset_section, 'SESSION_ID_BY_PATIENT'))
     misc_library_path = pipelines_path + '/../Miscellaneous&Others'
     min_free_space_local_folder = configuration.getfloat(
         dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
@@ -111,7 +108,7 @@ for dataset_section in dataset_sections.split(','):
 
     params = dict(dataset=dataset, dataset_config=dataset_config,
                   email_errors_to=email_errors_to, max_active_runs=max_active_runs,
-                  session_id_by_patient=session_id_by_patient, misc_library_path=misc_library_path,
+                  misc_library_path=misc_library_path,
                   min_free_space_local_folder=min_free_space_local_folder, copy_to_local_folder=copy_to_local_folder,
                   copy_to_local=copy_to_local, dicom_select_t1=dicom_select_t1,
                   images_selection=images_selection, protocols_file=protocols_file,

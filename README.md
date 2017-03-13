@@ -60,4 +60,3 @@ Requirements:
      * copy_to_local: copies all DICOM files to COPY_TO_LOCAL_FOLDER.
    * PREPROCESSING_SCANNERS: comma-separated list of values in continuous, daily, flat to select how the preprocessing data folder is scanned for new work.
    * PROTOCOLS_FILE: path to the MRI acquisition protocol file
-   * SESSION_ID_BY_PATIENT = False

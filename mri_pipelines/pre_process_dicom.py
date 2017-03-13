@@ -25,7 +25,7 @@ from i2b2_import import features_csv_import
 
 
 def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs,
-                          session_id_by_patient, misc_library_path, min_free_space_local_folder, copy_to_local_folder,
+                          misc_library_path, min_free_space_local_folder, copy_to_local_folder,
                           dataset_config=None, copy_to_local=True, images_organizer=False,
                           hierarchizer_dataset_type='DICOM', hierarchizer_image='hbpmip/hierarchizer',
                           hierarchizer_version='latest', images_organizer_local_folder=None,
@@ -229,7 +229,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs,
             priority_weight=priority_weight,
             execution_timeout=timedelta(hours=3),
             on_failure_trigger_dag_id='mri_notify_failed_processing',
-            session_id_by_patient=session_id_by_patient,
+            dataset_config=dataset_config,
             dag=dag
         )
         copy_dicom_to_local.set_upstream(upstream)
@@ -258,7 +258,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs,
             priority_weight=priority_weight,
             execution_timeout=timedelta(hours=3),
             on_failure_trigger_dag_id='mri_notify_failed_processing',
-            session_id_by_patient=session_id_by_patient,
+            dataset_config=dataset_config,
             dag=dag
         )
         register_local.set_upstream(upstream)
@@ -366,7 +366,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs,
             execution_timeout=timedelta(hours=24),
             on_skip_trigger_dag_id='mri_notify_skipped_processing',
             on_failure_trigger_dag_id='mri_notify_failed_processing',
-            session_id_by_patient=session_id_by_patient,
+            dataset_config=dataset_config,
             dag=dag
         )
 
@@ -427,7 +427,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs,
         execution_timeout=timedelta(hours=24),
         on_skip_trigger_dag_id='mri_notify_skipped_processing',
         on_failure_trigger_dag_id='mri_notify_failed_processing',
-        session_id_by_patient=session_id_by_patient,
+        dataset_config=dataset_config,
         dag=dag
     )
 
@@ -525,7 +525,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs,
             parent_task=upstream_id,
             on_skip_trigger_dag_id='mri_notify_skipped_processing',
             on_failure_trigger_dag_id='mri_notify_failed_processing',
-            session_id_by_patient=session_id_by_patient,
+            dataset_config=dataset_config,
             dag=dag
         )
 
@@ -593,7 +593,7 @@ def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs,
             execution_timeout=timedelta(hours=24),
             on_skip_trigger_dag_id='mri_notify_skipped_processing',
             on_failure_trigger_dag_id='mri_notify_failed_processing',
-            session_id_by_patient=session_id_by_patient,
+            dataset_config=dataset_config,
             dag=dag
         )
         neuro_morphometric_atlas_pipeline.set_upstream(upstream)
