@@ -31,6 +31,7 @@ mipmap_db_confile_file = configuration.get('mri', 'MIPMAP_DB_CONFILE_FILE')
 
 for dataset_section in dataset_sections.split(','):
     # Set the default configuration for the dataset
+    default_config(dataset_section, 'DATASET_CONFIG', '')
     default_config(dataset_section, 'PREPROCESSING_SCANNERS', 'daily')
     default_config(dataset_section, 'PREPROCESSING_PIPELINES',
                    'copy_to_local,dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')

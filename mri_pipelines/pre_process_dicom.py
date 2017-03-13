@@ -23,9 +23,9 @@ from mri_meta_extract.files_recording import visit
 
 from i2b2_import import features_csv_import
 
-from mri_pipelines.pre_process_steps.check_free_space_local import check_free_space_local_cfg
-from mri_pipelines.pre_process_steps.copy_to_local import copy_to_local_cfg
-from mri_pipelines.pre_process_steps.register_local import register_local_cfg
+from pre_process_steps.check_free_space_local import check_free_space_local_cfg
+from pre_process_steps.copy_to_local import copy_to_local_cfg
+from pre_process_steps.register_local import register_local_cfg
 
 def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs,
                           misc_library_path, min_free_space_local_folder, copy_to_local_folder,
