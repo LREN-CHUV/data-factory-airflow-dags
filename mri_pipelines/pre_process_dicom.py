@@ -21,10 +21,13 @@ from airflow_pipeline.pipelines import pipeline_trigger
 from mri_meta_extract.files_recording import create_provenance
 from mri_meta_extract.files_recording import visit
 
+from i2b2_import import features_csv_import
 
-def pre_process_dicom_dag(dataset, dataset_type, dataset_config, email_errors_to, max_active_runs,
+
+def pre_process_dicom_dag(dataset, email_errors_to, max_active_runs,
                           session_id_by_patient, misc_library_path, min_free_space_local_folder, copy_to_local_folder,
-                          copy_to_local=True, images_organizer=False, hierarchizer_image='hbpmip/hierarchizer',
+                          dataset_config=None, copy_to_local=True, images_organizer=False,
+                          hierarchizer_dataset_type='DICOM', hierarchizer_image='hbpmip/hierarchizer',
                           hierarchizer_version='latest', images_organizer_local_folder=None,
                           images_organizer_data_structure='PatientID:StudyID:SeriesDescription:SeriesNumber',
                           images_selection=False, images_selection_local_folder=None, images_selection_csv_path=None,
@@ -38,7 +41,7 @@ def pre_process_dicom_dag(dataset, dataset_type, dataset_config, email_errors_to
                           neuro_morphometric_atlas_spm_function='NeuroMorphometric_pipeline',
                           neuro_morphometric_atlas_pipeline_path=None, neuro_morphometric_atlas_local_folder=None,
                           neuro_morphometric_atlas_server_folder=None,
-                          neuro_morphometric_atlas_tpm_template='nwTPM_sl3.nii'):
+                          neuro_morphometric_atlas_tpm_template='nwTPM_sl3.nii', import_features_local_folder=None):
 
     # functions used in the DAG
 
@@ -136,6 +139,14 @@ def pre_process_dicom_dag(dataset, dataset_type, dataset_config, email_errors_to
                 protocols_file,
                 pipeline_params_config_file,
                 mpm_maps_server_folder]
+
+    def features_to_i2b2_fn(folder, i2b2_conn, **kwargs):
+        """
+          Import brain features from CSV files to I2B2 DB
+        """
+        features_csv_import.folder2db(folder, i2b2_conn, dataset, dataset_config)
+
+        return "ok"
 
     # Define the DAG
 
@@ -267,7 +278,7 @@ def pre_process_dicom_dag(dataset, dataset_type, dataset_config, email_errors_to
     if images_organizer:
 
         dataset_param = "--dataset " + dataset
-        type_of_images_param = "--type " + dataset_type
+        type_of_images_param = "--type " + hierarchizer_dataset_type
         structure_param = "--attributes " + str(images_organizer_data_structure.split(':'))
 
         images_organizer_pipeline = DockerPipelineOperator(
@@ -585,9 +596,7 @@ def pre_process_dicom_dag(dataset, dataset_type, dataset_config, email_errors_to
             session_id_by_patient=session_id_by_patient,
             dag=dag
         )
-
         neuro_morphometric_atlas_pipeline.set_upstream(upstream)
-        priority_weight += 5
 
         neuro_morphometric_atlas_pipeline.doc_md = dedent("""\
         # NeuroMorphometric Pipeline
@@ -612,6 +621,10 @@ def pre_process_dicom_dag(dataset, dataset_type, dataset_config, email_errors_to
         """ % (neuro_morphometric_atlas_spm_function, neuro_morphometric_atlas_local_folder,
                neuro_morphometric_atlas_server_folder, upstream_id))
 
+        upstream = neuro_morphometric_atlas_pipeline
+        upstream_id = "neuro_morphometric_atlas_pipeline"
+        priority_weight += 5
+
         extract_nifti_atlas_info = PythonPipelineOperator(
             task_id='extract_nifti_atlas_info',
             python_callable=extract_images_info_fn,
@@ -634,6 +647,29 @@ def pre_process_dicom_dag(dataset, dataset_type, dataset_config, email_errors_to
 
         notify_success.set_upstream(extract_nifti_atlas_info)
         priority_weight += 5
+
+        import_features_pipeline = PythonPipelineOperator(
+            task_id='import_features_pipeline',
+            python_callable=features_to_i2b2_fn,
+            output_folder_callable=lambda session_id, **kwargs: import_features_local_folder + '/' + session_id,
+            pool='io_intensive',
+            parent_task=upstream_id,
+            priority_weight=priority_weight,
+            execution_timeout=timedelta(hours=6),
+            on_skip_trigger_dag_id='mri_notify_skipped_processing',
+            on_failure_trigger_dag_id='mri_notify_failed_processing',
+            dag=dag
+        )
+
+        import_features_pipeline.set_upstream(upstream)
+
+        import_features_pipeline.doc_md = dedent("""\
+        # import brain features from CSV files to I2B2 DB
+
+        Read CSV files containing brain features and import it into an I2B2 DB.
+
+        Depends on: __%s__
+        """ % upstream_id)
 
     # endif
 
