@@ -23,10 +23,12 @@ def copy_to_local_cfg(dag, upstream, upstream_id, priority_weight, dataset_secti
     copy_to_local_folder = configuration.get(dataset_section, local_folder_config_key)
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
 
-    return copy_to_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder, dataset_config)
+    return copy_to_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder,
+                         dataset_config)
 
 
-def copy_to_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder, dataset_config):
+def copy_to_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder,
+                  dataset_config):
 
     copy_to_local_cmd = dedent("""
         used="$(df -h /home | grep '/' | grep -Po '[^ ]*(?=%)')"
@@ -62,4 +64,4 @@ def copy_to_local(dag, upstream, upstream_id, priority_weight, min_free_space_lo
     upstream_id = 'copy_to_local'
     priority_weight += 10
 
-    return (upstream, upstream_id, priority_weight)
+    return upstream, upstream_id, priority_weight

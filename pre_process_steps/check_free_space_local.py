@@ -46,4 +46,4 @@ def check_free_space_local(dag, upstream, upstream_id, priority_weight, min_free
     upstream_id = 'check_free_space'
     priority_weight += 10
 
-    return (upstream, upstream_id, priority_weight)
+    return upstream, upstream_id, priority_weight

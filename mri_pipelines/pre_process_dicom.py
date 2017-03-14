@@ -13,9 +13,7 @@ from textwrap import dedent
 from airflow import DAG
 from airflow.operators import BashOperator, TriggerDagRunOperator
 from airflow_spm.operators import SpmPipelineOperator
-from airflow_freespace.operators import FreeSpaceSensor
-from airflow_pipeline.operators import PreparePipelineOperator, BashPipelineOperator, PythonPipelineOperator, \
-    DockerPipelineOperator
+from airflow_pipeline.operators import PreparePipelineOperator, PythonPipelineOperator
 from airflow_pipeline.pipelines import pipeline_trigger
 
 from mri_meta_extract.files_recording import create_provenance
@@ -27,6 +25,7 @@ from pre_process_steps.check_free_space_local import check_free_space_local_cfg
 from pre_process_steps.copy_to_local import copy_to_local_cfg
 from pre_process_steps.register_local import register_local_cfg
 from pre_process_steps.images_organizer import images_organizer_cfg
+
 
 def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs,
                           misc_library_path, copy_to_local_folder,
@@ -170,7 +169,8 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
         schedule_interval=None,
         max_active_runs=max_active_runs)
 
-    upstream, upstream_id, priority_weight = check_free_space_local_cfg(dag, None, None, 0, dataset_section, "DICOM_LOCAL_FOLDER")
+    upstream, upstream_id, priority_weight = check_free_space_local_cfg(dag, None, None, 0, dataset_section,
+                                                                        "DICOM_LOCAL_FOLDER")
 
     prepare_pipeline = PreparePipelineOperator(
         task_id='prepare_pipeline',
@@ -193,13 +193,16 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
     priority_weight += 5
 
     if copy_to_local:
-        upstream, upstream_id, priority_weight = copy_to_local_cfg(dag, upstream, upstream_id, priority_weight, dataset_section, "DICOM_LOCAL_FOLDER")
+        upstream, upstream_id, priority_weight = copy_to_local_cfg(dag, upstream, upstream_id, priority_weight,
+                                                                   dataset_section, "DICOM_LOCAL_FOLDER")
     else:
-        upstream, upstream_id, priority_weight = register_local_cfg(dag, upstream, upstream_id, priority_weight, dataset_section)
+        upstream, upstream_id, priority_weight = register_local_cfg(dag, upstream, upstream_id, priority_weight,
+                                                                    dataset_section)
     # endif
 
     if images_organizer:
-        upstream, upstream_id, priority_weight = images_organizer_cfg(dag, upstream, upstream_id, priority_weight, dataset_section, dataset, "DICOM_LOCAL_FOLDER")
+        upstream, upstream_id, priority_weight = images_organizer_cfg(dag, upstream, upstream_id, priority_weight,
+                                                                      dataset_section, dataset, "DICOM_LOCAL_FOLDER")
     # endif
 
     if images_selection:

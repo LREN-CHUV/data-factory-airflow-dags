@@ -22,7 +22,7 @@ def cleanup_cfg(dag, upstream, upstream_id, priority_weight, dataset_section, lo
     return cleanup_local(dag, upstream, upstream_id, priority_weight, copy_to_local_folder)
 
 
-def cleanup_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder):
+def cleanup_local(dag, upstream, upstream_id, priority_weight, copy_to_local_folder):
 
     cleanup_local_cmd = dedent("""
             rm -rf {{ params["local_folder"] }}/{{ dag_run.conf["session_id"] }}
@@ -48,4 +48,4 @@ def cleanup_local(dag, upstream, upstream_id, priority_weight, min_free_space_lo
     upstream_id = 'cleanup_local'
     priority_weight += 5
 
-    return (upstream, upstream_id, priority_weight)
+    return upstream, upstream_id, priority_weight

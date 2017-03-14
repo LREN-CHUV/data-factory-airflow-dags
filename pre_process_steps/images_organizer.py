@@ -79,4 +79,4 @@ def images_organizer(dag, upstream, upstream_id, priority_weight, dataset, datas
     upstream_id = 'images_organizer_pipeline'
     priority_weight += 10
 
-    return (upstream, upstream_id, priority_weight)
+    return upstream, upstream_id, priority_weight
