@@ -30,6 +30,7 @@ from pre_process_steps.register_local import register_local_cfg
 from pre_process_steps.images_organizer import images_organizer_cfg
 from pre_process_steps.images_selection import images_selection_pipeline_cfg
 from pre_process_steps.dicom_select_t1 import dicom_select_t1_pipeline_cfg
+from pre_process_steps.extract_dicom_info import extract_dicom_info_cfg
 
 
 def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs, misc_library_path,
@@ -163,28 +164,8 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
                                                                               priority_weight, dataset_section)
     # endif
 
-    extract_dicom_info = PythonPipelineOperator(
-        task_id='extract_dicom_info',
-        python_callable=extract_images_info_fn,
-        parent_task=upstream_id,
-        pool='io_intensive',
-        priority_weight=priority_weight,
-        execution_timeout=timedelta(hours=6),
-        dag=dag
-    )
-    extract_dicom_info.set_upstream(upstream)
-
-    extract_dicom_info.doc_md = dedent("""\
-    # Extract DICOM information
-
-    Read DICOM information from the files stored in the session folder and store that information into the database.
-    """)
-
-    # This upstream is required as we need to extract additional information from the DICOM files (participant_id,
-    # scan_date) and transfer it via XCOMs to the next SPM pipeline
-    upstream = extract_dicom_info
-    upstream_id = 'extract_dicom_info'
-    priority_weight += 5
+    upstream, upstream_id, priority_weight = extract_dicom_info_cfg(dag, upstream, upstream_id,
+                                                                    priority_weight, dataset_section)
 
     dicom_to_nifti_pipeline = SpmPipelineOperator(
         task_id='dicom_to_nifti_pipeline',

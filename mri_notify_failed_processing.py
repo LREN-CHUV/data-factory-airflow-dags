@@ -47,9 +47,9 @@ post_on_slack = SlackAPIPostOperator(
          + 'done on {{ dag_run.conf["scan_date"].strftime("%Y-%m-%d") }} {% endif %}'
          + 'for participant {{ dag_run.conf["participant_id"] | default("?") }}\n'
          + '> Output:\n'
-         + '> ```{{ dag_run.conf["spm_output"] | default("?") }}```\n'
+         + '> ```\n\n{{ dag_run.conf["spm_output"] | default("?") }}\n\n```\n'
          + '> Errors:\n'
-         + '> ```{{ dag_run.conf["spm_error"] | default("?") }}```',
+         + '> ```\n\n{{ dag_run.conf["spm_error"] | default("?") }}\n\n```',
     icon_url='https://raw.githubusercontent.com/airbnb/airflow/master/airflow/www/static/pin_100.png',
     dag=dag
 )

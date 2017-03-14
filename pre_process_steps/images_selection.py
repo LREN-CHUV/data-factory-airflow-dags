@@ -1,6 +1,6 @@
 """
 
-  Pre processing step: copy files to local
+  Pre processing step: images selection
 
   Configuration variables used:
 
