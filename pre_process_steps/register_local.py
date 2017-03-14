@@ -26,7 +26,7 @@ def register_local(dag, upstream, upstream_id, priority_weight, dataset_config):
 
     # Register local data into the Data catalog/provenance tables
 
-    register_local_cmd = ";"
+    register_local_cmd = "echo 'Register files in folder $AIRFLOW_OUTPUT_DIR'"
 
     register_local = BashPipelineOperator(
         task_id='register_local',
@@ -51,4 +51,4 @@ def register_local(dag, upstream, upstream_id, priority_weight, dataset_config):
     upstream_id = 'register_local'
     priority_weight += 10
 
-    return upstream, upstream_id, priority_weight
+    return (upstream, upstream_id, priority_weight)

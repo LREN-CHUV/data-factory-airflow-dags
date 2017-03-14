@@ -46,6 +46,6 @@ def cleanup_local(dag, upstream, upstream_id, priority_weight, copy_to_local_fol
 
     upstream = cleanup_local
     upstream_id = 'cleanup_local'
-    priority_weight += 5
+    priority_weight += 10
 
     return (upstream, upstream_id, priority_weight)

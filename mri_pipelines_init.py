@@ -23,6 +23,7 @@ def default_config(section, key, value):
     if not configuration.has_option(section, key):
         configuration.set(section, key, value)
 
+
 default_config('mri', 'MIPMAP_DB_CONFILE_FILE', '/dev/null')
 
 dataset_sections = configuration.get('mri', 'DATASETS')
@@ -112,10 +113,6 @@ for dataset_section in dataset_sections.split(','):
                   dicom_to_nifti_local_folder=dicom_to_nifti_local_folder,
                   dicom_to_nifti_server_folder=dicom_to_nifti_server_folder, mpm_maps=mpm_maps,
                   neuro_morphometric_atlas=neuro_morphometric_atlas, dcm2nii_program=dcm2nii_program)
-
-    if images_selection:
-        params['images_selection_local_folder'] = configuration.get(dataset_section, 'IMAGES_SELECTION_LOCAL_FOLDER')
-        params['images_selection_csv_path'] = configuration.get(dataset_section, 'IMAGES_SELECTION_CSV_PATH')
 
     if dicom_select_t1:
         params['dicom_select_t1_spm_function'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION')
