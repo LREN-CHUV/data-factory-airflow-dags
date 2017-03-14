@@ -139,7 +139,7 @@ for dataset_section in dataset_sections.split(','):
         params['neuro_morphometric_atlas_pipeline_path'] = pipelines_path + \
             '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
         params['mpm_maps_pipeline_path'] = pipelines_path + '/MPMs_Pipeline'
-        params['neuro_morphometric_atlas_TPM_template'] = tpmTemplate = configuration.get(
+        params['neuro_morphometric_atlas_tpm_template'] = tpmTemplate = configuration.get(
             dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE')
         # check that file exists if absolute path
         if len(tpmTemplate) > 0 and tpmTemplate[0] is '/':
