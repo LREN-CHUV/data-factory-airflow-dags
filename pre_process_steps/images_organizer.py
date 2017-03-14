@@ -34,8 +34,7 @@ def images_organizer_cfg(dag, upstream, upstream_id, priority_weight, dataset, d
                             images_organizer_data_structure=data_structure,
                             images_organizer_input_folder=input_folder,
                             images_organizer_local_folder=local_folder,
-                            images_organizer_docker_image=docker_image,
-                            min_free_space_local_folder, images_organizer_folder, dataset_config)
+                            images_organizer_docker_image=docker_image)
 
 
 def images_organizer(dag, upstream, upstream_id, priority_weight, dataset, dataset_config, images_organizer_dataset_type,

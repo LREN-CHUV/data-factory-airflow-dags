@@ -44,8 +44,8 @@ def cleanup_local(dag, upstream, upstream_id, priority_weight, min_free_space_lo
         Remove locally stored files as they have been processed already.
         """)
 
-    upstream = copy_to_local
-    upstream_id = 'copy_to_local'
+    upstream = cleanup_local
+    upstream_id = 'cleanup_local'
     priority_weight += 5
 
     return (upstream, upstream_id, priority_weight)
