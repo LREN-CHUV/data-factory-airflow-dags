@@ -27,7 +27,17 @@ Requirements:
 
 * For each dataset, add a [<dataset>] section, replacing <dataset> with the actual name of the dataset and define the following entries:
    * DATASET: Name of the dataset
-   * DATASET_CONFIG: TODO
+   * DATASET_CONFIG: dictionary containing:
+        - boost: (optional) When enabled, we consider that all the files from a same folder share the same meta-data.
+        When enabled, the processing is (about 2 times) faster. This option is enabled by default.
+        - sid_by_patient: Rarely, a data set might use study IDs which are unique by patient (not for the whole study).
+        E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session ID.
+        - pid_in_vid: Rarely, a data set might mix patient IDs and visit IDs. E.g. : LREN data. In such a case, you have
+        to enable this flag. This will try to split PatientID into VisitID and PatientID.
+        - visit_in_path: Enable this flag to get the visit ID from the folder hierarchy instead of DICOM meta-data
+        (e.g. can be useful for PPMI).
+        - rep_in_path: Enable this flag to get the repetition ID from the folder hierarchy instead of DICOM meta-data
+        (e.g. can be useful for PPMI).
    * DICOM_LOCAL_FOLDER: path containing the anonymised files coming from the MRI scanner and already anonymised by a tool
    * DICOM_FILES_PATTERN: pattern used to identify DICOM files. Default: ```**/MR.*```
    * dicom_select_T1_local_folder = /data/select_T1
