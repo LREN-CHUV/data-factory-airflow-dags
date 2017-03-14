@@ -1,6 +1,6 @@
 """
 
-  Pre processing step: copy files to local
+  Pre processing step: Select T1 DICOM files
 
   Configuration variables used:
 

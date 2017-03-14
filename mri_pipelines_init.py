@@ -37,7 +37,6 @@ for dataset_section in dataset_sections.split(','):
     default_config(dataset_section, 'PREPROCESSING_PIPELINES',
                    'copy_to_local,dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')
     default_config(dataset_section, 'DICOM_FILES_PATTERN', '**/MR.*')
-    default_config(dataset_section, 'NIFTI_SPM_FUNCTION', 'DCM2NII_LREN')
     default_config(dataset_section, 'MPM_MAPS_SPM_FUNCTION',
                    'Preproc_mpm_maps')
     default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION',
@@ -86,15 +85,6 @@ for dataset_section in dataset_sections.split(','):
     max_active_runs = int(configuration.get(
         dataset_section, 'MAX_ACTIVE_RUNS'))
     misc_library_path = pipelines_path + '/../Miscellaneous&Others'
-    dicom_to_nifti_spm_function = configuration.get(
-        dataset_section, 'NIFTI_SPM_FUNCTION')
-    dicom_to_nifti_local_folder = configuration.get(
-        dataset_section, 'NIFTI_LOCAL_FOLDER')
-    dicom_to_nifti_server_folder = configuration.get(
-        dataset_section, 'NIFTI_SERVER_FOLDER')
-    dicom_to_nifti_pipeline_path = pipelines_path + '/Nifti_Conversion_Pipeline'
-    dcm2nii_program = configuration.get(
-        dataset_section, 'DCM2NII_PROGRAM')
     copy_to_local = 'copy_to_local' in preprocessing_pipelines
     images_organizer = 'dicom_organizer' in preprocessing_pipelines
     dicom_select_t1 = 'dicom_select_T1' in preprocessing_pipelines
@@ -107,11 +97,8 @@ for dataset_section in dataset_sections.split(','):
                   misc_library_path=misc_library_path,
                   copy_to_local=copy_to_local, dicom_select_t1=dicom_select_t1,
                   images_selection=images_selection, protocols_file=protocols_file,
-                  dicom_to_nifti_spm_function=dicom_to_nifti_spm_function,
-                  dicom_to_nifti_pipeline_path=dicom_to_nifti_pipeline_path,
-                  dicom_to_nifti_local_folder=dicom_to_nifti_local_folder,
-                  dicom_to_nifti_server_folder=dicom_to_nifti_server_folder, mpm_maps=mpm_maps,
-                  neuro_morphometric_atlas=neuro_morphometric_atlas, dcm2nii_program=dcm2nii_program)
+                  mpm_maps=mpm_maps,
+                  neuro_morphometric_atlas=neuro_morphometric_atlas)
 
     if mpm_maps:
         params['mpm_maps_spm_function'] = configuration.get(dataset_section, 'MPM_MAPS_SPM_FUNCTION')
