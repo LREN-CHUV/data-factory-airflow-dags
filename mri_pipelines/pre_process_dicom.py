@@ -29,15 +29,13 @@ from pre_process_steps.copy_to_local import copy_to_local_cfg
 from pre_process_steps.register_local import register_local_cfg
 from pre_process_steps.images_organizer import images_organizer_cfg
 from pre_process_steps.images_selection import images_selection_pipeline_cfg
-
+from pre_process_steps.dicom_select_t1 import dicom_select_t1_pipeline_cfg
 
 
 def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs, misc_library_path,
                           dataset_config=None, copy_to_local=True, images_organizer=False,
                           images_selection=False,
-                          dicom_select_t1=False, dicom_select_t1_spm_function='selectT1',
-                          dicom_select_t1_pipeline_path=None, dicom_select_t1_local_folder=None,
-                          dicom_select_t1_protocols_file=None, dicom_to_nifti_spm_function='DCM2NII_LREN',
+                          dicom_select_t1=False, dicom_to_nifti_spm_function='DCM2NII_LREN',
                           dicom_to_nifti_pipeline_path=None, dicom_to_nifti_local_folder=None,
                           dicom_to_nifti_server_folder=None, protocols_file=None, dcm2nii_program=None, mpm_maps=True,
                           mpm_maps_spm_function='Preproc_mpm_maps', mpm_maps_pipeline_path=None,
@@ -61,18 +59,6 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
         step = visit(folder, provenance, step_name, config=dataset_config)
 
         return step
-
-    def dicom_select_t1_arguments_fn(folder, session_id, **kwargs):
-        """
-          Prepare the arguments for the pipeline that selects T1 files from DICOM.
-          It selects all T1 files located in the folder 'folder'
-        """
-        parent_data_folder = os.path.abspath(folder + '/..')
-
-        return [parent_data_folder,
-                dicom_select_t1_local_folder,
-                session_id,
-                dicom_select_t1_protocols_file]
 
     def dicom_to_nifti_arguments_fn(folder, session_id, **kwargs):
         """
@@ -173,42 +159,8 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
 
     if dicom_select_t1:
 
-        dicom_select_t1_pipeline = SpmPipelineOperator(
-            task_id='dicom_select_T1_pipeline',
-            spm_function=dicom_select_t1_spm_function,
-            spm_arguments_callable=dicom_select_t1_arguments_fn,
-            matlab_paths=[misc_library_path, dicom_select_t1_pipeline_path],
-            output_folder_callable=lambda session_id, **kwargs: dicom_select_t1_local_folder + '/' + session_id,
-            pool='io_intensive',
-            parent_task=upstream_id,
-            priority_weight=priority_weight,
-            execution_timeout=timedelta(hours=24),
-            on_skip_trigger_dag_id='mri_notify_skipped_processing',
-            on_failure_trigger_dag_id='mri_notify_failed_processing',
-            dataset_config=dataset_config,
-            dag=dag
-        )
-
-        dicom_select_t1_pipeline.set_upstream(upstream)
-
-        dicom_select_t1_pipeline.doc_md = dedent("""\
-        # select T1 DICOM pipeline
-
-        SPM function: __%s__
-
-        Selects only T1 images from a set of various DICOM images.
-
-        Selected DICOM files are stored the the following locations:
-
-        * Local folder: __%s__
-
-        Depends on: __%s__
-        """ % (dicom_select_t1_spm_function, dicom_select_t1_local_folder, upstream_id))
-
-        upstream = dicom_select_t1_pipeline
-        upstream_id = 'dicom_select_T1_pipeline'
-        priority_weight += 5
-
+        upstream, upstream_id, priority_weight = dicom_select_t1_pipeline_cfg(dag, upstream, upstream_id,
+                                                                              priority_weight, dataset_section)
     # endif
 
     extract_dicom_info = PythonPipelineOperator(

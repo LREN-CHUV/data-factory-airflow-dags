@@ -36,7 +36,6 @@ for dataset_section in dataset_sections.split(','):
     default_config(dataset_section, 'PREPROCESSING_SCANNERS', 'daily')
     default_config(dataset_section, 'PREPROCESSING_PIPELINES',
                    'copy_to_local,dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')
-    default_config(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION', 'selectT1')
     default_config(dataset_section, 'DICOM_FILES_PATTERN', '**/MR.*')
     default_config(dataset_section, 'NIFTI_SPM_FUNCTION', 'DCM2NII_LREN')
     default_config(dataset_section, 'MPM_MAPS_SPM_FUNCTION',
@@ -113,12 +112,6 @@ for dataset_section in dataset_sections.split(','):
                   dicom_to_nifti_local_folder=dicom_to_nifti_local_folder,
                   dicom_to_nifti_server_folder=dicom_to_nifti_server_folder, mpm_maps=mpm_maps,
                   neuro_morphometric_atlas=neuro_morphometric_atlas, dcm2nii_program=dcm2nii_program)
-
-    if dicom_select_t1:
-        params['dicom_select_t1_spm_function'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION')
-        params['dicom_select_t1_local_folder'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_LOCAL_FOLDER')
-        params['dicom_select_t1_protocols_file'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_PROTOCOLS_FILE')
-        params['dicom_select_t1_pipeline_path'] = pipelines_path + '/SelectT1_Pipeline'
 
     if mpm_maps:
         params['mpm_maps_spm_function'] = configuration.get(dataset_section, 'MPM_MAPS_SPM_FUNCTION')
