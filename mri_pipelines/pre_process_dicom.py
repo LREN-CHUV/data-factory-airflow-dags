@@ -26,7 +26,6 @@ from pre_process_steps.copy_to_local import copy_to_local_cfg
 from pre_process_steps.register_local import register_local_cfg
 from pre_process_steps.images_organizer import images_organizer_cfg
 
-
 def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs,
                           misc_library_path, copy_to_local_folder,
                           dataset_config=None, copy_to_local=True, images_organizer=False,
