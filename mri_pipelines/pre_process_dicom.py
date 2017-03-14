@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from textwrap import dedent
 
 from airflow import DAG
-from airflow.operators import BashOperator, TriggerDagRunOperator
+from airflow.operators import TriggerDagRunOperator
 from airflow_spm.operators import SpmPipelineOperator
 from airflow_pipeline.operators import PreparePipelineOperator, PythonPipelineOperator
 from airflow_pipeline.pipelines import pipeline_trigger
@@ -26,6 +26,7 @@ from pre_process_steps.cleanup_local import cleanup_local_cfg
 from pre_process_steps.copy_to_local import copy_to_local_cfg
 from pre_process_steps.register_local import register_local_cfg
 from pre_process_steps.images_organizer import images_organizer_cfg
+
 
 def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs, misc_library_path,
                           dataset_config=None, copy_to_local=True, images_organizer=False,
@@ -343,8 +344,8 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
 
     if copy_to_local:
         _, _, priority_weight = cleanup_local_cfg(dag, upstream, upstream_id, priority_weight,
-                                                                   dataset_section, "DICOM_LOCAL_FOLDER")
-    # endif                                                              
+                                                  dataset_section, "DICOM_LOCAL_FOLDER")
+    # endif
 
     extract_nifti_info = PythonPipelineOperator(
         task_id='extract_nifti_info',
