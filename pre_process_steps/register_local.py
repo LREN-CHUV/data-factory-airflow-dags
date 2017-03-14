@@ -2,6 +2,10 @@
 
   Pre processing step: register local files
 
+  Configuration variables used:
+
+  * DATASET_CONFIG
+
 """
 
 
@@ -12,13 +16,13 @@ from airflow import configuration
 from airflow_pipeline.operators import BashPipelineOperator
 
 
-def register_local_cfg(upstream, upstream_id, priority_weight, dataset_section):
+def register_local_cfg(dag, upstream, upstream_id, priority_weight, dataset_section):
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
 
-    return register_local(upstream, upstream_id, priority_weight, dataset_config)
+    return register_local(dag, upstream, upstream_id, priority_weight, dataset_config)
 
 
-def register_local(upstream, upstream_id, priority_weight, dataset_config):
+def register_local(dag, upstream, upstream_id, priority_weight, dataset_config):
 
     # Register local data into the Data catalog/provenance tables
 

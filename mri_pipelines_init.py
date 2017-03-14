@@ -35,7 +35,6 @@ for dataset_section in dataset_sections.split(','):
     default_config(dataset_section, 'PREPROCESSING_SCANNERS', 'daily')
     default_config(dataset_section, 'PREPROCESSING_PIPELINES',
                    'copy_to_local,dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')
-    default_config(dataset_section, 'DICOM_ORGANIZER_SPM_FUNCTION', 'dicomOrganizer')
     default_config(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION', 'selectT1')
     default_config(dataset_section, 'DICOM_FILES_PATTERN', '**/MR.*')
     default_config(dataset_section, 'NIFTI_SPM_FUNCTION', 'DCM2NII_LREN')
@@ -113,13 +112,6 @@ for dataset_section in dataset_sections.split(','):
                   dicom_to_nifti_local_folder=dicom_to_nifti_local_folder,
                   dicom_to_nifti_server_folder=dicom_to_nifti_server_folder, mpm_maps=mpm_maps,
                   neuro_morphometric_atlas=neuro_morphometric_atlas, dcm2nii_program=dcm2nii_program)
-
-    if images_organizer:
-        params['hierarchizer_image'] = configuration.get(dataset_section, 'HIERARCHIZER_IMAGE')
-        params['hierarchizer_version'] = configuration.get(dataset_section, 'HIERARCHIZER_VERSION')
-        params['images_organizer_local_folder'] = configuration.get(dataset_section, 'IMAGES_ORGANIZER_LOCAL_FOLDER')
-        params['images_organizer_data_structure'] = configuration.get(dataset_section, 'IMAGE_ORGANIZER_DATA_STRUCTURE')
-        params['hierarchizer_dataset_type'] = configuration.get(dataset_section, 'HIERARCHIZER_DATASET_TYPE')
 
     if images_selection:
         params['images_selection_local_folder'] = configuration.get(dataset_section, 'IMAGES_SELECTION_LOCAL_FOLDER')

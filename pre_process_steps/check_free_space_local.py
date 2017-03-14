@@ -2,6 +2,12 @@
 
   Pre processing step: copy files to local
 
+  Configuration variables used:
+
+  * DATASET_CONFIG
+  * MIN_FREE_SPACE_LOCAL_FOLDER
+  * <local_folder_config_key>
+
 """
 
 
@@ -12,15 +18,15 @@ from airflow import configuration
 from airflow_freespace.operators import FreeSpaceSensor
 
 
-def check_free_space_local_cfg(upstream, upstream_id, priority_weight, dataset_section, local_folder_config_key):
+def check_free_space_local_cfg(dag, upstream, upstream_id, priority_weight, dataset_section, local_folder_config_key):
     min_free_space_local_folder = configuration.getfloat(dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
     copy_to_local_folder = configuration.get(dataset_section, local_folder_config_key)
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
 
-    return check_free_space_local(upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder, dataset_config)
+    return check_free_space_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder, dataset_config)
 
 
-def check_free_space_local(upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder):
+def check_free_space_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder):
 
     check_free_space = FreeSpaceSensor(
         task_id='check_free_space',

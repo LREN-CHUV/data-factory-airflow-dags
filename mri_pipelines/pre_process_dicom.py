@@ -26,13 +26,11 @@ from i2b2_import import features_csv_import
 from pre_process_steps.check_free_space_local import check_free_space_local_cfg
 from pre_process_steps.copy_to_local import copy_to_local_cfg
 from pre_process_steps.register_local import register_local_cfg
+from pre_process_steps.images_organizer import images_organizer_cfg
 
 def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs,
                           misc_library_path, copy_to_local_folder,
                           dataset_config=None, copy_to_local=True, images_organizer=False,
-                          hierarchizer_dataset_type='DICOM', hierarchizer_image='hbpmip/hierarchizer',
-                          hierarchizer_version='latest', images_organizer_local_folder=None,
-                          images_organizer_data_structure='PatientID:StudyID:SeriesDescription:SeriesNumber',
                           images_selection=False, images_selection_local_folder=None, images_selection_csv_path=None,
                           dicom_select_t1=False, dicom_select_t1_spm_function='selectT1',
                           dicom_select_t1_pipeline_path=None, dicom_select_t1_local_folder=None,
@@ -172,7 +170,7 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
         schedule_interval=None,
         max_active_runs=max_active_runs)
 
-    upstream, upstream_id, priority_weight = check_free_space_local_cfg(None, None, 0, dataset_section, "DICOM_LOCAL_FOLDER")
+    upstream, upstream_id, priority_weight = check_free_space_local_cfg(dag, None, None, 0, dataset_section, "DICOM_LOCAL_FOLDER")
 
     prepare_pipeline = PreparePipelineOperator(
         task_id='prepare_pipeline',
@@ -195,50 +193,13 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
     priority_weight += 5
 
     if copy_to_local:
-        upstream, upstream_id, priority_weight = copy_to_local_cfg(upstream, upstream_id, priority_weight, dataset_section, "DICOM_LOCAL_FOLDER")
+        upstream, upstream_id, priority_weight = copy_to_local_cfg(dag, upstream, upstream_id, priority_weight, dataset_section, "DICOM_LOCAL_FOLDER")
     else:
-        upstream, upstream_id, priority_weight = register_local_cfg(upstream, upstream_id, priority_weight, dataset_section)
+        upstream, upstream_id, priority_weight = register_local_cfg(dag, upstream, upstream_id, priority_weight, dataset_section)
     # endif
 
     if images_organizer:
-
-        dataset_param = "--dataset " + dataset
-        type_of_images_param = "--type " + hierarchizer_dataset_type
-        structure_param = "--attributes " + str(images_organizer_data_structure.split(':'))
-
-        images_organizer_pipeline = DockerPipelineOperator(
-            task_id='images_organizer_pipeline',
-            output_folder_callable=lambda session_id, **kwargs: images_organizer_local_folder + '/' + session_id,
-            pool='io_intensive',
-            parent_task=upstream_id,
-            priority_weight=priority_weight,
-            execution_timeout=timedelta(hours=24),
-            on_skip_trigger_dag_id='mri_notify_skipped_processing',
-            on_failure_trigger_dag_id='mri_notify_failed_processing',
-            dag=dag,
-            image=hierarchizer_image+':'+hierarchizer_version,
-            command=[dataset_param, type_of_images_param, structure_param],
-            volumes=[copy_to_local_folder + ':/input_folder:ro', images_organizer_local_folder + ':/output_folder']
-        )
-
-        images_organizer_pipeline.set_upstream(upstream)
-
-        images_organizer_pipeline.doc_md = dedent("""\
-        # Images organizer pipeline
-
-        Reorganise DICOM/NIFTI files to fit the structure expected by the following pipelines.
-
-        Reorganised DICOM/NIFTI files are stored the the following locations:
-
-        * Local folder: __%s__
-
-        Depends on: __%s__
-        """ % (images_organizer_local_folder, upstream_id))
-
-        upstream = images_organizer_pipeline
-        upstream_id = 'images_organizer_pipeline'
-        priority_weight += 5
-
+        upstream, upstream_id, priority_weight = images_organizer_cfg(dag, upstream, upstream_id, priority_weight, dataset_section, dataset, "DICOM_LOCAL_FOLDER")
     # endif
 
     if images_selection:

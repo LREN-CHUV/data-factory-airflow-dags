@@ -2,6 +2,12 @@
 
   Pre processing step: copy files to local
 
+  Configuration variables used:
+
+  * DATASET_CONFIG
+  * MIN_FREE_SPACE_LOCAL_FOLDER
+  * <local_folder_config_key>
+
 """
 
 
@@ -12,15 +18,15 @@ from airflow import configuration
 from airflow_pipeline.operators import BashPipelineOperator
 
 
-def copy_to_local_cfg(upstream, upstream_id, priority_weight, dataset_section, local_folder_config_key):
+def copy_to_local_cfg(dag, upstream, upstream_id, priority_weight, dataset_section, local_folder_config_key):
     min_free_space_local_folder = configuration.getfloat(dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
     copy_to_local_folder = configuration.get(dataset_section, local_folder_config_key)
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
 
-    return copy_to_local(upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder, dataset_config)
+    return copy_to_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder, dataset_config)
 
 
-def copy_to_local(upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder, dataset_config):
+def copy_to_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder, dataset_config):
 
     copy_to_local_cmd = dedent("""
         used="$(df -h /home | grep '/' | grep -Po '[^ ]*(?=%)')"

@@ -32,7 +32,7 @@ Requirements:
    * DICOM_FILES_PATTERN: pattern used to identify DICOM files. Default: ```**/MR.*```
    * dicom_organizer_data_structure = PatientID:AcquisitionDate:SeriesDescription:SeriesDate
    * dicom_organizer_local_folder = /data/organizer
-   * DICOM_ORGANIZER_SPM_FUNCTION: dicomOrganizer
+   * DICOM_ORGANIZER_IMAGE: dicomOrganizer
    * dicom_select_T1_local_folder = /data/select_T1
    * dicom_select_T1_protocols_file = /opt/airflow-scripts/mri-preprocessing-pipeline/Protocols_definition.txt
    * DICOM_SELECT_T1_SPM_FUNCTION: selectT1

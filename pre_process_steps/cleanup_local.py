@@ -2,6 +2,10 @@
 
   Pre processing step: cleanup local
 
+  Configuration variables used:
+
+  * <local_folder_config_key>
+
 """
 
 
@@ -12,13 +16,13 @@ from airflow import configuration
 from airflow.operators import BashOperator
 
 
-def cleanup_cfg(upstream, upstream_id, priority_weight, dataset_section, local_folder_config_key):
+def cleanup_cfg(dag, upstream, upstream_id, priority_weight, dataset_section, local_folder_config_key):
     copy_to_local_folder = configuration.get(dataset_section, local_folder_config_key)
 
-    return cleanup_local(upstream, upstream_id, priority_weight, copy_to_local_folder)
+    return cleanup_local(dag, upstream, upstream_id, priority_weight, copy_to_local_folder)
 
 
-def cleanup_local(upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder):
+def cleanup_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder):
 
     cleanup_local_cmd = dedent("""
             rm -rf {{ params["local_folder"] }}/{{ dag_run.conf["session_id"] }}
