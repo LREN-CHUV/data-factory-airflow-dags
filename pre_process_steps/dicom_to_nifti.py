@@ -34,9 +34,8 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream, upstream_id, priority_weight, dat
     default_config(dataset_section, 'DATASET_CONFIG', '')
     default_config(dataset_section, 'NIFTI_SPM_FUNCTION', 'DCM2NII_LREN')
 
-    dataset = configuration.get(dataset_section, 'DATASET')
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
-    pipelines_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/Nifti_Conversion_Pipeline'
+    pipeline_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/Nifti_Conversion_Pipeline'
     misc_library_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/../Miscellaneous&Others'
     spm_function = configuration.get(dataset_section, 'NIFTI_SPM_FUNCTION')
     local_folder = configuration.get(dataset_section, 'NIFTI_LOCAL_FOLDER')
@@ -45,9 +44,8 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream, upstream_id, priority_weight, dat
     dcm2nii_program = configuration.get(dataset_section, 'DCM2NII_PROGRAM')
 
     return dicom_to_nifti_pipeline(dag, upstream, upstream_id, priority_weight,
-                                   dataset=dataset,
                                    dataset_config=dataset_config,
-                                   pipeline_path=pipelines_path,
+                                   pipeline_path=pipeline_path,
                                    misc_library_path=misc_library_path,
                                    spm_function=spm_function,
                                    local_folder=local_folder,
@@ -119,27 +117,6 @@ def dicom_to_nifti_pipeline(dag, upstream, upstream_id, priority_weight,
     upstream_id = 'dicom_to_nifti_pipeline'
     priority_weight += 10
 
-    extract_nifti_info = PythonPipelineOperator(
-        task_id='extract_nifti_info',
-        python_callable=extract_provenance_info_fn,
-        op_kwargs={'dataset_config': dataset_config, 'dataset': dataset},
-        parent_task=upstream_id,
-        pool='io_intensive',
-        priority_weight=priority_weight,
-        execution_timeout=timedelta(hours=3),
-        dag=dag
-    )
-
-    extract_nifti_info.set_upstream(upstream)
-    priority_weight += 10
-
-    extract_nifti_info.doc_md = dedent("""\
-    # Extract information from NIFTI files converted from DICOM
-
-    Read NIFTI information from directory %s containing nifti files freshly converted from DICOM and store that
-    information into the database.
-    """ % local_folder)
-
     notify_success = TriggerDagRunOperator(
         task_id='notify_success',
         trigger_dag_id='mri_notify_successful_processing',
@@ -148,7 +125,7 @@ def dicom_to_nifti_pipeline(dag, upstream, upstream_id, priority_weight,
         dag=dag
     )
 
-    notify_success.set_upstream(extract_nifti_info)
+    notify_success.set_upstream(upstream)
 
     notify_success.doc_md = dedent("""\
     # Notify successful processing
