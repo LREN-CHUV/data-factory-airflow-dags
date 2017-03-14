@@ -118,10 +118,10 @@ for dataset_section in dataset_sections.split(','):
         params['images_selection_csv_path'] = configuration.get(dataset_section, 'IMAGES_SELECTION_CSV_PATH')
 
     if dicom_select_t1:
-        params['dicom_select_T1_spm_function'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION')
-        params['dicom_select_T1_local_folder'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_LOCAL_FOLDER')
-        params['dicom_select_T1_protocols_file'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_PROTOCOLS_FILE')
-        params['dicom_select_T1_pipeline_path'] = pipelines_path + '/SelectT1_Pipeline'
+        params['dicom_select_t1_spm_function'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION')
+        params['dicom_select_t1_local_folder'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_LOCAL_FOLDER')
+        params['dicom_select_t1_protocols_file'] = configuration.get(dataset_section, 'DICOM_SELECT_T1_PROTOCOLS_FILE')
+        params['dicom_select_t1_pipeline_path'] = pipelines_path + '/SelectT1_Pipeline'
 
     if mpm_maps:
         params['mpm_maps_spm_function'] = configuration.get(dataset_section, 'MPM_MAPS_SPM_FUNCTION')
