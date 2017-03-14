@@ -30,9 +30,6 @@ Requirements:
    * DATASET_CONFIG: TODO
    * DICOM_LOCAL_FOLDER: path containing the anonymised files coming from the MRI scanner and already anonymised by a tool
    * DICOM_FILES_PATTERN: pattern used to identify DICOM files. Default: ```**/MR.*```
-   * dicom_organizer_data_structure = PatientID:AcquisitionDate:SeriesDescription:SeriesDate
-   * dicom_organizer_local_folder = /data/organizer
-   * DICOM_ORGANIZER_IMAGE: dicomOrganizer
    * dicom_select_T1_local_folder = /data/select_T1
    * dicom_select_T1_protocols_file = /opt/airflow-scripts/mri-preprocessing-pipeline/Protocols_definition.txt
    * DICOM_SELECT_T1_SPM_FUNCTION: selectT1
@@ -42,6 +39,10 @@ Requirements:
    * EHR_TO_I2B2_CAPTURE_DOCKER_IMAGE
    * EHR_TO_I2B2_CAPTURE_FOLDER
    * EHR_VERSIONED_FOLDER
+   * IMAGES_ORGANIZER_DATASET_TYPE
+   * IMAGES_ORGANIZER_DATA_STRUCTURE PatientID:AcquisitionDate:SeriesDescription:SeriesDate
+   * IMAGES_ORGANIZER_LOCAL_FOLDER
+   * IMAGES_ORGANIZER_DOCKER_IMAGE
    * max_active_runs = 30
    * MIN_FREE_SPACE_LOCAL_FOLDER: minimum percentage of free space available on local disk
    * MPM_MAPS_LOCAL_FOLDER: path for the results of MPM maps pipeline
