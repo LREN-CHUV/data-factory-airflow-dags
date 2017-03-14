@@ -22,12 +22,12 @@ from mri_meta_extract.files_recording import visit
 from i2b2_import import features_csv_import
 
 from pre_process_steps.check_free_space_local import check_free_space_local_cfg
+from pre_process_steps.cleanup_local import cleanup_local_cfg
 from pre_process_steps.copy_to_local import copy_to_local_cfg
 from pre_process_steps.register_local import register_local_cfg
 from pre_process_steps.images_organizer import images_organizer_cfg
 
-def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs,
-                          misc_library_path, copy_to_local_folder,
+def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs, misc_library_path,
                           dataset_config=None, copy_to_local=True, images_organizer=False,
                           images_selection=False, images_selection_local_folder=None, images_selection_csv_path=None,
                           dicom_select_t1=False, dicom_select_t1_spm_function='selectT1',
@@ -342,26 +342,9 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
     priority_weight += 5
 
     if copy_to_local:
-        cleanup_local_dicom_cmd = dedent("""
-            rm -rf {{ params["local_folder"] }}/{{ dag_run.conf["session_id"] }}
-        """)
-
-        cleanup_local_dicom = BashOperator(
-            task_id='cleanup_local_dicom',
-            bash_command=cleanup_local_dicom_cmd,
-            params={'local_folder': copy_to_local_folder},
-            priority_weight=priority_weight,
-            execution_timeout=timedelta(hours=1),
-            dag=dag
-        )
-        cleanup_local_dicom.set_upstream(upstream)
-        priority_weight += 5
-
-        cleanup_local_dicom.doc_md = dedent("""\
-        # Cleanup local DICOM files
-
-        Remove locally stored DICOM files as they have been processed already.
-        """)
+        _, _, priority_weight = cleanup_local_cfg(dag, upstream, upstream_id, priority_weight,
+                                                                   dataset_section, "DICOM_LOCAL_FOLDER")
+    # endif                                                              
 
     extract_nifti_info = PythonPipelineOperator(
         task_id='extract_nifti_info',
