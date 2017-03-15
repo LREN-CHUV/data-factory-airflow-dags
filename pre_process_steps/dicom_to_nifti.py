@@ -25,14 +25,13 @@ from airflow.operators import TriggerDagRunOperator
 from airflow_pipeline.pipelines import pipeline_trigger
 from airflow_spm.operators import SpmPipelineOperator
 
-from common_steps import default_config
+from common_steps import Step, default_config
 
 
-def dicom_to_nifti_pipeline_cfg(dag, upstream, upstream_id, priority_weight, dataset_section):
+def dicom_to_nifti_pipeline_cfg(dag, upstream_step, dataset_section):
     default_config(dataset_section, 'DATASET_CONFIG', '')
     default_config(dataset_section, 'NIFTI_SPM_FUNCTION', 'DCM2NII_LREN')
 
-    dataset = configuration.get(dataset_section, 'DATASET')
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
     pipeline_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/Nifti_Conversion_Pipeline'
     misc_library_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/../Miscellaneous&Others'
@@ -42,8 +41,7 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream, upstream_id, priority_weight, dat
     protocols_file = configuration.get(dataset_section, 'PROTOCOLS_FILE')
     dcm2nii_program = configuration.get(dataset_section, 'DCM2NII_PROGRAM')
 
-    return dicom_to_nifti_pipeline(dag, upstream, upstream_id, priority_weight,
-                                   dataset=dataset,
+    return dicom_to_nifti_pipeline(dag, upstream_step,
                                    dataset_config=dataset_config,
                                    pipeline_path=pipeline_path,
                                    misc_library_path=misc_library_path,
@@ -54,7 +52,7 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream, upstream_id, priority_weight, dat
                                    dcm2nii_program=dcm2nii_program)
 
 
-def dicom_to_nifti_pipeline(dag, upstream, upstream_id, priority_weight,
+def dicom_to_nifti_pipeline(dag, upstream_step,
                             dataset='',
                             dataset_config='',
                             spm_function='DCM2NII_LREN',
@@ -86,8 +84,8 @@ def dicom_to_nifti_pipeline(dag, upstream, upstream_id, priority_weight,
         matlab_paths=[misc_library_path, pipeline_path],
         output_folder_callable=lambda session_id, **kwargs: local_folder + '/' + session_id,
         pool='io_intensive',
-        parent_task=upstream_id,
-        priority_weight=priority_weight,
+        parent_task=upstream_step.task_id,
+        priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=24),
         on_skip_trigger_dag_id='mri_notify_skipped_processing',
         on_failure_trigger_dag_id='mri_notify_failed_processing',
@@ -95,7 +93,8 @@ def dicom_to_nifti_pipeline(dag, upstream, upstream_id, priority_weight,
         dag=dag
     )
 
-    dicom_to_nifti_pipeline.set_upstream(upstream)
+    if upstream_step.task:
+        dicom_to_nifti_pipeline.set_upstream(upstream_step.task)
 
     dicom_to_nifti_pipeline.doc_md = dedent("""\
     # DICOM to Nitfi Pipeline
@@ -111,11 +110,7 @@ def dicom_to_nifti_pipeline(dag, upstream, upstream_id, priority_weight,
     * Remote folder: __%s__
 
     Depends on: __%s__
-    """ % (spm_function, local_folder, server_folder, upstream_id))
-
-    upstream = dicom_to_nifti_pipeline
-    upstream_id = 'dicom_to_nifti_pipeline'
-    priority_weight += 10
+    """ % (spm_function, local_folder, server_folder, upstream_step.task_id))
 
     notify_success = TriggerDagRunOperator(
         task_id='notify_success',
@@ -125,7 +120,7 @@ def dicom_to_nifti_pipeline(dag, upstream, upstream_id, priority_weight,
         dag=dag
     )
 
-    notify_success.set_upstream(upstream)
+    notify_success.set_upstream(dicom_to_nifti_pipeline)
 
     notify_success.doc_md = dedent("""\
     # Notify successful processing
@@ -133,4 +128,4 @@ def dicom_to_nifti_pipeline(dag, upstream, upstream_id, priority_weight,
     Notify successful processing of this MRI scan session.
     """)
 
-    return notify_success, upstream, upstream_id, priority_weight
+    return notify_success, Step(dicom_to_nifti_pipeline, 'dicom_to_nifti_pipeline', upstream_step.priority_weight + 10)

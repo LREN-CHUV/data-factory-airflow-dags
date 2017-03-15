@@ -20,8 +20,10 @@ from textwrap import dedent
 from airflow import configuration
 from airflow_pipeline.operators import DockerPipelineOperator
 
+from common_steps import Step
 
-def images_organizer_cfg(dag, upstream, upstream_id, priority_weight, dataset, dataset_section,
+
+def images_organizer_cfg(dag, upstream_step, dataset, dataset_section,
                          input_folder_config_key):
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
     dataset_type = configuration.get(dataset_section, 'IMAGES_ORGANIZER_DATASET_TYPE')
@@ -30,7 +32,7 @@ def images_organizer_cfg(dag, upstream, upstream_id, priority_weight, dataset, d
     docker_image = configuration.get(dataset_section, 'IMAGES_ORGANIZER_DOCKER_IMAGE')
     input_folder = configuration.get(dataset_section, input_folder_config_key)
 
-    return images_organizer(dag, upstream, upstream_id, priority_weight, dataset, dataset_config,
+    return images_organizer(dag, upstream_step, dataset, dataset_config,
                             dataset_type=dataset_type,
                             data_structure=data_structure,
                             input_folder=input_folder,
@@ -38,7 +40,7 @@ def images_organizer_cfg(dag, upstream, upstream_id, priority_weight, dataset, d
                             docker_image=docker_image)
 
 
-def images_organizer(dag, upstream, upstream_id, priority_weight, dataset, dataset_config,
+def images_organizer(dag, upstream_step, dataset, dataset_config,
                      dataset_type, data_structure, input_folder,
                      local_folder, docker_image='hbpmip/hierarchizer:latest'):
 
@@ -50,8 +52,8 @@ def images_organizer(dag, upstream, upstream_id, priority_weight, dataset, datas
         task_id='images_organizer_pipeline',
         output_folder_callable=lambda session_id, **kwargs: local_folder + '/' + session_id,
         pool='io_intensive',
-        parent_task=upstream_id,
-        priority_weight=priority_weight,
+        parent_task=upstream_step.task_id,
+        priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=24),
         on_skip_trigger_dag_id='mri_notify_skipped_processing',
         on_failure_trigger_dag_id='mri_notify_failed_processing',
@@ -63,7 +65,8 @@ def images_organizer(dag, upstream, upstream_id, priority_weight, dataset, datas
                  local_folder + ':/output_folder']
     )
 
-    images_organizer_pipeline.set_upstream(upstream)
+    if upstream_step.task:
+        images_organizer_pipeline.set_upstream(upstream_step.task)
 
     images_organizer_pipeline.doc_md = dedent("""\
         # Images organizer pipeline
@@ -75,10 +78,6 @@ def images_organizer(dag, upstream, upstream_id, priority_weight, dataset, datas
         * Local folder: __%s__
 
         Depends on: __%s__
-        """ % (local_folder, upstream_id))
+        """ % (local_folder, upstream_step.task_id))
 
-    upstream = images_organizer_pipeline
-    upstream_id = 'images_organizer_pipeline'
-    priority_weight += 10
-
-    return upstream, upstream_id, priority_weight
+    return Step(images_organizer_pipeline, 'images_organizer_pipeline', upstream_step.priority_weight + 10)

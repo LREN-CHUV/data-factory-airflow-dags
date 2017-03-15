@@ -16,17 +16,18 @@ from textwrap import dedent
 from airflow import configuration
 from airflow_freespace.operators import FreeSpaceSensor
 
+from common_steps import Step
 
-def check_free_space_local_cfg(dag, upstream, upstream_id, priority_weight, dataset_section, local_folder_config_key):
+
+def check_free_space_local_cfg(dag, upstream_step, dataset_section, local_folder_config_key):
     min_free_space_local_folder = configuration.getfloat(dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
     copy_to_local_folder = configuration.get(dataset_section, local_folder_config_key)
 
-    return check_free_space_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder,
+    return check_free_space_local(dag, upstream_step, min_free_space_local_folder,
                                   copy_to_local_folder)
 
 
-def check_free_space_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder,
-                           copy_to_local_folder):
+def check_free_space_local(dag, upstream_step, min_free_space_local_folder, copy_to_local_folder):
 
     check_free_space = FreeSpaceSensor(
         task_id='check_free_space',
@@ -38,14 +39,13 @@ def check_free_space_local(dag, upstream, upstream_id, priority_weight, min_free
         dag=dag
     )
 
+    if upstream_step.task:
+        check_free_space.set_upstream(upstream_step.task)
+
     check_free_space.doc_md = dedent("""\
     # Check free space
 
     Check that there is enough free space on the disk hosting folder %s for processing, wait otherwise.
     """ % copy_to_local_folder)
 
-    upstream = check_free_space
-    upstream_id = 'check_free_space'
-    priority_weight += 10
-
-    return upstream, upstream_id, priority_weight
+    return Step(check_free_space, 'check_free_space', upstream_step.priority_weight + 10)

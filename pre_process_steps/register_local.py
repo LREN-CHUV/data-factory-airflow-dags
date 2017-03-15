@@ -15,14 +15,16 @@ from textwrap import dedent
 from airflow import configuration
 from airflow_pipeline.operators import BashPipelineOperator
 
+from common_steps import Step
 
-def register_local_cfg(dag, upstream, upstream_id, priority_weight, dataset_section):
+
+def register_local_cfg(dag, upstream_step, dataset_section):
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
 
-    return register_local(dag, upstream, upstream_id, priority_weight, dataset_config)
+    return register_local(dag, upstream_step, dataset_config)
 
 
-def register_local(dag, upstream, upstream_id, priority_weight, dataset_config):
+def register_local(dag, upstream_step, dataset_config):
 
     # Register local data into the Data catalog/provenance tables
 
@@ -32,14 +34,16 @@ def register_local(dag, upstream, upstream_id, priority_weight, dataset_config):
         task_id='register_local',
         bash_command=register_local_cmd,
         params={},
-        parent_task=upstream_id,
-        priority_weight=priority_weight,
+        parent_task=upstream_step.task_id,
+        priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=3),
         on_failure_trigger_dag_id='mri_notify_failed_processing',
         dataset_config=dataset_config,
         dag=dag
     )
-    register_local.set_upstream(upstream)
+
+    if upstream_step.task:
+        register_local.set_upstream(upstream_step.task)
 
     register_local.doc_md = dedent("""\
         # Register incoming files for provenance
@@ -47,8 +51,4 @@ def register_local(dag, upstream, upstream_id, priority_weight, dataset_config):
         This step does nothing except register the files in the input folder for provenance.
         """)
 
-    upstream = register_local
-    upstream_id = 'register_local'
-    priority_weight += 10
-
-    return upstream, upstream_id, priority_weight
+    return Step(register_local, 'register_local', upstream_step.priority_weight + 10)

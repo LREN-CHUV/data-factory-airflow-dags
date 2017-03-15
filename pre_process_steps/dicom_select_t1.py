@@ -19,10 +19,11 @@ from textwrap import dedent
 
 from airflow import configuration
 from airflow_spm.operators import SpmPipelineOperator
-from common_steps import default_config
+
+from common_steps import Step, default_config
 
 
-def dicom_select_t1_pipeline_cfg(dag, upstream, upstream_id, priority_weight, dataset_section):
+def dicom_select_t1_pipeline_cfg(dag, upstream_step, dataset_section):
     default_config(dataset_section, 'DATASET_CONFIG', '')
     default_config(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION', 'selectT1')
 
@@ -33,7 +34,7 @@ def dicom_select_t1_pipeline_cfg(dag, upstream, upstream_id, priority_weight, da
     local_folder = configuration.get(dataset_section, 'DICOM_SELECT_T1_LOCAL_FOLDER')
     protocols_file = configuration.get(dataset_section, 'DICOM_SELECT_T1_PROTOCOLS_FILE')
 
-    return dicom_select_t1_pipeline(dag, upstream, upstream_id, priority_weight,
+    return dicom_select_t1_pipeline(dag, upstream_step,
                                     dataset_config=dataset_config,
                                     pipeline_path=pipeline_path,
                                     misc_library_path=misc_library_path,
@@ -42,7 +43,7 @@ def dicom_select_t1_pipeline_cfg(dag, upstream, upstream_id, priority_weight, da
                                     protocols_file=protocols_file)
 
 
-def dicom_select_t1_pipeline(dag, upstream, upstream_id, priority_weight,
+def dicom_select_t1_pipeline(dag, upstream_step,
                              dataset_config=None,
                              spm_function='selectT1',
                              pipeline_path=None,
@@ -69,8 +70,8 @@ def dicom_select_t1_pipeline(dag, upstream, upstream_id, priority_weight,
         matlab_paths=[misc_library_path, pipeline_path],
         output_folder_callable=lambda session_id, **kwargs: local_folder + '/' + session_id,
         pool='io_intensive',
-        parent_task=upstream_id,
-        priority_weight=priority_weight,
+        parent_task=upstream_step.task_id,
+        priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=24),
         on_skip_trigger_dag_id='mri_notify_skipped_processing',
         on_failure_trigger_dag_id='mri_notify_failed_processing',
@@ -78,7 +79,8 @@ def dicom_select_t1_pipeline(dag, upstream, upstream_id, priority_weight,
         dag=dag
     )
 
-    dicom_select_t1_pipeline.set_upstream(upstream)
+    if upstream_step.task:
+        dicom_select_t1_pipeline.set_upstream(upstream_step.task)
 
     dicom_select_t1_pipeline.doc_md = dedent("""\
         # select T1 DICOM pipeline
@@ -92,10 +94,6 @@ def dicom_select_t1_pipeline(dag, upstream, upstream_id, priority_weight,
         * Local folder: __%s__
 
         Depends on: __%s__
-        """ % (spm_function, local_folder, upstream_id))
+        """ % (spm_function, local_folder, upstream_step.task_id))
 
-    upstream = dicom_select_t1_pipeline
-    upstream_id = 'dicom_select_T1_pipeline'
-    priority_weight += 10
-
-    return upstream, upstream_id, priority_weight
+    return Step(dicom_select_t1_pipeline, 'dicom_select_T1_pipeline', upstream_step.priority_weight + 10)

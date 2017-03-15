@@ -19,6 +19,7 @@ from mri_meta_extract.files_recording import visit
 
 from i2b2_import import features_csv_import
 
+from common_steps import initial_step
 from common_steps.prepare_pipeline import prepare_pipeline
 
 from pre_process_steps.check_free_space_local import check_free_space_local_cfg
@@ -102,42 +103,38 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
         schedule_interval=None,
         max_active_runs=max_active_runs)
 
-    upstream, upstream_id, priority_weight = check_free_space_local_cfg(dag, None, None, 0, dataset_section,
-                                                                        "DICOM_LOCAL_FOLDER")
+    upstream_step = check_free_space_local_cfg(dag, initial_step, dataset_section, "DICOM_LOCAL_FOLDER")
 
-    upstream, upstream_id, priority_weight = prepare_pipeline(dag, upstream, upstream_id, priority_weight, True)
+    upstream_step = prepare_pipeline(dag, upstream_step, True)
 
     if copy_to_local:
-        upstream, upstream_id, priority_weight = copy_to_local_cfg(dag, upstream, upstream_id, priority_weight,
-                                                                   dataset_section, "DICOM_LOCAL_FOLDER")
+        upstream_step = copy_to_local_cfg(dag, upstream_step, dataset_section, "DICOM_LOCAL_FOLDER")
     else:
-        upstream, upstream_id, priority_weight = register_local_cfg(dag, upstream, upstream_id, priority_weight,
-                                                                    dataset_section)
+        upstream_step = register_local_cfg(dag, upstream_step, dataset_section)
     # endif
 
     if images_organizer:
-        upstream, upstream_id, priority_weight = images_organizer_cfg(dag, upstream, upstream_id, priority_weight,
-                                                                      dataset_section, dataset, "DICOM_LOCAL_FOLDER")
+        upstream_step = images_organizer_cfg(dag, upstream_step, dataset_section, dataset, "DICOM_LOCAL_FOLDER")
     # endif
 
     if images_selection:
-        upstream, upstream_id, priority_weight = images_selection_pipeline_cfg(dag, upstream, upstream_id,
-                                                                               priority_weight, dataset_section)
+        upstream_step = images_selection_pipeline_cfg(dag, upstream_step, dataset_section)
     # endif
 
     if dicom_select_t1:
-
-        upstream, upstream_id, priority_weight = dicom_select_t1_pipeline_cfg(dag, upstream, upstream_id,
-                                                                              priority_weight, dataset_section)
+        upstream_step = dicom_select_t1_pipeline_cfg(dag, upstream_step, dataset_section)
     # endif
 
-    dicom_to_nifti_success, upstream, upstream_id, priority_weight = \
-        dicom_to_nifti_pipeline_cfg(dag, upstream, upstream_id, priority_weight, dataset_section)
+    dicom_to_nifti_success, upstream_step = dicom_to_nifti_pipeline_cfg(dag, upstream_step, dataset_section)
 
     if copy_to_local:
-        _, _, priority_weight = cleanup_local_cfg(dag, upstream, upstream_id, priority_weight,
-                                                  dataset_section, "DICOM_LOCAL_FOLDER")
+        copy_step = cleanup_local_cfg(dag, upstream_step, dataset_section, "DICOM_LOCAL_FOLDER")
+        upstream_step.priority_weight = copy_step.priority_weight
     # endif
+
+    upstream = upstream_step.task
+    upstream_id = upstream_step.task_id
+    priority_weight = upstream_step.priority_weight
 
     if mpm_maps:
         upstream, upstream_id, priority_weight = mpm_maps_pipeline_cfg(dag, upstream, upstream_id, priority_weight,
