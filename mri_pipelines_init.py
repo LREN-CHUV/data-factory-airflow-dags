@@ -32,7 +32,6 @@ for dataset_section in dataset_sections.split(','):
     default_config(dataset_section, 'EHR_DATA_FOLDER_DEPTH', '1')
 
     dataset = configuration.get(dataset_section, 'DATASET')
-    dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
     preprocessing_data_folder = configuration.get(
         dataset_section, 'PREPROCESSING_DATA_FOLDER')
     preprocessing_scanners = configuration.get(
@@ -65,7 +64,6 @@ for dataset_section in dataset_sections.split(','):
 
     name = '%s_preprocess_dag' % dataset.lower().replace(" ", "_")
     globals()[name] = pre_process_dicom_dag(dataset=dataset, dataset_section=dataset_section,
-                                            dataset_config=dataset_config,
                                             email_errors_to=email_errors_to, max_active_runs=max_active_runs,
                                             preprocessing_pipelines=preprocessing_pipelines)
     logging.info("Add DAG %s", globals()[name].dag_id)

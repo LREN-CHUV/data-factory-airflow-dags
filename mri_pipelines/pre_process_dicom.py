@@ -23,7 +23,7 @@ from pre_process_steps.mpm_maps import mpm_maps_pipeline_cfg
 from pre_process_steps.neuro_morphometric_atlas import neuro_morphometric_atlas_pipeline_cfg
 from pre_process_steps.notify_success import notify_success
 
-from data_export_steps.features_to_i2b2 import features_to_i2b2_pipeline_cfg
+from etl_steps.features_to_i2b2 import features_to_i2b2_pipeline_cfg
 
 
 def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs, preprocessing_pipelines=''):
