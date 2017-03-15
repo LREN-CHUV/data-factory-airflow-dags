@@ -38,6 +38,10 @@ Requirements:
         (e.g. can be useful for PPMI).
         - repetition_from_path: Enable this flag to get the repetition ID from the folder hierarchy instead of DICOM meta-data
         (e.g. can be useful for PPMI).
+    * PREPROCESSING_DATA_FOLDER:
+    * PREPROCESSING_PIPELINES: comma-separated list of values in copy_to_local, dicom_to_nifti, mpm_maps, neuro_morphometric_atlas
+    * PREPROCESSING_SCANNERS: comma-separated list of values in continuous, daily, flat to select how the preprocessing data folder is scanned for new work.
+
    * DICOM_LOCAL_FOLDER: path containing the anonymised files coming from the MRI scanner and already anonymised by a tool
    * DICOM_FILES_PATTERN: pattern used to identify DICOM files. Default: ```**/MR.*```
    * dicom_select_T1_local_folder = /data/select_T1
@@ -67,8 +71,5 @@ Requirements:
    * NIFTI_SERVER_FOLDER: long term storage location for the image files converted to Nifti
    * NIFTI_SPM_FUNCTION: DCM2NII_LREN'
    * PIPELINES_PATH: path to the root folder containing the Matlab scripts for the pipelines
-   * PREPROCESSING_DATA_FOLDER:
-   * PREPROCESSING_PIPELINES: comma-separated list of values in copy_to_local, dicom_to_nifti, mpm_maps, neuro_morphometric_atlas
-     * copy_to_local: copies all DICOM files to COPY_TO_LOCAL_FOLDER.
-   * PREPROCESSING_SCANNERS: comma-separated list of values in continuous, daily, flat to select how the preprocessing data folder is scanned for new work.
+   * copy_to_local: copies all DICOM files to COPY_TO_LOCAL_FOLDER.
    * PROTOCOLS_FILE: path to the MRI acquisition protocol file

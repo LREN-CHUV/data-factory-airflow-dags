@@ -23,7 +23,7 @@ from airflow_pipeline.operators import DockerPipelineOperator
 from common_steps import Step
 
 
-def images_organizer_cfg(dag, upstream_step, dataset, dataset_section,
+def images_organizer_cfg(dag, upstream_step, dataset_section, dataset,
                          input_folder_config_key):
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
     dataset_type = configuration.get(dataset_section, 'IMAGES_ORGANIZER_DATASET_TYPE')
