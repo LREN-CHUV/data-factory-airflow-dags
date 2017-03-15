@@ -19,7 +19,7 @@ from textwrap import dedent
 
 from airflow import configuration
 from airflow_spm.operators import SpmPipelineOperator
-from common_steps.default_config import default_config
+from common_steps import default_config
 
 
 def dicom_select_t1_pipeline_cfg(dag, upstream, upstream_id, priority_weight, dataset_section):
