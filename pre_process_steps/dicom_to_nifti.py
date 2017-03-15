@@ -34,6 +34,7 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream, upstream_id, priority_weight, dat
     default_config(dataset_section, 'DATASET_CONFIG', '')
     default_config(dataset_section, 'NIFTI_SPM_FUNCTION', 'DCM2NII_LREN')
 
+    dataset = configuration.get(dataset_section, 'DATASET')
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
     pipelines_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/Nifti_Conversion_Pipeline'
     misc_library_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/../Miscellaneous&Others'
@@ -44,6 +45,7 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream, upstream_id, priority_weight, dat
     dcm2nii_program = configuration.get(dataset_section, 'DCM2NII_PROGRAM')
 
     return dicom_to_nifti_pipeline(dag, upstream, upstream_id, priority_weight,
+                                   dataset=dataset,
                                    dataset_config=dataset_config,
                                    pipeline_path=pipelines_path,
                                    misc_library_path=misc_library_path,
@@ -55,6 +57,7 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream, upstream_id, priority_weight, dat
 
 
 def dicom_to_nifti_pipeline(dag, upstream, upstream_id, priority_weight,
+                            dataset='',
                             dataset_config='',
                             spm_function='DCM2NII_LREN',
                             pipeline_path=None,
@@ -119,6 +122,7 @@ def dicom_to_nifti_pipeline(dag, upstream, upstream_id, priority_weight,
     extract_nifti_info = PythonPipelineOperator(
         task_id='extract_nifti_info',
         python_callable=extract_provenance_info_fn,
+        op_kwargs={'dataset_config': dataset_config, 'dataset': dataset},
         parent_task=upstream_id,
         pool='io_intensive',
         priority_weight=priority_weight,

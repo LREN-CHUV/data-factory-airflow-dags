@@ -24,9 +24,7 @@ def extract_dicom_info_cfg(dag, upstream, upstream_id, priority_weight, dataset,
     return extract_dicom_info(dag, upstream, upstream_id, priority_weight, dataset, dataset_config)
 
 
-def extract_dicom_info(dag, upstream, upstream_id, priority_weight,
-                       dataset, dataset_config):
-
+def extract_dicom_info(dag, upstream, upstream_id, priority_weight, dataset, dataset_config):
     extract_dicom_info = PythonPipelineOperator(
         task_id='extract_dicom_info',
         python_callable=extract_provenance_info_fn,
