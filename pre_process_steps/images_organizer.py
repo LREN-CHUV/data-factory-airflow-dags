@@ -21,7 +21,8 @@ from airflow import configuration
 from airflow_pipeline.operators import DockerPipelineOperator
 
 
-def images_organizer_cfg(dag, upstream, upstream_id, priority_weight, dataset, dataset_section, input_folder_config_key):
+def images_organizer_cfg(dag, upstream, upstream_id, priority_weight, dataset, dataset_section,
+                         input_folder_config_key):
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
     dataset_type = configuration.get(dataset_section, 'IMAGES_ORGANIZER_DATASET_TYPE')
     data_structure = configuration.get(dataset_section, 'IMAGES_ORGANIZER_DATA_STRUCTURE')
@@ -37,9 +38,9 @@ def images_organizer_cfg(dag, upstream, upstream_id, priority_weight, dataset, d
                             images_organizer_docker_image=docker_image)
 
 
-def images_organizer(dag, upstream, upstream_id, priority_weight, dataset, dataset_config, images_organizer_dataset_type,
-                     images_organizer_data_structure, images_organizer_input_folder, images_organizer_local_folder,
-                     images_organizer_docker_image='hbpmip/hierarchizer:latest'):
+def images_organizer(dag, upstream, upstream_id, priority_weight, dataset, dataset_config,
+                     images_organizer_dataset_type, images_organizer_data_structure, images_organizer_input_folder,
+                     images_organizer_local_folder, images_organizer_docker_image='hbpmip/hierarchizer:latest'):
 
     dataset_param = "--dataset " + dataset
     type_of_images_param = "--type " + images_organizer_dataset_type
@@ -58,7 +59,8 @@ def images_organizer(dag, upstream, upstream_id, priority_weight, dataset, datas
         dag=dag,
         image=images_organizer_docker_image,
         command=[dataset_param, type_of_images_param, structure_param],
-        volumes=[images_organizer_input_folder + ':/input_folder:ro', images_organizer_local_folder + ':/output_folder']
+        volumes=[images_organizer_input_folder + ':/input_folder:ro',
+                 images_organizer_local_folder + ':/output_folder']
     )
 
     images_organizer_pipeline.set_upstream(upstream)
