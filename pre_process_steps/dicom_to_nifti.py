@@ -22,12 +22,10 @@ from textwrap import dedent
 from airflow import configuration
 from airflow.operators import TriggerDagRunOperator
 
-from airflow_pipeline.operators import PythonPipelineOperator
 from airflow_pipeline.pipelines import pipeline_trigger
 from airflow_spm.operators import SpmPipelineOperator
 
 from common_steps.default_config import default_config
-from common_steps.extract_provenance_info import extract_provenance_info_fn
 
 
 def dicom_to_nifti_pipeline_cfg(dag, upstream, upstream_id, priority_weight, dataset_section):
