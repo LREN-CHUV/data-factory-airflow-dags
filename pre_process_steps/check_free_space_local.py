@@ -1,6 +1,6 @@
 """
 
-  Pre processing step: copy files to local
+  Pre processing step: check free space on local disk
 
   Configuration variables used:
 

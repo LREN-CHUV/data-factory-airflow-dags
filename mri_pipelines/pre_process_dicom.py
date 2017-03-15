@@ -27,6 +27,7 @@ from pre_process_steps.images_selection import images_selection_pipeline_cfg
 from pre_process_steps.dicom_select_t1 import dicom_select_t1_pipeline_cfg
 from pre_process_steps.dicom_to_nifti import dicom_to_nifti_pipeline_cfg
 from pre_process_steps.mpm_maps import mpm_maps_pipeline_cfg
+from pre_process_steps.notify_success import notify_success
 
 
 def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs, misc_library_path,
@@ -115,15 +116,13 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
         upstream_step.priority_weight = copy_step.priority_weight
     # endif
 
+    if mpm_maps:
+        upstream_step = mpm_maps_pipeline_cfg(dag, upstream_step, dataset_section)
+    # endif
+
     upstream = upstream_step.task
     upstream_id = upstream_step.task_id
     priority_weight = upstream_step.priority_weight
-
-    if mpm_maps:
-        upstream, upstream_id, priority_weight = mpm_maps_pipeline_cfg(dag, upstream, upstream_id, priority_weight,
-                                                                       dataset_section)
-
-    # endif
 
     if neuro_morphometric_atlas:
 
@@ -198,5 +197,7 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
         """ % upstream_id)
 
     # endif
+
+    notify_success(dag, upstream_step)
 
     return dag

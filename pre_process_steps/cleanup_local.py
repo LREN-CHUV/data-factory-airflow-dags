@@ -1,6 +1,6 @@
 """
 
-  Pre processing step: cleanup local
+  Pre processing step: cleanup local folder
 
   Configuration variables used:
 

@@ -20,9 +20,7 @@ from datetime import timedelta
 from textwrap import dedent
 
 from airflow import configuration
-from airflow.operators import TriggerDagRunOperator
 
-from airflow_pipeline.pipelines import pipeline_trigger
 from airflow_spm.operators import SpmPipelineOperator
 
 from common_steps import Step, default_config
@@ -112,20 +110,4 @@ def dicom_to_nifti_pipeline(dag, upstream_step,
     Depends on: __%s__
     """ % (spm_function, local_folder, server_folder, upstream_step.task_id))
 
-    notify_success = TriggerDagRunOperator(
-        task_id='notify_success',
-        trigger_dag_id='mri_notify_successful_processing',
-        python_callable=pipeline_trigger('extract_nifti_atlas_info'),
-        priority_weight=999,
-        dag=dag
-    )
-
-    notify_success.set_upstream(dicom_to_nifti_pipeline)
-
-    notify_success.doc_md = dedent("""\
-    # Notify successful processing
-
-    Notify successful processing of this MRI scan session.
-    """)
-
-    return notify_success, Step(dicom_to_nifti_pipeline, 'dicom_to_nifti_pipeline', upstream_step.priority_weight + 10)
+    return Step(dicom_to_nifti_pipeline, 'dicom_to_nifti_pipeline', upstream_step.priority_weight + 10)
