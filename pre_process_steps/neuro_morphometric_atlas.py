@@ -25,6 +25,10 @@ from common_steps import Step, default_config
 
 def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, dataset_section):
     default_config(dataset_section, 'DATASET_CONFIG', '')
+    default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION',
+                   'NeuroMorphometric_pipeline')
+    default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE',
+                   configuration.get('spm', 'SPM_DIR') + '/tpm/nwTPM_sl3.nii')
 
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
     neuro_morphometric_atlas_pipeline_path = configuration.get(
@@ -37,6 +41,11 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, dataset_section):
     local_folder = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_LOCAL_FOLDER')
     server_folder = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER')
     tpm_template = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE')
+
+    # check that file exists if absolute path
+    if len(tpm_template) > 0 and tpm_template[0] is '/':
+        if not os.path.isfile(tpm_template):
+            raise OSError("TPM template file %s does not exist" % tpm_template)
 
     return neuro_morphometric_atlas_pipeline(dag, upstream_step,
                                              dataset_config=dataset_config,
@@ -55,10 +64,10 @@ def neuro_morphometric_atlas_pipeline(dag, upstream_step,
                                       neuro_morpho_atlas_pipeline_path=None,
                                       mpm_maps_pipeline_path=None,
                                       misc_library_path=None,
-                                      spm_function='neuromorphometric_a',
+                                      spm_function='NeuroMorphometric_pipeline',
                                       local_folder=None,
                                       server_folder='',
-                                      tpm_template='',
+                                      tpm_template='nwTPM_sl3.nii',
                                       protocols_file=None):
 
     def arguments_fn(folder, session_id, **kwargs):
@@ -118,4 +127,5 @@ def neuro_morphometric_atlas_pipeline(dag, upstream_step,
             Depends on: __%s__
             """ % (spm_function, local_folder, server_folder, upstream_step.task_id))
 
-    return Step(upstream_step.task, upstream_step.task_id, upstream_step.priority_weight)
+    return Step(neuro_morphometric_atlas_pipeline, 'neuro_morphometric_atlas_pipeline',
+                upstream_step.priority_weight + 10)

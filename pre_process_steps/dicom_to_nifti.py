@@ -27,12 +27,15 @@ from common_steps import Step, default_config
 
 
 def dicom_to_nifti_pipeline_cfg(dag, upstream_step, dataset_section):
+    pipelines_path = configuration.get(dataset_section, 'PIPELINES_PATH')
+
     default_config(dataset_section, 'DATASET_CONFIG', '')
     default_config(dataset_section, 'NIFTI_SPM_FUNCTION', 'DCM2NII_LREN')
+    default_config(dataset_section, 'DCM2NII_PROGRAM', pipelines_path + '/Nifti_Conversion_Pipeline/dcm2nii')
 
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
-    pipeline_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/Nifti_Conversion_Pipeline'
-    misc_library_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/../Miscellaneous&Others'
+    pipeline_path = pipelines_path + '/Nifti_Conversion_Pipeline'
+    misc_library_path = pipelines_path + '/../Miscellaneous&Others'
     spm_function = configuration.get(dataset_section, 'NIFTI_SPM_FUNCTION')
     local_folder = configuration.get(dataset_section, 'NIFTI_LOCAL_FOLDER')
     server_folder = configuration.get(dataset_section, 'NIFTI_SERVER_FOLDER')
