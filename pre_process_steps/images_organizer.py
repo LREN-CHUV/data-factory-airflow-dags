@@ -31,24 +31,24 @@ def images_organizer_cfg(dag, upstream, upstream_id, priority_weight, dataset, d
     input_folder = configuration.get(dataset_section, input_folder_config_key)
 
     return images_organizer(dag, upstream, upstream_id, priority_weight, dataset, dataset_config,
-                            images_organizer_dataset_type=dataset_type,
-                            images_organizer_data_structure=data_structure,
-                            images_organizer_input_folder=input_folder,
-                            images_organizer_local_folder=local_folder,
-                            images_organizer_docker_image=docker_image)
+                            dataset_type=dataset_type,
+                            data_structure=data_structure,
+                            input_folder=input_folder,
+                            local_folder=local_folder,
+                            docker_image=docker_image)
 
 
 def images_organizer(dag, upstream, upstream_id, priority_weight, dataset, dataset_config,
-                     images_organizer_dataset_type, images_organizer_data_structure, images_organizer_input_folder,
-                     images_organizer_local_folder, images_organizer_docker_image='hbpmip/hierarchizer:latest'):
+                     dataset_type, data_structure, input_folder,
+                     local_folder, docker_image='hbpmip/hierarchizer:latest'):
 
     dataset_param = "--dataset " + dataset
-    type_of_images_param = "--type " + images_organizer_dataset_type
-    structure_param = "--attributes " + str(images_organizer_data_structure.split(':'))
+    type_of_images_param = "--type " + dataset_type
+    structure_param = "--attributes " + str(data_structure.split(':'))
 
     images_organizer_pipeline = DockerPipelineOperator(
         task_id='images_organizer_pipeline',
-        output_folder_callable=lambda session_id, **kwargs: images_organizer_local_folder + '/' + session_id,
+        output_folder_callable=lambda session_id, **kwargs: local_folder + '/' + session_id,
         pool='io_intensive',
         parent_task=upstream_id,
         priority_weight=priority_weight,
@@ -57,10 +57,10 @@ def images_organizer(dag, upstream, upstream_id, priority_weight, dataset, datas
         on_failure_trigger_dag_id='mri_notify_failed_processing',
         dataset_config=dataset_config,
         dag=dag,
-        image=images_organizer_docker_image,
+        image=docker_image,
         command=[dataset_param, type_of_images_param, structure_param],
-        volumes=[images_organizer_input_folder + ':/input_folder:ro',
-                 images_organizer_local_folder + ':/output_folder']
+        volumes=[input_folder + ':/input_folder:ro',
+                 local_folder + ':/output_folder']
     )
 
     images_organizer_pipeline.set_upstream(upstream)
@@ -75,7 +75,7 @@ def images_organizer(dag, upstream, upstream_id, priority_weight, dataset, datas
         * Local folder: __%s__
 
         Depends on: __%s__
-        """ % (images_organizer_local_folder, upstream_id))
+        """ % (local_folder, upstream_id))
 
     upstream = images_organizer_pipeline
     upstream_id = 'images_organizer_pipeline'
