@@ -43,7 +43,7 @@ def dicom_select_t1_pipeline_cfg(dag, upstream, upstream_id, priority_weight, da
 
 
 def dicom_select_t1_pipeline(dag, upstream, upstream_id, priority_weight,
-                             dataset_config='',
+                             dataset_config=None,
                              spm_function='selectT1',
                              pipeline_path=None,
                              misc_library_path=None,

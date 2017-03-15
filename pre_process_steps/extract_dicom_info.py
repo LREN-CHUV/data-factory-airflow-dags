@@ -18,15 +18,13 @@ from airflow_pipeline.operators import PythonPipelineOperator
 from common_steps.extract_provenance_info import extract_provenance_info_fn
 
 
-def extract_dicom_info_cfg(dag, upstream, upstream_id, priority_weight, dataset, dataset_section):
+def extract_dicom_info_cfg(dag, upstream, upstream_id, priority_weight, dataset_section, dataset):
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
 
     return extract_dicom_info(dag, upstream, upstream_id, priority_weight, dataset, dataset_config)
 
 
-def extract_dicom_info(dag, upstream, upstream_id, priority_weight,
-                       dataset, dataset_config):
-
+def extract_dicom_info(dag, upstream, upstream_id, priority_weight, dataset, dataset_config):
     extract_dicom_info = PythonPipelineOperator(
         task_id='extract_dicom_info',
         python_callable=extract_provenance_info_fn,
