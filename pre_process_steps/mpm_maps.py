@@ -25,6 +25,7 @@ from common_steps import Step, default_config
 
 def mpm_maps_pipeline_cfg(dag, upstream_step, dataset_section):
     default_config(dataset_section, 'DATASET_CONFIG', '')
+    default_config(dataset_section, 'MPM_MAPS_SPM_FUNCTION', 'Preproc_mpm_maps')
 
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
     pipeline_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/MPMs_Pipeline'
@@ -44,7 +45,7 @@ def mpm_maps_pipeline_cfg(dag, upstream_step, dataset_section):
 
 def mpm_maps_pipeline(dag, upstream_step,
                       dataset_config=None,
-                      spm_function='mpm_maps',
+                      spm_function='Preproc_mpm_maps',
                       pipeline_path=None,
                       misc_library_path=None,
                       local_folder=None,

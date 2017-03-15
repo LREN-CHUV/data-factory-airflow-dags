@@ -26,9 +26,7 @@ from pre_process_steps.notify_success import notify_success
 from data_export_steps.features_to_i2b2 import features_to_i2b2_pipeline_cfg
 
 
-def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs, copy_to_local=True,
-                          images_organizer=False, images_selection=False, dicom_select_t1=False, dicom_to_nifti=True,
-                          mpm_maps=True, neuro_morphometric_atlas=True, export_features=False):
+def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs, preprocessing_pipelines=''):
 
     # Define the DAG
 
@@ -55,6 +53,14 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
 
     upstream_step = prepare_pipeline(dag, upstream_step, True)
 
+    copy_to_local = 'copy_to_local' in preprocessing_pipelines
+    images_organizer = 'dicom_organizer' in preprocessing_pipelines
+    dicom_select_t1 = 'dicom_select_T1' in preprocessing_pipelines
+    images_selection = 'images_selection' in preprocessing_pipelines
+    mpm_maps = 'mpm_maps' in preprocessing_pipelines
+    neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
+    export_features = 'export_features' in preprocessing_pipelines
+
     if copy_to_local:
         upstream_step = copy_to_local_cfg(dag, upstream_step, dataset_section, "DICOM_LOCAL_FOLDER")
     else:
@@ -73,9 +79,7 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
         upstream_step = dicom_select_t1_pipeline_cfg(dag, upstream_step, dataset_section)
     # endif
 
-    if dicom_to_nifti:
-        dicom_to_nifti_success, upstream_step = dicom_to_nifti_pipeline_cfg(dag, upstream_step, dataset_section)
-    # endif
+    upstream_step = dicom_to_nifti_pipeline_cfg(dag, upstream_step, dataset_section)
 
     if copy_to_local:
         copy_step = cleanup_local_cfg(dag, upstream_step, dataset_section, "DICOM_LOCAL_FOLDER")
@@ -88,7 +92,6 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
 
     if neuro_morphometric_atlas:
         upstream_step = neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, dataset_section)
-
         if export_features:
             upstream_step = features_to_i2b2_pipeline_cfg(dag, upstream_step, dataset_section)
         # endif

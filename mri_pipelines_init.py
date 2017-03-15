@@ -1,15 +1,12 @@
-"""
-
-Initialise the DAGs for all the pipelines required to process different datasets containing MRI images
-
-"""
+""" Initialise the DAGs for all the pipelines required to process different datasets containing MRI images """
 
 # Please keep keywords airflow and DAG in this file, otherwise the safe mode in DagBag may skip this file
 
 import logging
-import os
 
 from airflow import configuration
+from common_steps import default_config
+
 from mri_pipelines.continuously_pre_process_incoming import continuously_preprocess_incoming_dag
 from mri_pipelines.daily_pre_process_incoming import daily_preprocess_incoming_dag
 from mri_pipelines.flat_pre_process_incoming import flat_preprocess_incoming_dag
@@ -17,11 +14,6 @@ from mri_pipelines.pre_process_dicom import pre_process_dicom_dag
 from mri_pipelines.daily_ehr_incoming import daily_ehr_incoming_dag
 from mri_pipelines.flat_ehr_incoming import flat_ehr_incoming_dag
 from mri_pipelines.ehr_to_i2b2 import ehr_to_i2b2_dag
-
-
-def default_config(section, key, value):
-    if not configuration.has_option(section, key):
-        configuration.set(section, key, value)
 
 
 default_config('mri', 'MIPMAP_DB_CONFILE_FILE', '/dev/null')
@@ -36,13 +28,6 @@ for dataset_section in dataset_sections.split(','):
     default_config(dataset_section, 'PREPROCESSING_SCANNERS', 'daily')
     default_config(dataset_section, 'PREPROCESSING_PIPELINES',
                    'copy_to_local,dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')
-    default_config(dataset_section, 'DICOM_FILES_PATTERN', '**/MR.*')
-    default_config(dataset_section, 'MPM_MAPS_SPM_FUNCTION',
-                   'Preproc_mpm_maps')
-    default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION',
-                   'NeuroMorphometric_pipeline')
-    default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE',
-                   configuration.get('spm', 'SPM_DIR') + '/tpm/nwTPM_sl3.nii')
     default_config(dataset_section, 'EHR_SCANNERS', '')
     default_config(dataset_section, 'EHR_DATA_FOLDER_DEPTH', '1')
 
@@ -54,6 +39,7 @@ for dataset_section in dataset_sections.split(','):
         dataset_section, 'PREPROCESSING_SCANNERS').split(',')
     preprocessing_pipelines = configuration.get(
         dataset_section, 'PREPROCESSING_PIPELINES').split(',')
+    max_active_runs = int(configuration.get(dataset_section, 'MAX_ACTIVE_RUNS'))
 
     logging.info("Create pipelines for dataset %s using scannners %s and pipelines %s",
                  dataset, preprocessing_scanners, preprocessing_pipelines)
@@ -77,54 +63,11 @@ for dataset_section in dataset_sections.split(','):
             trigger_dag_id='%s_mri_pre_process_dicom' % dataset.lower())
         logging.info("Add DAG %s", globals()[name].dag_id)
 
-    pipelines_path = configuration.get(dataset_section, 'PIPELINES_PATH')
-    protocols_file = configuration.get(dataset_section, 'PROTOCOLS_FILE')
-
-    default_config(dataset_section, 'DCM2NII_PROGRAM', pipelines_path + '/Nifti_Conversion_Pipeline/dcm2nii')
-
-    max_active_runs = int(configuration.get(
-        dataset_section, 'MAX_ACTIVE_RUNS'))
-    misc_library_path = pipelines_path + '/../Miscellaneous&Others'
-    copy_to_local = 'copy_to_local' in preprocessing_pipelines
-    images_organizer = 'dicom_organizer' in preprocessing_pipelines
-    dicom_select_t1 = 'dicom_select_T1' in preprocessing_pipelines
-    images_selection = 'images_selection' in preprocessing_pipelines
-    mpm_maps = 'mpm_maps' in preprocessing_pipelines
-    neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
-
-    params = dict(dataset=dataset, dataset_section=dataset_section, dataset_config=dataset_config,
-                  email_errors_to=email_errors_to, max_active_runs=max_active_runs,
-                  misc_library_path=misc_library_path,
-                  copy_to_local=copy_to_local, dicom_select_t1=dicom_select_t1,
-                  images_selection=images_selection, protocols_file=protocols_file,
-                  mpm_maps=mpm_maps,
-                  neuro_morphometric_atlas=neuro_morphometric_atlas)
-
-    if mpm_maps:
-        params['mpm_maps_spm_function'] = configuration.get(dataset_section, 'MPM_MAPS_SPM_FUNCTION')
-        params['mpm_maps_local_folder'] = configuration.get(dataset_section, 'MPM_MAPS_LOCAL_FOLDER')
-        params['mpm_maps_server_folder'] = configuration.get(dataset_section, 'MPM_MAPS_SERVER_FOLDER')
-        params['mpm_maps_pipeline_path'] = pipelines_path + '/MPMs_Pipeline'
-
-    if neuro_morphometric_atlas:
-        params['neuro_morphometric_atlas_spm_function'] = configuration.get(
-            dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION')
-        params['neuro_morphometric_atlas_local_folder'] = configuration.get(
-            dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_LOCAL_FOLDER')
-        params['neuro_morphometric_atlas_server_folder'] = configuration.get(
-            dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER')
-        params['neuro_morphometric_atlas_pipeline_path'] = pipelines_path + \
-            '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
-        params['mpm_maps_pipeline_path'] = pipelines_path + '/MPMs_Pipeline'
-        params['neuro_morphometric_atlas_tpm_template'] = tpmTemplate = configuration.get(
-            dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE')
-        # check that file exists if absolute path
-        if len(tpmTemplate) > 0 and tpmTemplate[0] is '/':
-            if not os.path.isfile(tpmTemplate):
-                raise OSError("TPM template file %s does not exist" % tpmTemplate)
-
     name = '%s_preprocess_dag' % dataset.lower().replace(" ", "_")
-    globals()[name] = pre_process_dicom_dag(**params)
+    globals()[name] = pre_process_dicom_dag(dataset=dataset, dataset_section=dataset_section,
+                                            dataset_config=dataset_config,
+                                            email_errors_to=email_errors_to, max_active_runs=max_active_runs,
+                                            preprocessing_pipelines=preprocessing_pipelines)
     logging.info("Add DAG %s", globals()[name].dag_id)
 
     ehr_scanners = configuration.get(dataset_section, 'EHR_SCANNERS')
