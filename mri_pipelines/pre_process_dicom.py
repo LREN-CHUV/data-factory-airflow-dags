@@ -28,7 +28,6 @@ from pre_process_steps.register_local import register_local_cfg
 from pre_process_steps.images_organizer import images_organizer_cfg
 from pre_process_steps.images_selection import images_selection_pipeline_cfg
 from pre_process_steps.dicom_select_t1 import dicom_select_t1_pipeline_cfg
-from pre_process_steps.extract_dicom_info import extract_dicom_info_cfg
 from pre_process_steps.dicom_to_nifti import dicom_to_nifti_pipeline_cfg
 from pre_process_steps.mpm_maps import mpm_maps_pipeline_cfg
 
@@ -131,9 +130,6 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
         upstream, upstream_id, priority_weight = dicom_select_t1_pipeline_cfg(dag, upstream, upstream_id,
                                                                               priority_weight, dataset_section)
     # endif
-
-    upstream, upstream_id, priority_weight = extract_dicom_info_cfg(dag, upstream, upstream_id,
-                                                                    priority_weight, dataset_section, dataset)
 
     dicom_to_nifti_success, upstream, upstream_id, priority_weight = \
         dicom_to_nifti_pipeline_cfg(dag, upstream, upstream_id, priority_weight, dataset_section)
