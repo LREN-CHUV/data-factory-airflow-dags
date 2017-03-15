@@ -35,7 +35,7 @@ def dicom_select_t1_pipeline_cfg(dag, upstream, upstream_id, priority_weight, da
 
     return dicom_select_t1_pipeline(dag, upstream, upstream_id, priority_weight,
                                     dataset_config=dataset_config,
-                                    pipelines_path=pipelines_path,
+                                    pipeline_path=pipelines_path,
                                     misc_library_path=misc_library_path,
                                     spm_function=spm_function,
                                     local_folder=local_folder,
@@ -98,4 +98,4 @@ def dicom_select_t1_pipeline(dag, upstream, upstream_id, priority_weight,
     upstream_id = 'dicom_select_T1_pipeline'
     priority_weight += 10
 
-    return (upstream, upstream_id, priority_weight)
+    return upstream, upstream_id, priority_weight

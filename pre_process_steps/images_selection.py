@@ -85,4 +85,4 @@ def images_selection_pipeline(dag, upstream, upstream_id, priority_weight,
     upstream_id = 'images_selection_pipeline'
     priority_weight += 10
 
-    return (upstream, upstream_id, priority_weight)
+    return upstream, upstream_id, priority_weight

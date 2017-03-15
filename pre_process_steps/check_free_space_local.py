@@ -21,10 +21,12 @@ def check_free_space_local_cfg(dag, upstream, upstream_id, priority_weight, data
     min_free_space_local_folder = configuration.getfloat(dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
     copy_to_local_folder = configuration.get(dataset_section, local_folder_config_key)
 
-    return check_free_space_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder)
+    return check_free_space_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder,
+                                  copy_to_local_folder)
 
 
-def check_free_space_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder, copy_to_local_folder):
+def check_free_space_local(dag, upstream, upstream_id, priority_weight, min_free_space_local_folder,
+                           copy_to_local_folder):
 
     check_free_space = FreeSpaceSensor(
         task_id='check_free_space',

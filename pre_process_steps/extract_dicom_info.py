@@ -51,4 +51,4 @@ def extract_dicom_info(dag, upstream, upstream_id, priority_weight,
     upstream_id = 'extract_dicom_info'
     priority_weight += 10
 
-    return (upstream, upstream_id, priority_weight)
+    return upstream, upstream_id, priority_weight

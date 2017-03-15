@@ -34,9 +34,7 @@ from pre_process_steps.dicom_to_nifti import dicom_to_nifti_pipeline_cfg
 
 def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs, misc_library_path,
                           dataset_config=None, copy_to_local=True, images_organizer=False,
-                          images_selection=False,
-                          dicom_select_t1=False, dicom_to_nifti_spm_function='DCM2NII_LREN',
-                          protocols_file=None,  mpm_maps=True,
+                          images_selection=False, dicom_select_t1=False, protocols_file=None,  mpm_maps=True,
                           mpm_maps_spm_function='Preproc_mpm_maps', mpm_maps_pipeline_path=None,
                           mpm_maps_local_folder=None, mpm_maps_server_folder=None, neuro_morphometric_atlas=True,
                           neuro_morphometric_atlas_spm_function='NeuroMorphometric_pipeline',
