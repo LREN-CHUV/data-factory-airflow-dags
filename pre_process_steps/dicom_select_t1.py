@@ -27,7 +27,7 @@ def dicom_select_t1_pipeline_cfg(dag, upstream, upstream_id, priority_weight, da
     default_config(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION', 'selectT1')
 
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
-    pipelines_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/SelectT1_Pipeline'
+    pipeline_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/SelectT1_Pipeline'
     misc_library_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/../Miscellaneous&Others'
     spm_function = configuration.get(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION')
     local_folder = configuration.get(dataset_section, 'DICOM_SELECT_T1_LOCAL_FOLDER')
@@ -35,7 +35,7 @@ def dicom_select_t1_pipeline_cfg(dag, upstream, upstream_id, priority_weight, da
 
     return dicom_select_t1_pipeline(dag, upstream, upstream_id, priority_weight,
                                     dataset_config=dataset_config,
-                                    pipeline_path=pipelines_path,
+                                    pipeline_path=pipeline_path,
                                     misc_library_path=misc_library_path,
                                     spm_function=spm_function,
                                     local_folder=local_folder,
