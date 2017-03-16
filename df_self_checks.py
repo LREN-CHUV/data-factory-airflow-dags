@@ -95,15 +95,17 @@ check_spm.doc_md = """\
 Checks that SPM is running as expected.
 """
 
-for dataset_section in dataset_sections.split(','):
-    dataset = configuration.get(dataset_section, 'DATASET')
+for dataset in dataset_sections.split(','):
+    dataset_section = 'data-factory:%s' % dataset
+
+    dataset_name = configuration.get(dataset_section, 'DATASET')
     min_free_space_local_folder = configuration.getfloat(
         dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
     dicom_local_folder = configuration.get(
         dataset_section, 'DICOM_LOCAL_FOLDER')
 
     check_free_space = FreeSpaceSensor(
-        task_id='%s_check_free_space' % dataset.lower().replace(" ", "_"),
+        task_id='%s_check_free_space' % dataset_name.lower().replace(" ", "_"),
         path=dicom_local_folder,
         free_disk_threshold=min_free_space_local_folder,
         retry_delay=timedelta(hours=1),

@@ -38,8 +38,8 @@ register_dag(mri_notify_skipped_processing_dag())
 register_dag(mri_notify_successful_processing_dag())
 
 for dataset in dataset_sections.split(','):
-
     dataset_section = 'data-factory:%s' % dataset
+
     # Set the default configuration for the dataset
     default_config(dataset_section, 'DATASET_CONFIG', '')
     default_config(dataset_section, 'PREPROCESSING_SCANNERS', 'daily')
