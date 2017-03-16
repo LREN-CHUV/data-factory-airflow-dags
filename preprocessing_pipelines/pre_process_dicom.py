@@ -10,7 +10,7 @@ from airflow import DAG
 
 from common_steps import initial_step
 from common_steps.prepare_pipeline import prepare_pipeline
-from common_steps.check_free_space_local import check_free_space_local_cfg
+from common_steps.check_local_free_space import check_local_free_space_cfg
 
 from preprocessing_steps.cleanup_local import cleanup_local_cfg
 from preprocessing_steps.copy_to_local import copy_to_local_cfg
@@ -49,7 +49,7 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
         schedule_interval=None,
         max_active_runs=max_active_runs)
 
-    upstream_step = check_free_space_local_cfg(dag, initial_step, dataset_section, "DICOM_LOCAL_FOLDER")
+    upstream_step = check_local_free_space_cfg(dag, initial_step, dataset_section, "DICOM_LOCAL_FOLDER")
 
     upstream_step = prepare_pipeline(dag, upstream_step, True)
 

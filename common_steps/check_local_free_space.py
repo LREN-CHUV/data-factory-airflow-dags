@@ -19,15 +19,15 @@ from airflow_freespace.operators import FreeSpaceSensor
 from common_steps import Step
 
 
-def check_free_space_local_cfg(dag, upstream_step, dataset_section, local_folder_config_key):
+def check_local_free_space_cfg(dag, upstream_step, dataset_section, local_folder_config_key):
     min_free_space_local_folder = configuration.getfloat(dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
     local_folder = configuration.get(dataset_section, local_folder_config_key)
 
-    return check_free_space_local(dag, upstream_step, min_free_space_local_folder,
+    return check_local_free_space(dag, upstream_step, min_free_space_local_folder,
                                   local_folder)
 
 
-def check_free_space_local(dag, upstream_step, min_free_space_local_folder, local_folder):
+def check_local_free_space(dag, upstream_step, min_free_space_local_folder, local_folder):
 
     check_free_space = FreeSpaceSensor(
         task_id='check_free_space',
