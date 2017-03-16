@@ -16,11 +16,11 @@ from etl_pipelines.flat_ehr_incoming import flat_ehr_incoming_dag
 from etl_pipelines.ehr_to_i2b2 import ehr_to_i2b2_dag
 
 
-default_config('mri', 'MIPMAP_DB_CONFILE_FILE', '/dev/null')
+default_config('data-factory', 'MIPMAP_DB_CONFILE_FILE', '/dev/null')
 
-dataset_sections = configuration.get('mri', 'DATASETS')
-email_errors_to = configuration.get('mri', 'EMAIL_ERRORS_TO')
-mipmap_db_confile_file = configuration.get('mri', 'MIPMAP_DB_CONFILE_FILE')
+dataset_sections = configuration.get('data-factory', 'DATASETS')
+email_errors_to = configuration.get('data-factory', 'EMAIL_ERRORS_TO')
+mipmap_db_confile_file = configuration.get('data-factory', 'MIPMAP_DB_CONFILE_FILE')
 
 for dataset_section in dataset_sections.split(','):
     # Set the default configuration for the dataset

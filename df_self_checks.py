@@ -17,7 +17,7 @@ from airflow import configuration
 DAG_NAME = 'mri_self_checks'
 
 spm_config_folder = configuration.get('spm', 'SPM_DIR')
-dataset_sections = configuration.get('mri', 'DATASETS')
+dataset_sections = configuration.get('data-factory', 'DATASETS')
 
 # functions
 

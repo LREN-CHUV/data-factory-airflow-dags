@@ -9,9 +9,9 @@ from airflow import configuration
 
 DAG_NAME = 'mri_notify_skipped_processing'
 
-slack_token = str(configuration.get('mri', 'SLACK_TOKEN'))
-slack_channel = str(configuration.get('mri', 'SLACK_CHANNEL'))
-slack_channel_user = str(configuration.get('mri', 'SLACK_CHANNEL_USER'))
+slack_token = str(configuration.get('data-factory', 'SLACK_TOKEN'))
+slack_channel = str(configuration.get('data-factory', 'SLACK_CHANNEL'))
+slack_channel_user = str(configuration.get('data-factory', 'SLACK_CHANNEL_USER'))
 
 # Define the DAG
 
