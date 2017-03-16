@@ -7,6 +7,9 @@ import logging
 from airflow import configuration
 from common_steps import default_config
 
+from preprocessing_pipelines.mri_notify_failed_processing import mri_notify_failed_processing_dag
+from preprocessing_pipelines.mri_notify_skipped_processing import mri_notify_skipped_processing_dag
+from preprocessing_pipelines.mri_notify_successful_processing import mri_notify_successful_processing_dag
 from preprocessing_pipelines.continuously_pre_process_incoming import continuously_preprocess_incoming_dag
 from preprocessing_pipelines.daily_pre_process_incoming import daily_preprocess_incoming_dag
 from preprocessing_pipelines.flat_pre_process_incoming import flat_preprocess_incoming_dag
@@ -16,11 +19,23 @@ from etl_pipelines.flat_ehr_incoming import flat_ehr_incoming_dag
 from etl_pipelines.ehr_to_i2b2 import ehr_to_i2b2_dag
 
 
+def register_dag(dag):
+    dag_id = dag.dag_id
+    var_name = "%s_dag" % dag_id
+    globals()[var_name] = dag
+    logging.info("Add DAG %s", dag_id)
+    return dag_id
+
+
 default_config('data-factory', 'MIPMAP_DB_CONFILE_FILE', '/dev/null')
 
 dataset_sections = configuration.get('data-factory', 'DATASETS')
 email_errors_to = configuration.get('data-factory', 'EMAIL_ERRORS_TO')
 mipmap_db_confile_file = configuration.get('data-factory', 'MIPMAP_DB_CONFILE_FILE')
+
+register_dag(mri_notify_failed_processing_dag())
+register_dag(mri_notify_skipped_processing_dag())
+register_dag(mri_notify_successful_processing_dag())
 
 for dataset in dataset_sections.split(','):
 
@@ -41,13 +56,6 @@ for dataset in dataset_sections.split(','):
     preprocessing_pipelines = configuration.get(
         dataset_section, 'PREPROCESSING_PIPELINES').split(',')
     max_active_runs = int(configuration.get(dataset_section, 'MAX_ACTIVE_RUNS'))
-
-    def register_dag(dag):
-        dag_id = dag.dag_id
-        var_name = "%s_dag" % dag_id
-        globals()[var_name] = dag
-        logging.info("Add DAG %s", dag_id)
-        return dag_id
 
     logging.info("Create pipelines for dataset %s using scannners %s and pipelines %s",
                  dataset_name, preprocessing_scanners, preprocessing_pipelines)
