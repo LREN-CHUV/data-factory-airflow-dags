@@ -10,8 +10,8 @@ from airflow import DAG
 
 from common_steps import initial_step
 from common_steps.prepare_pipeline import prepare_pipeline
+from common_steps.check_free_space_local import check_free_space_local_cfg
 
-from preprocessing_steps.check_free_space_local import check_free_space_local_cfg
 from preprocessing_steps.cleanup_local import cleanup_local_cfg
 from preprocessing_steps.copy_to_local import copy_to_local_cfg
 from preprocessing_steps.register_local import register_local_cfg

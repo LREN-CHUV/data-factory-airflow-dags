@@ -21,17 +21,17 @@ from common_steps import Step
 
 def check_free_space_local_cfg(dag, upstream_step, dataset_section, local_folder_config_key):
     min_free_space_local_folder = configuration.getfloat(dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
-    copy_to_local_folder = configuration.get(dataset_section, local_folder_config_key)
+    local_folder = configuration.get(dataset_section, local_folder_config_key)
 
     return check_free_space_local(dag, upstream_step, min_free_space_local_folder,
-                                  copy_to_local_folder)
+                                  local_folder)
 
 
-def check_free_space_local(dag, upstream_step, min_free_space_local_folder, copy_to_local_folder):
+def check_free_space_local(dag, upstream_step, min_free_space_local_folder, local_folder):
 
     check_free_space = FreeSpaceSensor(
         task_id='check_free_space',
-        path=copy_to_local_folder,
+        path=local_folder,
         free_disk_threshold=min_free_space_local_folder,
         retry_delay=timedelta(hours=1),
         retries=24 * 7,
@@ -46,6 +46,6 @@ def check_free_space_local(dag, upstream_step, min_free_space_local_folder, copy
     # Check free space
 
     Check that there is enough free space on the disk hosting folder %s for processing, wait otherwise.
-    """ % copy_to_local_folder)
+    """ % local_folder)
 
     return Step(check_free_space, 'check_free_space', upstream_step.priority_weight + 10)
