@@ -26,7 +26,20 @@ from preprocessing_steps.notify_success import notify_success
 from etl_steps.features_to_i2b2 import features_to_i2b2_pipeline_cfg
 
 
-def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_runs, preprocessing_pipelines=''):
+shared_preparation_steps = ['copy_to_local']
+dicom_preparation_steps = ['dicom_organizer', 'dicom_selection', 'dicom_select_T1', 'dicom_to_nitfi']
+nifti_preparation_steps = ['nifti_organizer', 'nifti_selection', 'nifti_select_T1']
+preprocessing_steps = ['mpm_maps', 'neuro_morphometric_atlas']
+finalisation_steps = ['export_features']
+
+steps_with_file_outputs = shared_preparation_steps + dicom_preparation_steps + \
+    nifti_preparation_steps + preprocessing_steps
+
+all_preprocessing_steps = shared_preparation_steps + dicom_preparation_steps + \
+    nifti_preparation_steps + preprocessing_steps + finalisation_steps
+
+
+def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, preprocessing_pipelines=''):
 
     # Define the DAG
 
@@ -49,51 +62,58 @@ def pre_process_dicom_dag(dataset, dataset_section, email_errors_to, max_active_
         schedule_interval=None,
         max_active_runs=max_active_runs)
 
-    upstream_step = check_local_free_space_cfg(dag, initial_step, dataset_section, "DICOM_LOCAL_FOLDER")
+    upstream_step = check_local_free_space_cfg(dag, initial_step, section, steps_with_file_outputs.map(
+        lambda p: section + ':' + p))
 
     upstream_step = prepare_pipeline(dag, upstream_step, True)
 
     copy_to_local = 'copy_to_local' in preprocessing_pipelines
-    images_organizer = 'dicom_organizer' in preprocessing_pipelines
-    dicom_select_t1 = 'dicom_select_T1' in preprocessing_pipelines
-    images_selection = 'images_selection' in preprocessing_pipelines
+    dicom_to_nifti = 'dicom_to_nitfi' in preprocessing_pipelines or bool(
+        set(preprocessing_pipelines).intersection(set(dicom_preparation_steps)))
     mpm_maps = 'mpm_maps' in preprocessing_pipelines
     neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
     export_features = 'export_features' in preprocessing_pipelines
 
     if copy_to_local:
-        upstream_step = copy_to_local_cfg(dag, upstream_step, dataset_section, "DICOM_LOCAL_FOLDER")
+        upstream_step = copy_to_local_cfg(dag, upstream_step, section)
     else:
-        upstream_step = register_local_cfg(dag, upstream_step, dataset_section)
+        upstream_step = register_local_cfg(dag, upstream_step, section)
     # endif
 
-    if images_organizer:
-        upstream_step = images_organizer_cfg(dag, upstream_step, dataset_section, dataset, "DICOM_LOCAL_FOLDER")
+    if dicom_to_nifti:
+
+        if 'dicom_organizer' in preprocessing_pipelines:
+            upstream_step = images_organizer_cfg(dag, upstream_step, section, section + ':dicom_organizer')
+        # endif
+
+        if 'dicom_selection' in preprocessing_pipelines:
+            upstream_step = images_selection_pipeline_cfg(dag, upstream_step, section)
+        # endif
+
+        if 'dicom_select_T1' in preprocessing_pipelines:
+            upstream_step = dicom_select_t1_pipeline_cfg(dag, upstream_step, section)
+        # endif
+
+        upstream_step = dicom_to_nifti_pipeline_cfg(dag, upstream_step, section)
+
+        if copy_to_local:
+            copy_step = cleanup_local_cfg(dag, upstream_step, section, "DICOM_LOCAL_FOLDER")
+            upstream_step.priority_weight = copy_step.priority_weight
+        # endif
     # endif
 
-    if images_selection:
-        upstream_step = images_selection_pipeline_cfg(dag, upstream_step, dataset_section)
-    # endif
-
-    if dicom_select_t1:
-        upstream_step = dicom_select_t1_pipeline_cfg(dag, upstream_step, dataset_section)
-    # endif
-
-    upstream_step = dicom_to_nifti_pipeline_cfg(dag, upstream_step, dataset_section)
-
-    if copy_to_local:
-        copy_step = cleanup_local_cfg(dag, upstream_step, dataset_section, "DICOM_LOCAL_FOLDER")
-        upstream_step.priority_weight = copy_step.priority_weight
+    if 'nifti_organizer' in preprocessing_pipelines:
+        upstream_step = images_organizer_cfg(dag, upstream_step, section, section + ':nifti_organizer')
     # endif
 
     if mpm_maps:
-        upstream_step = mpm_maps_pipeline_cfg(dag, upstream_step, dataset_section)
+        upstream_step = mpm_maps_pipeline_cfg(dag, upstream_step, section)
     # endif
 
     if neuro_morphometric_atlas:
-        upstream_step = neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, dataset_section)
+        upstream_step = neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, section)
         if export_features:
-            upstream_step = features_to_i2b2_pipeline_cfg(dag, upstream_step, dataset_section)
+            upstream_step = features_to_i2b2_pipeline_cfg(dag, upstream_step, section)
         # endif
     # endif
 

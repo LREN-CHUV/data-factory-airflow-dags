@@ -4,9 +4,11 @@
 
   Configuration variables used:
 
-  * DATASET_CONFIG
-  * MIN_FREE_SPACE_LOCAL_FOLDER
-  * <local_folder_config_key>
+  * :preprocessing section
+    * INPUT_CONFIG
+    * MIN_FREE_SPACE
+  * :preprocessing:copy_to_local section
+    * LOCAL_FOLDER
 
 """
 
@@ -20,16 +22,17 @@ from airflow_pipeline.operators import BashPipelineOperator
 from common_steps import Step
 
 
-def copy_to_local_cfg(dag, upstream_step, dataset_section, local_folder_config_key):
-    min_free_space_local_folder = configuration.getfloat(dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
-    copy_to_local_folder = configuration.get(dataset_section, local_folder_config_key)
-    dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
+def copy_to_local_cfg(dag, upstream_step, preprocessing_section):
+    section = preprocessing_section + ':copy_to_local'
+    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
+    min_free_space_local_folder = configuration.getfloat(preprocessing_section, 'MIN_FREE_SPACE')
+    local_folder = configuration.get(section, 'LOCAL_FOLDER')
 
     return copy_to_local(dag, upstream_step, min_free_space_local_folder,
-                         copy_to_local_folder, dataset_config)
+                         local_folder, dataset_config)
 
 
-def copy_to_local(dag, upstream_step, min_free_space_local_folder, copy_to_local_folder,
+def copy_to_local(dag, upstream_step, min_free_space_local_folder, local_folder,
                   dataset_config):
 
     copy_to_local_cmd = dedent("""
@@ -45,7 +48,7 @@ def copy_to_local(dag, upstream_step, min_free_space_local_folder, copy_to_local
         task_id='copy_to_local',
         bash_command=copy_to_local_cmd,
         params={'min_free_space_local_folder': min_free_space_local_folder},
-        output_folder_callable=lambda session_id, **kwargs: copy_to_local_folder + '/' + session_id,
+        output_folder_callable=lambda session_id, **kwargs: local_folder + '/' + session_id,
         pool='remote_file_copy',
         parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
@@ -62,6 +65,6 @@ def copy_to_local(dag, upstream_step, min_free_space_local_folder, copy_to_local
     # Copy DICOM files to local %s folder
 
     Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
-    """ % copy_to_local_folder)
+    """ % local_folder)
 
     return Step(copy_to_local, 'copy_to_local', upstream_step.priority_weight + 10)

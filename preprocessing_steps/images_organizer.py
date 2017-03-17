@@ -4,15 +4,19 @@
 
   Configuration variables used:
 
-  * DATASET_CONFIG
-  * IMAGES_ORGANIZER_DATASET_TYPE
-  * IMAGES_ORGANIZER_DATA_STRUCTURE
-  * IMAGES_ORGANIZER_LOCAL_FOLDER
-  * IMAGES_ORGANIZER_DOCKER_IMAGE
-  * <input_folder_config_key>
+  * :preprocessing section
+    * INPUT_CONFIG
+  * :preprocessing:dicom_organiser or :preprocessing:nifti_organiser section
+    * LOCAL_FOLDER
+    * DATA_STRUCTURE
+    * DOCKER_IMAGE
+    * DOCKER_INPUT_DIR
+    * DOCKER_OUTPUT_DIR
 
 """
 
+
+import re
 
 from datetime import timedelta
 from textwrap import dedent
@@ -23,28 +27,33 @@ from airflow_pipeline.operators import DockerPipelineOperator
 from common_steps import Step
 
 
-def images_organizer_cfg(dag, upstream_step, dataset_section, dataset,
-                         input_folder_config_key):
-    dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
-    dataset_type = configuration.get(dataset_section, 'IMAGES_ORGANIZER_DATASET_TYPE')
-    data_structure = configuration.get(dataset_section, 'IMAGES_ORGANIZER_DATA_STRUCTURE')
-    local_folder = configuration.get(dataset_section, 'IMAGES_ORGANIZER_LOCAL_FOLDER')
-    docker_image = configuration.get(dataset_section, 'IMAGES_ORGANIZER_DOCKER_IMAGE')
-    input_folder = configuration.get(dataset_section, input_folder_config_key)
+def images_organizer_cfg(dag, upstream_step, preprocessing_section, step_section):
+    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
+    local_folder = configuration.get(step_section, 'LOCAL_FOLDER')
+    data_structure = configuration.get(step_section, 'DATA_STRUCTURE')
+    docker_image = configuration.get(step_section, 'DOCKER_IMAGE')
+    docker_input_dir = configuration.get(step_section, 'DOCKER_INPUT_DIR')
+    docker_output_dir = configuration.get(step_section, 'DOCKER_OUTPUT_DIR')
 
-    return images_organizer(dag, upstream_step, dataset, dataset_config,
+    m = re.search('.*:preprocessing:(.*)_organizer', step_section)
+    dataset_type = m.group(1)
+
+    return images_organizer(dag, upstream_step, dataset_config,
                             dataset_type=dataset_type,
                             data_structure=data_structure,
-                            input_folder=input_folder,
                             local_folder=local_folder,
-                            docker_image=docker_image)
+                            docker_image=docker_image,
+                            docker_input_dir=docker_input_dir,
+                            docker_output_dir=docker_output_dir)
 
 
-def images_organizer(dag, upstream_step, dataset, dataset_config,
-                     dataset_type, data_structure, input_folder,
-                     local_folder, docker_image='hbpmip/hierarchizer:latest'):
+def images_organizer(dag, upstream_step,  dataset_config,
+                     dataset_type, data_structure,
+                     local_folder,
+                     docker_image='hbpmip/hierarchizer:latest',
+                     docker_input_dir='/input_folder',
+                     docker_output_dir='/output_folder'):
 
-    dataset_param = "--dataset " + dataset
     type_of_images_param = "--type " + dataset_type
     structure_param = "--attributes " + str(data_structure.split(':'))
 
@@ -60,9 +69,9 @@ def images_organizer(dag, upstream_step, dataset, dataset_config,
         dataset_config=dataset_config,
         dag=dag,
         image=docker_image,
-        command=[dataset_param, type_of_images_param, structure_param],
-        volumes=[input_folder + ':/input_folder:ro',
-                 local_folder + ':/output_folder']
+        command=["--dataset {{ dag_run.conf['dataset'] }}", type_of_images_param, structure_param],
+        container_input_dir=docker_input_dir,
+        container_output_dir=docker_output_dir
     )
 
     if upstream_step.task:

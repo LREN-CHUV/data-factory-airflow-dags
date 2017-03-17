@@ -100,7 +100,7 @@ for dataset in dataset_sections.split(','):
 
     dataset_name = configuration.get(dataset_section, 'DATASET')
     min_free_space_local_folder = configuration.getfloat(
-        dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
+        dataset_section, 'MIN_FREE_SPACE')
     dicom_local_folder = configuration.get(
         dataset_section, 'DICOM_LOCAL_FOLDER')
 

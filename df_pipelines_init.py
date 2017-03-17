@@ -39,51 +39,53 @@ register_dag(mri_notify_successful_processing_dag())
 
 for dataset in dataset_sections.split(','):
     dataset_section = 'data-factory:%s' % dataset
+    dataset_label = configuration.get(dataset_section, 'DATASET_LABEL')
+    preprocessing_section = dataset_section + ':preprocessing'
 
-    # Set the default configuration for the dataset
-    default_config(dataset_section, 'DATASET_CONFIG', '')
-    default_config(dataset_section, 'PREPROCESSING_SCANNERS', 'daily')
-    default_config(dataset_section, 'PREPROCESSING_PIPELINES',
+    # Set the default configuration for the preprocessing of the dataset
+    default_config(preprocessing_section, 'SCANNERS', 'daily')
+    default_config(preprocessing_section, 'PIPELINES',
                    'copy_to_local,dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')
-    default_config(dataset_section, 'EHR_SCANNERS', '')
-    default_config(dataset_section, 'EHR_DATA_FOLDER_DEPTH', '1')
 
-    dataset_name = configuration.get(dataset_section, 'DATASET')
-    preprocessing_data_folder = configuration.get(
-        dataset_section, 'PREPROCESSING_DATA_FOLDER')
+    preprocessing_input_folder = configuration.get(
+        preprocessing_section, 'INPUT_FOLDER')
     preprocessing_scanners = configuration.get(
-        dataset_section, 'PREPROCESSING_SCANNERS').split(',')
+        preprocessing_section, 'SCANNERS').split(',')
     preprocessing_pipelines = configuration.get(
-        dataset_section, 'PREPROCESSING_PIPELINES').split(',')
-    max_active_runs = int(configuration.get(dataset_section, 'MAX_ACTIVE_RUNS'))
+        preprocessing_section, 'PIPELINES').split(',')
+    max_active_runs = int(configuration.get(preprocessing_section, 'MAX_ACTIVE_RUNS'))
 
     logging.info("Create pipelines for dataset %s using scannners %s and pipelines %s",
-                 dataset_name, preprocessing_scanners, preprocessing_pipelines)
+                 dataset_label, preprocessing_scanners, preprocessing_pipelines)
 
-    pre_process_dicom_dag_id = register_dag(pre_process_dicom_dag(dataset=dataset_name,
-                                                                  dataset_section=dataset_section,
+    pre_process_dicom_dag_id = register_dag(pre_process_dicom_dag(dataset=dataset,
+                                                                  section=preprocessing_section,
                                                                   email_errors_to=email_errors_to,
                                                                   max_active_runs=max_active_runs,
                                                                   preprocessing_pipelines=preprocessing_pipelines))
 
     if 'continuous' in preprocessing_scanners:
         register_dag(continuously_preprocess_incoming_dag(
-                         dataset=dataset_name,
-                         folder=preprocessing_data_folder,
+                         dataset=dataset,
+                         folder=preprocessing_input_folder,
                          email_errors_to=email_errors_to,
                          trigger_dag_id=pre_process_dicom_dag_id))
     if 'daily' in preprocessing_scanners:
         register_dag(daily_preprocess_incoming_dag(
-                         dataset=dataset_name,
-                         folder=preprocessing_data_folder,
+                         dataset=dataset,
+                         folder=preprocessing_input_folder,
                          email_errors_to=email_errors_to,
                          trigger_dag_id=pre_process_dicom_dag_id))
     if 'flat' in preprocessing_scanners:
         register_dag(flat_preprocess_incoming_dag(
-                         dataset=dataset_name,
-                         folder=preprocessing_data_folder,
+                         dataset=dataset,
+                         folder=preprocessing_input_folder,
                          email_errors_to=email_errors_to,
                          trigger_dag_id=pre_process_dicom_dag_id))
+
+    # Set the default configuration for the preprocessing of the dataset
+    default_config(dataset_section, 'EHR_SCANNERS', '')
+    default_config(dataset_section, 'EHR_DATA_FOLDER_DEPTH', '1')
 
     ehr_scanners = configuration.get(dataset_section, 'EHR_SCANNERS')
 
@@ -101,7 +103,7 @@ for dataset in dataset_sections.split(','):
         if 'daily' in ehr_scanners:
             name = '%s_daily_ehr_dag' % dataset.lower().replace(" ", "_")
             globals()[name] = daily_ehr_incoming_dag(
-                dataset=dataset_name, folder=ehr_data_folder, email_errors_to=email_errors_to,
+                dataset=dataset, folder=ehr_data_folder, email_errors_to=email_errors_to,
                 trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower())
             logging.info("Add DAG %s", globals()[name].dag_id)
 
@@ -109,15 +111,15 @@ for dataset in dataset_sections.split(','):
             ehr_data_folder_depth = int(configuration.get(dataset_section, 'EHR_DATA_FOLDER_DEPTH'))
             name = '%s_flat_ehr_dag' % dataset.lower().replace(" ", "_")
             globals()[name] = flat_ehr_incoming_dag(
-                dataset=dataset_name, folder=ehr_data_folder, depth=ehr_data_folder_depth,
+                dataset=dataset, folder=ehr_data_folder, depth=ehr_data_folder_depth,
                 email_errors_to=email_errors_to,
                 trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower())
             logging.info("Add DAG %s", globals()[name].dag_id)
 
     min_free_space_local_folder = configuration.getfloat(
-        dataset_section, 'MIN_FREE_SPACE_LOCAL_FOLDER')
+        dataset_section, 'MIN_FREE_SPACE')
 
-    params = dict(dataset=dataset_name, email_errors_to=email_errors_to, max_active_runs=max_active_runs,
+    params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs,
                   min_free_space_local_folder=min_free_space_local_folder,
                   mipmap_db_confile_file=mipmap_db_confile_file,
                   ehr_versioned_folder=ehr_versioned_folder,

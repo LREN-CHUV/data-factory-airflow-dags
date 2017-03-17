@@ -4,7 +4,8 @@
 
   Configuration variables used:
 
-  * DATASET_CONFIG
+  * :preprocessing section
+    * INPUT_CONFIG
 
 """
 
@@ -18,8 +19,8 @@ from airflow_pipeline.operators import BashPipelineOperator
 from common_steps import Step
 
 
-def register_local_cfg(dag, upstream_step, dataset_section):
-    dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
+def register_local_cfg(dag, upstream_step, preprocessing_section):
+    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
 
     return register_local(dag, upstream_step, dataset_config)
 
