@@ -6,11 +6,9 @@
 
   * :preprocessing section
     * INPUT_CONFIG
-  * :preprocessing:dicom_organiser or :preprocessing:nifti_organiser section
+  * :preprocessing:dicom_selection or :preprocessing:nifti_selection section
     * OUTPUT_FOLDER
-
-  * IMAGES_SELECTION_OUTPUT_FOLDER
-  * IMAGES_SELECTION_CSV_PATH
+    * CSV_PATH
 
 """
 
@@ -24,9 +22,10 @@ from airflow_pipeline.operators import PythonPipelineOperator
 from common_steps import Step
 
 
-def images_selection_pipeline_cfg(dag, upstream_step, dataset_section):
-    local_folder = configuration.get(dataset_section, 'IMAGES_SELECTION_OUTPUT_FOLDER')
-    csv_path = configuration.get(dataset_section, 'IMAGES_SELECTION_CSV_PATH')
+def images_selection_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
+    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
+    local_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
+    csv_path = configuration.get(step_section, 'CSV_PATH')
 
     return images_selection_pipeline(dag, upstream_step, local_folder, csv_path)
 

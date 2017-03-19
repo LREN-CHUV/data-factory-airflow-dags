@@ -87,7 +87,7 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
         # endif
 
         if 'dicom_selection' in preprocessing_pipelines:
-            upstream_step = images_selection_pipeline_cfg(dag, upstream_step, section)
+            upstream_step = images_selection_pipeline_cfg(dag, upstream_step, section, section + ':dicom_selection')
         # endif
 
         if 'dicom_select_T1' in preprocessing_pipelines:

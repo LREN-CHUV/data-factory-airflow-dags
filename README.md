@@ -64,6 +64,10 @@ Requirements:
      * DOCKER_INPUT_DIR: Input directory inside the Docker container
      * DOCKER_OUTPUT_DIR: Output directory inside the Docker container
 
+* If dicom_organiser is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_selection] section:
+    * OUTPUT_FOLDER: destination folder for the selected images
+    * CSV_PATH: TODO - @mirco
+
    * dicom_select_T1_local_folder = /data/select_T1
    * dicom_select_T1_protocols_file = /opt/airflow-scripts/mri-preprocessing-pipeline/Protocols_definition.txt
    * DICOM_SELECT_T1_SPM_FUNCTION: selectT1
