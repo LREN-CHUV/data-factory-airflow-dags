@@ -32,7 +32,7 @@ Requirements:
 
 
 * For each dataset, now configure the [data-factory:&lt;dataset&gt;:preprocessing] section:
-   * INPUT_FOLDER: Folder containing the original imaging data to process
+   * INPUT_FOLDER: Folder containing the original imaging data to process. This data should have been already anonymised by a tool
    * INPUT_CONFIG: List of flags defining how incoming imaging data is organised, values are
       * boost: (optional) When enabled, we consider that all the files from a same folder share the same meta-data. The processing is (about 2 times) faster. This option is enabled by default.
       * session_id_by_patient: Rarely, a data set might use study IDs which are unique by patient (not for the whole study). E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session ID.
@@ -47,22 +47,23 @@ Requirements:
       * flat: input folder contains a set of sub-folders each containing a scan to process.
    * PIPELINES: List of pipelines to execute. Values are
       * copy_to_local: if used, input data is first copied to a local folder to speed-up processing.
+      * dicom_organiser: reorganise DICOM files in a scan folder for the following pipelines.
+      * dicom_selection
       * dicom_to_nifti
       * mpm_maps
       * neuro_morphometric_atlas
 
 
 * If copy_to_local is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:copy_to_local] section:
-   * LOCAL_FOLDER: destination folder for the local copy
+   * OUTPUT_FOLDER: destination folder for the local copy
 
-* :preprocessing:dicom_organiser or :preprocessing:nifti_organiser section
-     * LOCAL_FOLDER
-     * DATA_STRUCTURE
-     * DOCKER_IMAGE
-     * DOCKER_INPUT_DIR
-     * DOCKER_OUTPUT_DIR
+* If dicom_organiser is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_organiser] section:
+     * OUTPUT_FOLDER: destination folder for the organised images
+     * DATA_STRUCTURE: TODO - @mirco Pass cmd line options?
+     * DOCKER_IMAGE: Docker image of the hierarchizer program
+     * DOCKER_INPUT_DIR: Input directory inside the Docker container
+     * DOCKER_OUTPUT_DIR: Output directory inside the Docker container
 
-   * DICOM_LOCAL_FOLDER: path containing the anonymised files coming from the MRI scanner and already anonymised by a tool
    * dicom_select_T1_local_folder = /data/select_T1
    * dicom_select_T1_protocols_file = /opt/airflow-scripts/mri-preprocessing-pipeline/Protocols_definition.txt
    * DICOM_SELECT_T1_SPM_FUNCTION: selectT1
@@ -74,21 +75,21 @@ Requirements:
    * EHR_VERSIONED_FOLDER
    * IMAGES_ORGANIZER_DATASET_TYPE
    * IMAGES_ORGANIZER_DATA_STRUCTURE PatientID:AcquisitionDate:SeriesDescription:SeriesDate
-   * IMAGES_ORGANIZER_LOCAL_FOLDER
+   * IMAGES_ORGANIZER_OUTPUT_FOLDER
    * IMAGES_ORGANIZER_DOCKER_IMAGE
-   * MPM_MAPS_LOCAL_FOLDER: path for the results of MPM maps pipeline
+   * MPM_MAPS_OUTPUT_FOLDER: path for the results of MPM maps pipeline
    * MPM_MAPS_SERVER_FOLDER: for the results of MPM maps pipeline
    * MPM_MAPS_SPM_FUNCTION: Preproc_mpm_maps
    * neuro_morphometric_atlas_TPM_template = /opt/spm12/tpm/nwTPM_sl3.nii
-   * NEURO_MORPHOMETRIC_ATLAS_LOCAL_FOLDER: path for the results of neuro morphometric atlas pipeline
+   * NEURO_MORPHOMETRIC_ATLAS_OUTPUT_FOLDER: path for the results of neuro morphometric atlas pipeline
    * NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER: long term storage location for the results of neuro morphometric atlas pipeline
    * NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION: NeuroMorphometric_pipeline
    * NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE: SPM_DIR + '/tpm/nwTPM_sl3.nii'
-   * NIFTI_LOCAL_FOLDER: path for the image files converted to Nifti
+   * NIFTI_OUTPUT_FOLDER: path for the image files converted to Nifti
    * NIFTI_SERVER_FOLDER: long term storage location for the image files converted to Nifti
    * NIFTI_SPM_FUNCTION: DCM2NII_LREN'
    * PIPELINES_PATH: path to the root folder containing the Matlab scripts for the pipelines
-   * copy_to_local: copies all DICOM files to COPY_TO_LOCAL_FOLDER.
+   * copy_to_local: copies all DICOM files to COPY_TO_OUTPUT_FOLDER.
    * PROTOCOLS_FILE: path to the MRI acquisition protocol file
 
 Sample configuration:

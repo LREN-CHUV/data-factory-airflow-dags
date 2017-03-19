@@ -1,7 +1,8 @@
 """
 
-Poll a base directory for incoming Dicom files ready for processing. We assume that
-Dicom files are already processed by the hierarchize.sh script with the following directory structure:
+Poll a base directory for incoming Dicom files ready for processing.
+
+We assume that Dicom files are already processed by the hierarchize.sh script with the following directory structure:
 
   <base dir>
     _ <scan session id>

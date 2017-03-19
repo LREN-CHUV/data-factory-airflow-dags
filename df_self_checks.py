@@ -102,7 +102,7 @@ for dataset in dataset_sections.split(','):
     min_free_space_local_folder = configuration.getfloat(
         dataset_section, 'MIN_FREE_SPACE')
     dicom_local_folder = configuration.get(
-        dataset_section, 'DICOM_LOCAL_FOLDER')
+        dataset_section, 'DICOM_OUTPUT_FOLDER')
 
     check_free_space = FreeSpaceSensor(
         task_id='%s_check_free_space' % dataset_name.lower().replace(" ", "_"),

@@ -140,7 +140,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
         environment=None,
         cpus=1,
         mem_limit='256m',
-        container_tmp_dir='/tmp/airflow',
+        container_tmp_dir='/tmp/airflow', # nosec
         container_input_dir='/opt/source',
         container_output_dir='/opt/target',
         output_folder_callable=lambda relative_context_path, **kwargs: "%s/%s" % (

@@ -7,7 +7,7 @@
   * DATASET_CONFIG
   * PIPELINES_PATH
   * MPM_MAPS_SPM_FUNCTION
-  * MPM_MAPS_LOCAL_FOLDER
+  * MPM_MAPS_OUTPUT_FOLDER
   * MPM_MAPS_SERVER_FOLDER
 
 """
@@ -31,7 +31,7 @@ def mpm_maps_pipeline_cfg(dag, upstream_step, dataset_section):
     pipeline_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/MPMs_Pipeline'
     misc_library_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/../Miscellaneous&Others'
     spm_function = configuration.get(dataset_section, 'MPM_MAPS_SPM_FUNCTION')
-    local_folder = configuration.get(dataset_section, 'MPM_MAPS_LOCAL_FOLDER')
+    local_folder = configuration.get(dataset_section, 'MPM_MAPS_OUTPUT_FOLDER')
     server_folder = configuration.get(dataset_section, 'MPM_MAPS_SERVER_FOLDER')
 
     return mpm_maps_pipeline(dag, upstream_step,

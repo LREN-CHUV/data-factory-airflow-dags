@@ -1,7 +1,8 @@
 """
 
-Poll a base directory for incoming daily EHR database extracts ready for processing. We assume that
-CSV files are already anonymised and organised with the following directory structure:
+Poll a base directory for incoming daily EHR database extracts ready for processing.
+
+We assume that CSV files are already anonymised and organised with the following directory structure:
 
   2016
      _ 20160407

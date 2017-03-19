@@ -7,7 +7,7 @@
   * DATASET_CONFIG
   * PIPELINES_PATH
   * NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION
-  * NEURO_MORPHOMETRIC_ATLAS_LOCAL_FOLDER
+  * NEURO_MORPHOMETRIC_ATLAS_OUTPUT_FOLDER
   * NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER
   * NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE
 
@@ -38,7 +38,7 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, dataset_section):
     misc_library_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/../Miscellaneous&Others'
     protocols_file = configuration.get(dataset_section, 'PROTOCOLS_FILE')
     spm_function = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION')
-    local_folder = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_LOCAL_FOLDER')
+    local_folder = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_OUTPUT_FOLDER')
     server_folder = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER')
     tpm_template = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE')
 

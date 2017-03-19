@@ -1,13 +1,15 @@
 """
 
-  Pre processing step: images organizer
+  Pre processing step: images organizer.
+
+  Reorganises DICOM files in a scan folder for the following pipelines.
 
   Configuration variables used:
 
   * :preprocessing section
     * INPUT_CONFIG
   * :preprocessing:dicom_organiser or :preprocessing:nifti_organiser section
-    * LOCAL_FOLDER
+    * OUTPUT_FOLDER
     * DATA_STRUCTURE
     * DOCKER_IMAGE
     * DOCKER_INPUT_DIR
@@ -29,7 +31,7 @@ from common_steps import Step
 
 def images_organizer_cfg(dag, upstream_step, preprocessing_section, step_section):
     dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
-    local_folder = configuration.get(step_section, 'LOCAL_FOLDER')
+    local_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
     data_structure = configuration.get(step_section, 'DATA_STRUCTURE')
     docker_image = configuration.get(step_section, 'DOCKER_IMAGE')
     docker_input_dir = configuration.get(step_section, 'DOCKER_INPUT_DIR')

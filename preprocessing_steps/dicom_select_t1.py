@@ -7,7 +7,7 @@
   * DATASET_CONFIG
   * PIPELINES_PATH
   * DICOM_SELECT_T1_SPM_FUNCTION
-  * DICOM_SELECT_T1_LOCAL_FOLDER
+  * DICOM_SELECT_T1_OUTPUT_FOLDER
   * DICOM_SELECT_T1_PROTOCOLS_FILE
 
 """
@@ -31,7 +31,7 @@ def dicom_select_t1_pipeline_cfg(dag, upstream_step, dataset_section):
     pipeline_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/SelectT1_Pipeline'
     misc_library_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/../Miscellaneous&Others'
     spm_function = configuration.get(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION')
-    local_folder = configuration.get(dataset_section, 'DICOM_SELECT_T1_LOCAL_FOLDER')
+    local_folder = configuration.get(dataset_section, 'DICOM_SELECT_T1_OUTPUT_FOLDER')
     protocols_file = configuration.get(dataset_section, 'DICOM_SELECT_T1_PROTOCOLS_FILE')
 
     return dicom_select_t1_pipeline(dag, upstream_step,

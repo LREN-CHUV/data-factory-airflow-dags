@@ -7,7 +7,7 @@
   * DATASET_CONFIG
   * PIPELINES_PATH
   * NIFTI_SPM_FUNCTION
-  * NIFTI_LOCAL_FOLDER
+  * NIFTI_OUTPUT_FOLDER
   * NIFTI_SERVER_FOLDER
   * PROTOCOLS_FILE
   * DCM2NII_PROGRAM
@@ -37,7 +37,7 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream_step, dataset_section):
     pipeline_path = pipelines_path + '/Nifti_Conversion_Pipeline'
     misc_library_path = pipelines_path + '/../Miscellaneous&Others'
     spm_function = configuration.get(dataset_section, 'NIFTI_SPM_FUNCTION')
-    local_folder = configuration.get(dataset_section, 'NIFTI_LOCAL_FOLDER')
+    local_folder = configuration.get(dataset_section, 'NIFTI_OUTPUT_FOLDER')
     server_folder = configuration.get(dataset_section, 'NIFTI_SERVER_FOLDER')
     protocols_file = configuration.get(dataset_section, 'PROTOCOLS_FILE')
     dcm2nii_program = configuration.get(dataset_section, 'DCM2NII_PROGRAM')

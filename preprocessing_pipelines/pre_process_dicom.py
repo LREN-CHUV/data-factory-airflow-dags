@@ -97,7 +97,7 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
         upstream_step = dicom_to_nifti_pipeline_cfg(dag, upstream_step, section)
 
         if copy_to_local:
-            copy_step = cleanup_local_cfg(dag, upstream_step, section, "DICOM_LOCAL_FOLDER")
+            copy_step = cleanup_local_cfg(dag, upstream_step, section, "DICOM_OUTPUT_FOLDER")
             upstream_step.priority_weight = copy_step.priority_weight
         # endif
     # endif

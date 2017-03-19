@@ -1,6 +1,8 @@
 """
 
-  Pre processing step: copy files to local folder
+  Pre processing step: copy files to local folder.
+
+  Input data is first copied to a local folder to speed-up processing.
 
   Configuration variables used:
 
@@ -8,7 +10,7 @@
     * INPUT_CONFIG
     * MIN_FREE_SPACE
   * :preprocessing:copy_to_local section
-    * LOCAL_FOLDER
+    * OUTPUT_FOLDER
 
 """
 
@@ -26,7 +28,7 @@ def copy_to_local_cfg(dag, upstream_step, preprocessing_section):
     section = preprocessing_section + ':copy_to_local'
     dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
     min_free_space_local_folder = configuration.getfloat(preprocessing_section, 'MIN_FREE_SPACE')
-    local_folder = configuration.get(section, 'LOCAL_FOLDER')
+    local_folder = configuration.get(section, 'OUTPUT_FOLDER')
 
     return copy_to_local(dag, upstream_step, min_free_space_local_folder,
                          local_folder, dataset_config)

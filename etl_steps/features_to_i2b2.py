@@ -6,7 +6,7 @@
 
   * DATASET
   * DATASET_CONFIG
-  * FEATURES_TO_I2B2_LOCAL_FOLDER
+  * FEATURES_TO_I2B2_OUTPUT_FOLDER
 
 """
 
@@ -26,7 +26,7 @@ from i2b2_import import features_csv_import
 def features_to_i2b2_pipeline_cfg(dag, upstream_step, dataset_section):
     dataset = configuration.get(dataset_section, 'DATASET')
     dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
-    local_folder = configuration.get(dataset_section, 'FEATURES_TO_I2B2_LOCAL_FOLDER')
+    local_folder = configuration.get(dataset_section, 'FEATURES_TO_I2B2_OUTPUT_FOLDER')
 
     return features_to_i2b2_pipeline(dag, upstream_step, local_folder, dataset, dataset_config)
 

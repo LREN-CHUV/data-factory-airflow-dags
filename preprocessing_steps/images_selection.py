@@ -1,10 +1,15 @@
 """
 
-  Pre processing step: images selection
+  Pre processing step: images selection.
 
   Configuration variables used:
 
-  * IMAGES_SELECTION_LOCAL_FOLDER
+  * :preprocessing section
+    * INPUT_CONFIG
+  * :preprocessing:dicom_organiser or :preprocessing:nifti_organiser section
+    * OUTPUT_FOLDER
+
+  * IMAGES_SELECTION_OUTPUT_FOLDER
   * IMAGES_SELECTION_CSV_PATH
 
 """
@@ -20,7 +25,7 @@ from common_steps import Step
 
 
 def images_selection_pipeline_cfg(dag, upstream_step, dataset_section):
-    local_folder = configuration.get(dataset_section, 'IMAGES_SELECTION_LOCAL_FOLDER')
+    local_folder = configuration.get(dataset_section, 'IMAGES_SELECTION_OUTPUT_FOLDER')
     csv_path = configuration.get(dataset_section, 'IMAGES_SELECTION_CSV_PATH')
 
     return images_selection_pipeline(dag, upstream_step, local_folder, csv_path)
@@ -54,6 +59,7 @@ def images_selection_pipeline(dag, upstream_step,
 
         return "ok"
 
+    # TODO: track provenance
     images_selection_pipeline = PythonPipelineOperator(
         task_id='images_selection_pipeline',
         python_callable=images_selection_fn,
