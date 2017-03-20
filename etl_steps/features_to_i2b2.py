@@ -1,14 +1,14 @@
 """
 
-  Data export step: features to I2B2.
+Data export step: features to I2B2.
 
-  Exports neuroimaging features stored in CSV files to the I2B2 database.
+Exports neuroimaging features stored in CSV files to the I2B2 database.
 
-  Configuration variables used:
+Configuration variables used:
 
-  * :etl section
+* :etl section
     * INPUT_CONFIG
-  * :etl:export_features section
+* :etl:export_features section
     * INPUT_FOLDER
 
 """

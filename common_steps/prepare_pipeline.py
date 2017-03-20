@@ -1,10 +1,10 @@
 """
 
-  Common step step: prepare pipeline
+Common step step: prepare pipeline
 
-  Configuration variables used:
+Configuration variables used:
 
-  None
+None
 
 """
 

@@ -1,15 +1,15 @@
 """
 
-  Pre processing step: copy files to local folder.
+Pre processing step: copy files to local folder.
 
-  Input data are first copied to a local folder to speed-up processing.
+Input data are first copied to a local folder to speed-up processing.
 
-  Configuration variables used:
+Configuration variables used:
 
-  * :preprocessing section
+* :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
     * MIN_FREE_SPACE: minimum percentage of free space available on local disk
-  * :preprocessing:copy_to_local section
+* :preprocessing:copy_to_local section
     * OUTPUT_FOLDER: destination folder for the local copy
 
 """

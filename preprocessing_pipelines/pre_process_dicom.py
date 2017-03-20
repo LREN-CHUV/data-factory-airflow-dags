@@ -1,8 +1,4 @@
-"""
-
-Pre-process DICOM files in a study folder
-
-"""
+"""Pre-process DICOM files in a study folder"""
 
 from datetime import datetime, timedelta
 

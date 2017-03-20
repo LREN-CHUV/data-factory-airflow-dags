@@ -2,7 +2,7 @@
 
 Importing meta-data from data-catalog to I2B2
 
-  Configuration variables used:
+Configuration variables used:
 
   * DATA_CATALOG_DB
   * I2B2_DB

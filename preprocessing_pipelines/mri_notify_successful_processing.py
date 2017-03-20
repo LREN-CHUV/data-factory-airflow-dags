@@ -1,4 +1,4 @@
-""" Inform administrators when processing on a MRI session has been skipped because of missing / incorrect data """
+"""Inform administrators when processing on a MRI session has been skipped because of missing / incorrect data"""
 
 from datetime import datetime, timedelta
 from airflow import DAG, configuration

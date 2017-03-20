@@ -1,14 +1,14 @@
 """
 
-  Pre processing step: images organizer.
+Pre processing step: images organizer.
 
-  Reorganises DICOM files in a scan folder for the following pipelines.
+Reorganises DICOM files in a scan folder for the following pipelines.
 
-  Configuration variables used:
+Configuration variables used:
 
-  * :preprocessing section
+* :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
-  * :preprocessing:dicom_organiser or :preprocessing:nifti_organiser section
+* :preprocessing:dicom_organiser or :preprocessing:nifti_organiser section
     * OUTPUT_FOLDER: destination folder for the organised images
     * DATA_STRUCTURE: TODO
     * DOCKER_IMAGE: Docker image of the hierarchizer program

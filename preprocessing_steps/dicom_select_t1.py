@@ -1,15 +1,15 @@
 """
 
-  Pre processing step: Select T1 DICOM files.
+Pre processing step: Select T1 DICOM files.
 
-  Given an input dataset containing DICOM files, only T1 weighted images are selected.
+Given an input dataset containing DICOM files, only T1 weighted images are selected.
 
-  Configuration variables used:
+Configuration variables used:
 
-  * :preprocessing section
+* :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
     * PIPELINES_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
-  * :preprocessing:dicom_select_T1 section
+* :preprocessing:dicom_select_T1 section
     * OUTPUT_FOLDER: destination folder for the selected T1 images
     * SPM_FUNCTION: SPM function called. Default to 'selectT1'
     * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline.

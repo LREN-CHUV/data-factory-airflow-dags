@@ -1,15 +1,15 @@
 """
 
-  Pre processing step: DICOM to Nifti conversion.
+Pre processing step: DICOM to Nifti conversion.
 
-  Convert all DICOM files to Nifti format.
+Convert all DICOM files to Nifti format.
 
-  Configuration variables used:
+Configuration variables used:
 
-  * :preprocessing section
+* :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
     * PIPELINES_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
-  * :preprocessing:dicom_select_T1 section
+* :preprocessing:dicom_select_T1 section
     * OUTPUT_FOLDER: destination folder for the Nitfi images
     * BACKUP_FOLDER: backup folder for the Nitfi images
     * SPM_FUNCTION: SPM function called. Default to 'DCM2NII_LREN'

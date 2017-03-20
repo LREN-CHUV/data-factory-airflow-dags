@@ -1,12 +1,12 @@
 """
 
-  Pre processing step: images selection.
+Pre processing step: images selection.
 
-  Configuration variables used:
+Configuration variables used:
 
-  * :preprocessing section
+* :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
-  * :preprocessing:dicom_selection or :preprocessing:nifti_selection section
+* :preprocessing:dicom_selection or :preprocessing:nifti_selection section
     * OUTPUT_FOLDER: destination folder for the selected images
     * IMAGES_SELECTION_CSV_PATH: path to the CSV file containing the list of selected images (PatientID | ImageID).
 

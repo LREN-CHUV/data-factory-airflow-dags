@@ -1,16 +1,16 @@
 """
 
-  Pre processing step: MPM Maps.
+Pre processing step: MPM Maps.
 
-  Computes the Multiparametric Maps (MPMs)(R2*, R1, MT, PD) and brain segmentation
-  in different tissue maps.
+Computes the Multiparametric Maps (MPMs)(R2*, R1, MT, PD) and brain segmentation
+in different tissue maps.
 
-  Configuration variables used:
+Configuration variables used:
 
-  * :preprocessing section
+* :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
     * PIPELINES_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
-  * :preprocessing:mpm_maps section
+* :preprocessing:mpm_maps section
     * OUTPUT_FOLDER: destination folder for the MPMs and brain segmentation
     * BACKUP_FOLDER: backup folder for the MPMs and brain segmentation
     * SPM_FUNCTION: SPM function called. Default to 'Preproc_mpm_maps'

@@ -1,26 +1,26 @@
 """
 
-  Pre processing step: Neuromorphometric Atlas.
+Pre processing step: Neuromorphometric Atlas.
 
-  Computes an individual Atlas based on the NeuroMorphometrics Atlas. This is based on the NeuroMorphometrics Toolbox.
-  This delivers three files:
+Computes an individual Atlas based on the NeuroMorphometrics Atlas. This is based on the NeuroMorphometrics Toolbox.
+This delivers three files:
 
-  1) Atlas File (*.nii);
-  2) Volumes of the Morphometric Atlas structures (*.txt);
-  3) Excel File (.xls) or *.csv containing the volume, and globals plus Multiparametric Maps (R2*, R1, MT, PD) for
-  each structure defined in the Subject Atlas.
+1) Atlas File (*.nii);
+2) Volumes of the Morphometric Atlas structures (*.txt);
+3) Excel File (.xls) or *.csv containing the volume, and globals plus Multiparametric Maps (R2*, R1, MT, PD) for
+   each structure defined in the Subject Atlas.
 
-  In case of anatomical images different from Multiparametric Maps the outputs will be only the structure volumes.
+In case of anatomical images different from Multiparametric Maps the outputs will be only the structure volumes.
 
-  Configuration variables used:
+Configuration variables used:
 
-  * :preprocessing section
+* :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
     * PIPELINES_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
-  * :preprocessing:mpm_maps section
+* :preprocessing:mpm_maps section
     * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline.
       Default to PIPELINES_PATH + '/MPMs_Pipeline'
-  * :preprocessing:neuro_morphometric_atlas section
+* :preprocessing:neuro_morphometric_atlas section
     * OUTPUT_FOLDER: destination folder for the Atlas File, the volumes of the Morphometric Atlas structures (*.txt),
       the csv file containing the volume, and globals plus Multiparametric Maps (R2*, R1, MT, PD) for each structure
       defined in the Subject Atlas.

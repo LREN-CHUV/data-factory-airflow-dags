@@ -1,10 +1,10 @@
 """
 
-  Pre processing step: register local files
+Pre processing step: register local files
 
-  Configuration variables used:
+Configuration variables used:
 
-  * :preprocessing section
+* :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
 
 """

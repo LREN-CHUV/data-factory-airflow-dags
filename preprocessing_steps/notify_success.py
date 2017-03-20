@@ -1,10 +1,10 @@
 """
 
-  Pre processing step: notify success
+Pre processing step: notify success
 
-  Configuration variables used:
+Configuration variables used:
 
-  None
+None
 
 """
 

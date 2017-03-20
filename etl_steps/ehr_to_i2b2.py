@@ -1,12 +1,12 @@
 """
 
-  ETL steps: EHR to I2B2
+ETL steps: EHR to I2B2
 
-  Configuration variables used:
+Configuration variables used:
 
-  * :etl section
+* :etl section
     * MIN_FREE_SPACE
-  * :etl:ehr_to_i2b2 section:
+* :etl:ehr_to_i2b2 section:
     * DOCKER_IMAGE
 
 """

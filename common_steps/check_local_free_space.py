@@ -1,12 +1,12 @@
 """
 
-  Pre processing step: check free space on local disk
+Pre processing step: check free space on local disk
 
-  Configuration variables used:
+Configuration variables used:
 
-  * :<pipeline> section
+* :<pipeline> section
     * MIN_FREE_SPACE
-  * :<pipeline>:<step> section (first match in a list of steps)
+* :<pipeline>:<step> section (first match in a list of steps)
     * OUTPUT_FOLDER
 
 """

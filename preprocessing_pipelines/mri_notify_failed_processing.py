@@ -1,4 +1,4 @@
-""" Inform administrators when processing on a MRI session failed """
+"""Inform administrators when processing on a MRI session failed"""
 
 from datetime import datetime, timedelta
 from airflow import DAG, configuration

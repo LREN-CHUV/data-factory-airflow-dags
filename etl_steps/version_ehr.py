@@ -1,14 +1,14 @@
 """
 
-  ETL steps: version EHR
+ETL steps: version EHR
 
-  Copy files to a versioned folder.
+Copy files to a versioned folder.
 
-  Configuration variables used:
+Configuration variables used:
 
-  * etl section:
+* etl section:
     * MIN_FREE_SPACE
-  * :etl:version_ehr section:
+* :etl:version_ehr section:
     * OUTPUT_FOLDER
 
 """

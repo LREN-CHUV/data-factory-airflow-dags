@@ -2,7 +2,7 @@
 
 Importing meta-data from meta-data files to I2B2
 
-  Configuration variables used:
+Configuration variables used:
 
   * METADATA_FOLDER
   * I2B2_DB
