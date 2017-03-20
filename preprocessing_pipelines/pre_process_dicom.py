@@ -75,9 +75,9 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
     export_features = 'export_features' in preprocessing_pipelines
 
     if copy_to_local:
-        upstream_step = copy_to_local_cfg(dag, upstream_step, section)
+        upstream_step = copy_to_local_cfg(dag, upstream_step, section, section + ':copy_to_local')
     else:
-        upstream_step = register_local_cfg(dag, upstream_step, section)
+        upstream_step = register_local_cfg(dag, upstream_step, section, section + ':register_local')
     # endif
 
     if dicom_to_nifti:
@@ -91,13 +91,13 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
         # endif
 
         if 'dicom_select_T1' in preprocessing_pipelines:
-            upstream_step = dicom_select_t1_pipeline_cfg(dag, upstream_step, section)
+            upstream_step = dicom_select_t1_pipeline_cfg(dag, upstream_step, section, section + ':dicom_select_T1')
         # endif
 
-        upstream_step = dicom_to_nifti_pipeline_cfg(dag, upstream_step, section)
+        upstream_step = dicom_to_nifti_pipeline_cfg(dag, upstream_step, section, section + ':dicom_to_nifti')
 
         if copy_to_local:
-            copy_step = cleanup_local_cfg(dag, upstream_step, section, "DICOM_OUTPUT_FOLDER")
+            copy_step = cleanup_local_cfg(dag, upstream_step, section, section + ':copy_to_local')
             upstream_step.priority_weight = copy_step.priority_weight
         # endif
     # endif

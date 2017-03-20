@@ -86,6 +86,24 @@ Requirements:
    * PROTOCOLS_FILE: path to the Protocols definition file defining the protocols used on the scanner.Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
    * DCM2NII_PROGRAM: Path to DCM2NII program. Default to PIPELINE_PATH + '/dcm2nii'
 
+* If nifti_organiser is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:nifti_organiser] section:
+   * OUTPUT_FOLDER: destination folder for the organised images
+   * DATA_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
+   * DOCKER_IMAGE: Docker image of the hierarchizer program
+   * DOCKER_INPUT_DIR: Input directory inside the Docker container. Default to '/input_folder'
+   * DOCKER_OUTPUT_DIR: Output directory inside the Docker container. Default to '/output_folder'
+
+* If nifti_selection is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:nifti_selection] section:
+   * OUTPUT_FOLDER: destination folder for the selected images
+   * CSV_PATH: path to the CSV file containing the list of selected images (PatientID | ImageID).
+
+* If mpm_maps is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicompm_mapsm_to_nifti] section:
+   * OUTPUT_FOLDER: destination folder for the MPMs and brain segmentation
+   * BACKUP_FOLDER: backup folder for the MPMs and brain segmentation
+   * SPM_FUNCTION: SPM function called. Default to 'Preproc_mpm_maps'
+   * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to PIPELINES_PATH + '/MPMs_Pipeline'
+   * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
+   * PROTOCOLS_FILE: path to the Protocols definition file defining the protocols used on the scanner.Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
 
    * EHR_SCANNERS
    * EHR_DATA_FOLDER
@@ -95,22 +113,11 @@ Requirements:
    * EHR_VERSIONED_FOLDER
    * IMAGES_ORGANIZER_DATASET_TYPE: image type (e.g. DICOM, NIFTI)
    * IMAGES_ORGANIZER_DATA_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
-   * IMAGES_ORGANIZER_OUTPUT_FOLDER: output folder
-   * IMAGES_ORGANIZER_DOCKER_IMAGE: organizer image
-   * MPM_MAPS_OUTPUT_FOLDER: path for the results of MPM maps pipeline
-   * MPM_MAPS_SERVER_FOLDER: for the results of MPM maps pipeline
-   * MPM_MAPS_SPM_FUNCTION: Preproc_mpm_maps
    * neuro_morphometric_atlas_TPM_template = /opt/spm12/tpm/nwTPM_sl3.nii
    * NEURO_MORPHOMETRIC_ATLAS_OUTPUT_FOLDER: path for the results of neuro morphometric atlas pipeline
    * NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER: long term storage location for the results of neuro morphometric atlas pipeline
    * NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION: NeuroMorphometric_pipeline
    * NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE: SPM_DIR + '/tpm/nwTPM_sl3.nii'
-   * NIFTI_OUTPUT_FOLDER: path for the image files converted to Nifti
-   * NIFTI_SERVER_FOLDER: long term storage location for the image files converted to Nifti
-   * NIFTI_SPM_FUNCTION: DCM2NII_LREN'
-   * PIPELINES_PATH: path to the root folder containing the Matlab scripts for the pipelines
-   * copy_to_local: copies all DICOM files to COPY_TO_OUTPUT_FOLDER.
-   * PROTOCOLS_FILE: path to the MRI acquisition protocol file
 
 Sample configuration:
 

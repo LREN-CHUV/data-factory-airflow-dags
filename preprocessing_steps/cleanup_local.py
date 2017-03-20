@@ -1,10 +1,13 @@
 """
 
-  Pre processing step: cleanup local folder
+  Pre processing step: cleanup local folder.
+
+  Cleanup the local folder created during copy_to_local step.
 
   Configuration variables used:
 
-  * <local_folder_config_key>
+  * :preprocessing:copy_to_local section
+    * OUTPUT_FOLDER: destination folder for the local copy
 
 """
 
@@ -18,22 +21,22 @@ from airflow.operators import BashOperator
 from common_steps import Step
 
 
-def cleanup_local_cfg(dag, upstream_step, dataset_section, local_folder_config_key):
-    copy_to_local_folder = configuration.get(dataset_section, local_folder_config_key)
+def cleanup_local_cfg(dag, upstream_step, preprocessing_section=None, step_section=None):
+    cleanup_folder = configuration.get(step_section, "OUTPUT_FOLDER")
 
-    return cleanup_local(dag, upstream_step, copy_to_local_folder)
+    return cleanup_local(dag, upstream_step, cleanup_folder)
 
 
-def cleanup_local(dag, upstream_step, copy_to_local_folder):
+def cleanup_local(dag, upstream_step, cleanup_folder):
 
     cleanup_local_cmd = dedent("""
-            rm -rf {{ params["local_folder"] }}/{{ dag_run.conf["session_id"] }}
+            rm -rf {{ params["cleanup_folder"] }}/{{ dag_run.conf["session_id"] }}
         """)
 
     cleanup_local = BashOperator(
         task_id='cleanup_local',
         bash_command=cleanup_local_cmd,
-        params={'local_folder': copy_to_local_folder},
+        params={'cleanup_folder': cleanup_folder},
         priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=1),
         dag=dag
@@ -45,7 +48,7 @@ def cleanup_local(dag, upstream_step, copy_to_local_folder):
     cleanup_local.doc_md = dedent("""\
         # Cleanup local files
 
-        Remove locally stored files as they have been processed already.
+        Remove locally stored files as they have been already processed.
         """)
 
     return Step(cleanup_local, 'cleanup_local', upstream_step.priority_weight + 10)

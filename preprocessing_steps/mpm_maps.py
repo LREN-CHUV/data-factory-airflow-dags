@@ -1,14 +1,25 @@
 """
 
-  Pre processing step: MPM Maps
+  Pre processing step: MPM Maps.
+
+  Computes the Multiparametric Maps (MPMs)(R2*, R1, MT, PD) and brain segmentation
+  in different tissue maps.
 
   Configuration variables used:
 
-  * DATASET_CONFIG
-  * PIPELINES_PATH
-  * MPM_MAPS_SPM_FUNCTION
-  * MPM_MAPS_OUTPUT_FOLDER
-  * MPM_MAPS_SERVER_FOLDER
+  * :preprocessing section
+    * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
+    * PIPELINES_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
+  * :preprocessing:mpm_maps section
+    * OUTPUT_FOLDER: destination folder for the MPMs and brain segmentation
+    * BACKUP_FOLDER: backup folder for the MPMs and brain segmentation
+    * SPM_FUNCTION: SPM function called. Default to 'Preproc_mpm_maps'
+    * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline.
+      Default to PIPELINES_PATH + '/MPMs_Pipeline'
+    * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines.
+      Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
+    * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner.
+      Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
 
 """
 
@@ -23,34 +34,42 @@ from airflow_spm.operators import SpmPipelineOperator
 from common_steps import Step, default_config
 
 
-def mpm_maps_pipeline_cfg(dag, upstream_step, dataset_section):
-    default_config(dataset_section, 'INPUT_CONFIG', '')
-    default_config(dataset_section, 'MPM_MAPS_SPM_FUNCTION', 'Preproc_mpm_maps')
+def mpm_maps_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
+    default_config(preprocessing_section, 'INPUT_CONFIG', '')
+    default_config(step_section, 'SPM_FUNCTION', 'Preproc_mpm_maps')
+    default_config(step_section, 'PIPELINES_PATH', '.')
+    default_config(step_section, 'PIPELINE_PATH', configuration.get(
+        preprocessing_section, 'PIPELINES_PATH') + '/MPMs_Pipeline')
+    default_config(step_section, 'MISC_LIBRARY_PATH', configuration.get(preprocessing_section, 'MISC_LIBRARY_PATH'))
+    default_config(step_section, 'PROTOCOLS_DEFINITION_FILE',
+                   configuration.get(preprocessing_section, 'PROTOCOLS_FILE'))
 
-    dataset_config = configuration.get(dataset_section, 'INPUT_CONFIG')
-    pipeline_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/MPMs_Pipeline'
-    misc_library_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/../Miscellaneous&Others'
-    spm_function = configuration.get(dataset_section, 'MPM_MAPS_SPM_FUNCTION')
-    local_folder = configuration.get(dataset_section, 'MPM_MAPS_OUTPUT_FOLDER')
-    server_folder = configuration.get(dataset_section, 'MPM_MAPS_SERVER_FOLDER')
+    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
+    pipeline_path = configuration.get(step_section, 'PIPELINE_PATH')
+    misc_library_path = configuration.get(step_section, 'MISC_LIBRARY_PATH')
+    spm_function = configuration.get(step_section, 'SPM_FUNCTION')
+    output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
+    backup_folder = configuration.get(step_section, 'BACKUP_FOLDER')
+    protocols_definition_file = configuration.get(step_section, 'PROTOCOLS_DEFINITION_FILE')
 
     return mpm_maps_pipeline(dag, upstream_step,
                              dataset_config=dataset_config,
                              pipeline_path=pipeline_path,
                              misc_library_path=misc_library_path,
                              spm_function=spm_function,
-                             local_folder=local_folder,
-                             server_folder=server_folder)
+                             output_folder=output_folder,
+                             backup_folder=backup_folder,
+                             protocols_definition_file=protocols_definition_file)
 
 
 def mpm_maps_pipeline(dag, upstream_step,
-                      dataset_config=None,
+                      dataset_config='',
                       spm_function='Preproc_mpm_maps',
                       pipeline_path=None,
                       misc_library_path=None,
-                      local_folder=None,
-                      protocols_file=None,
-                      server_folder=None):
+                      output_folder=None,
+                      backup_folder=None,
+                      protocols_definition_file=None):
 
     def arguments_fn(folder, session_id, pipeline_params_config_file='Preproc_mpm_maps_pipeline_config.txt', **kwargs):
         """
@@ -61,17 +80,17 @@ def mpm_maps_pipeline(dag, upstream_step,
 
         return [parent_data_folder,
                 session_id,
-                local_folder,
-                protocols_file,
+                output_folder,
+                protocols_definition_file,
                 pipeline_params_config_file,
-                server_folder]
+                backup_folder]
 
     mpm_maps_pipeline = SpmPipelineOperator(
         task_id='mpm_maps_pipeline',
         spm_function=spm_function,
         spm_arguments_callable=arguments_fn,
         matlab_paths=[misc_library_path, pipeline_path],
-        output_folder_callable=lambda session_id, **kwargs: local_folder + '/' + session_id,
+        output_folder_callable=lambda session_id, **kwargs: output_folder + '/' + session_id,
         parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=24),
@@ -99,6 +118,6 @@ def mpm_maps_pipeline(dag, upstream_step,
             * Remote folder: __%s__
 
             Depends on: __%s__
-            """ % (spm_function, local_folder, server_folder, upstream_step.task_id))
+            """ % (spm_function, output_folder, backup_folder, upstream_step.task_id))
 
     return Step(mpm_maps_pipeline, 'mpm_maps_pipeline', upstream_step.priority_weight + 10)

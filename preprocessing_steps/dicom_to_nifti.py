@@ -67,7 +67,6 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream_step, preprocessing_section, step_
 
 
 def dicom_to_nifti_pipeline(dag, upstream_step,
-                            dataset='',
                             dataset_config='',
                             spm_function='DCM2NII_LREN',
                             pipeline_path=None,

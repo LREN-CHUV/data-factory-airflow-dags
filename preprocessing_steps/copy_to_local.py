@@ -10,7 +10,7 @@
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
     * MIN_FREE_SPACE: minimum percentage of free space available on local disk
   * :preprocessing:copy_to_local section
-    * OUTPUT_FOLDER: estination folder for the local copy
+    * OUTPUT_FOLDER: destination folder for the local copy
 
 """
 
@@ -24,13 +24,12 @@ from airflow_pipeline.operators import BashPipelineOperator
 from common_steps import Step, default_config
 
 
-def copy_to_local_cfg(dag, upstream_step, preprocessing_section):
+def copy_to_local_cfg(dag, upstream_step, preprocessing_section, step_section):
     default_config(preprocessing_section, 'INPUT_CONFIG', '')
 
-    section = preprocessing_section + ':copy_to_local'
     dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
     min_free_space = configuration.getfloat(preprocessing_section, 'MIN_FREE_SPACE')
-    output_folder = configuration.get(section, 'OUTPUT_FOLDER')
+    output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
 
     return copy_to_local(dag, upstream_step, min_free_space,
                          output_folder, dataset_config)
