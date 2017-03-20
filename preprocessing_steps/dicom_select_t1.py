@@ -1,17 +1,20 @@
 """
 
-  Pre processing step: Select T1 DICOM files
+  Pre processing step: Select T1 DICOM files.
+
+  Given an input dataset containing DICOM files, only T1 weighted images are selected.
 
   Configuration variables used:
 
   * :preprocessing section
-    * INPUT_CONFIG
+    * INPUT_CONFIG: List of flags defining how incoming imaging data is organised.
   * :preprocessing:dicom_select_T1 section
-    * OUTPUT_FOLDER
-    * SPM_FUNCTION
+    * OUTPUT_FOLDER: destination folder for the selected T1 images
+    * SPM_FUNCTION: SPM function called. Default to 'selectT1'
     * PROTOCOLS_FILE
     * PIPELINE_PATH
-    * MISC_LIBRARY_PATH
+    * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines.
+      Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
 
 """
 
