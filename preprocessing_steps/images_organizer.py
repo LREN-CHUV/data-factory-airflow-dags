@@ -57,7 +57,7 @@ def images_organizer(dag, upstream_step,  dataset_config,
                      docker_output_dir='/output_folder'):
 
     type_of_images_param = "--type " + dataset_type
-    structure_param = "--attributes " + str(data_structure.split(':'))
+    structure_param = "--output_folder_organization " + str(data_structure.split(':'))
 
     images_organizer_pipeline = DockerPipelineOperator(
         task_id='images_organizer_pipeline',
@@ -71,7 +71,7 @@ def images_organizer(dag, upstream_step,  dataset_config,
         dataset_config=dataset_config,
         dag=dag,
         image=docker_image,
-        command=["--dataset {{ dag_run.conf['dataset'] }}", type_of_images_param, structure_param],
+        command=["--incoming_dataset {{ dag_run.conf['dataset'] }}", type_of_images_param, structure_param],
         container_input_dir=docker_input_dir,
         container_output_dir=docker_output_dir
     )

@@ -59,14 +59,14 @@ Requirements:
 
 * If dicom_organiser is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_organiser] section:
      * OUTPUT_FOLDER: destination folder for the organised images
-     * DATA_STRUCTURE: TODO - @mirco Pass cmd line options?
+     * DATA_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
      * DOCKER_IMAGE: Docker image of the hierarchizer program
      * DOCKER_INPUT_DIR: Input directory inside the Docker container
      * DOCKER_OUTPUT_DIR: Output directory inside the Docker container
 
-* If dicom_organiser is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_selection] section:
+* If images_selection is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_selection] section:
     * OUTPUT_FOLDER: destination folder for the selected images
-    * CSV_PATH: TODO - @mirco
+    * CSV_PATH: path to the CSV file containing the list of selected images (PatientID | ImageID).
 
    * dicom_select_T1_local_folder = /data/select_T1
    * dicom_select_T1_protocols_file = /opt/airflow-scripts/mri-preprocessing-pipeline/Protocols_definition.txt
@@ -77,10 +77,10 @@ Requirements:
    * EHR_TO_I2B2_CAPTURE_DOCKER_IMAGE
    * EHR_TO_I2B2_CAPTURE_FOLDER
    * EHR_VERSIONED_FOLDER
-   * IMAGES_ORGANIZER_DATASET_TYPE
-   * IMAGES_ORGANIZER_DATA_STRUCTURE PatientID:AcquisitionDate:SeriesDescription:SeriesDate
-   * IMAGES_ORGANIZER_OUTPUT_FOLDER
-   * IMAGES_ORGANIZER_DOCKER_IMAGE
+   * IMAGES_ORGANIZER_DATASET_TYPE: image type (e.g. DICOM, NIFTI)
+   * IMAGES_ORGANIZER_DATA_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
+   * IMAGES_ORGANIZER_OUTPUT_FOLDER: output folder
+   * IMAGES_ORGANIZER_DOCKER_IMAGE: organizer image
    * MPM_MAPS_OUTPUT_FOLDER: path for the results of MPM maps pipeline
    * MPM_MAPS_SERVER_FOLDER: for the results of MPM maps pipeline
    * MPM_MAPS_SPM_FUNCTION: Preproc_mpm_maps
