@@ -4,8 +4,10 @@
 
   Configuration variables used:
 
-  * EHR_TO_I2B2_CAPTURE_DOCKER_IMAGE
-  * EHR_TO_I2B2_CAPTURE_FOLDER
+  * :etl section
+    * MIN_FREE_SPACE
+  * :etl:ehr_to_i2b2 section:
+    * DOCKER_IMAGE
 
 """
 
@@ -18,18 +20,18 @@ from airflow_pipeline.operators import DockerPipelineOperator
 from common_steps import Step
 
 
-def ehr_to_i2b2_pipeline_cfg(dag, upstream_step, dataset_section):
-    ehr_to_i2b2_capture_docker_image = configuration.get(dataset_section, 'EHR_TO_I2B2_CAPTURE_DOCKER_IMAGE')
-    local_folder = configuration.get(dataset_section, 'EHR_TO_I2B2_CAPTURE_FOLDER')
+def ehr_to_i2b2_pipeline_cfg(dag, upstream_step, etl_section, step_section):
+    min_free_space = configuration.get(etl_section, 'MIN_FREE_SPACE')
+    docker_image = configuration.get(step_section, 'DOCKER_IMAGE')
 
-    return ehr_to_i2b2_pipeline(dag, upstream_step, local_folder, ehr_to_i2b2_capture_docker_image)
+    return ehr_to_i2b2_pipeline(dag, upstream_step, min_free_space, docker_image)
 
 
-def ehr_to_i2b2_pipeline(dag, upstream_step, ehr_to_i2b2_capture_folder=None, ehr_to_i2b2_capture_docker_image=''):
+def ehr_to_i2b2_pipeline(dag, upstream_step, output_folder=None, docker_image=''):
 
     ehr_to_i2b2_pipeline = DockerPipelineOperator(
         task_id='map_ehr_to_i2b2_capture',
-        image=ehr_to_i2b2_capture_docker_image,
+        image=docker_image,
         force_pull=False,
         api_version="1.18",
         cpus=1,
@@ -38,7 +40,7 @@ def ehr_to_i2b2_pipeline(dag, upstream_step, ehr_to_i2b2_capture_folder=None, eh
         container_input_dir='/opt/source',
         container_output_dir='/opt/target',
         output_folder_callable=lambda relative_context_path, **kwargs: "%s/%s" % (
-            ehr_to_i2b2_capture_folder, relative_context_path),
+            output_folder, relative_context_path),
         volumes=[
             "/opt/postgresdb.properties:/etc/mipmap/postgresdb.properties"
         ],
@@ -61,6 +63,6 @@ def ehr_to_i2b2_pipeline(dag, upstream_step, ehr_to_i2b2_capture_folder=None, eh
     * Local folder: __%s__
 
     Depends on: __%s__
-    """ % (ehr_to_i2b2_capture_docker_image, ehr_to_i2b2_capture_folder, upstream_step.task))
+    """ % (docker_image, output_folder, upstream_step.task))
 
     return Step(ehr_to_i2b2_pipeline, 'ehr_to_i2b2_pipeline', upstream_step.priority_weight + 10)

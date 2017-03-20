@@ -4,8 +4,10 @@
 
   Configuration variables used:
 
-  * VERSION_EHR_LOCAL_FOLDER
-  * VERSION_EHR_MIN_FREE_SPACE
+  * etl section:
+    * MIN_FREE_SPACE
+  * :etl:version_ehr section:
+    * OUTPUT_FOLDER
 
 """
 
@@ -18,14 +20,14 @@ from airflow_pipeline.operators import BashPipelineOperator
 from common_steps import Step
 
 
-def version_ehr_pipeline_cfg(dag, upstream_step, dataset_section):
-    local_folder = configuration.get(dataset_section, 'VERSION_EHR_LOCAL_FOLDER')
-    min_free_space_local_folder = configuration.get(dataset_section, 'VERSION_EHR_MIN_FREE_SPACE')
+def version_ehr_pipeline_cfg(dag, upstream_step, etl_section, step_section):
+    min_free_space = configuration.get(etl_section, 'MIN_FREE_SPACE')
+    output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
 
-    return version_ehr_pipeline(dag, upstream_step, local_folder, min_free_space_local_folder)
+    return version_ehr_pipeline(dag, upstream_step, output_folder, min_free_space)
 
 
-def version_ehr_pipeline(dag, upstream_step, local_folder=None, min_free_space_local_folder=None):
+def version_ehr_pipeline(dag, upstream_step, output_folder=None, min_free_space=None):
 
     version_incoming_ehr_cmd = dedent("""
             export HOME=/usr/local/airflow
@@ -42,11 +44,11 @@ def version_ehr_pipeline(dag, upstream_step, local_folder=None, min_free_space_l
     version_ehr_pipeline = BashPipelineOperator(
         task_id='version_incoming_ehr',
         bash_command=version_incoming_ehr_cmd,
-        params={'min_free_space_local_folder': min_free_space_local_folder,
-                'ehr_versioned_folder': local_folder
+        params={'min_free_space_local_folder': min_free_space,
+                'ehr_versioned_folder': output_folder
                 },
         output_folder_callable=lambda relative_context_path, **kwargs: "%s/%s" % (
-            local_folder, relative_context_path),
+            output_folder, relative_context_path),
         parent_task=upstream_step.task,
         priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=3),
@@ -61,6 +63,6 @@ def version_ehr_pipeline(dag, upstream_step, local_folder=None, min_free_space_l
     # Copy EHR files to local %s folder
 
     Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
-    """ % local_folder)
+    """ % output_folder)
 
     return Step(version_ehr_pipeline, 'version_ehr_pipeline', upstream_step.priority_weight + 10)

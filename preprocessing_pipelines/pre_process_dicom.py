@@ -115,8 +115,7 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
         upstream_step = neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, section,
                                                               section + ':neuro_morphometric_atlas')
         if 'export_features' in preprocessing_pipelines:
-            upstream_step = features_to_i2b2_pipeline_cfg(dag, upstream_step, section,
-                                                          section + ':export_features')
+            upstream_step = features_to_i2b2_pipeline_cfg(dag, upstream_step, section, section + ':export_features')
         # endif
     # endif
 

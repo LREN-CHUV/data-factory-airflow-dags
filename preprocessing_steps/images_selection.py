@@ -5,7 +5,7 @@
   Configuration variables used:
 
   * :preprocessing section
-    * * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
+    * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
   * :preprocessing:dicom_selection or :preprocessing:nifti_selection section
     * OUTPUT_FOLDER: destination folder for the selected images
     * IMAGES_SELECTION_CSV_PATH: path to the CSV file containing the list of selected images (PatientID | ImageID).
@@ -25,7 +25,7 @@ from common_steps import Step, default_config
 def images_selection_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
     default_config(preprocessing_section, 'INPUT_CONFIG', '')
 
-    # TODO dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
+    # TODO: dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
     local_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
     images_selection_csv_path = configuration.get(step_section, 'IMAGES_SELECTION_CSV_PATH')
 
@@ -35,7 +35,7 @@ def images_selection_pipeline_cfg(dag, upstream_step, preprocessing_section, ste
 def images_selection_pipeline(dag, upstream_step,
                               local_folder=None, csv_path=None):
 
-    def images_selection_fn(folder, session_id, **kwargs):
+    def images_selection_fn(folder, **kwargs):
         """
           Selects files from DICOM/NIFTI that match criterion in CSV file.
           It selects all files located in the folder 'folder' matching criterion in CSV file
@@ -57,7 +57,6 @@ def images_selection_pipeline(dag, upstream_step,
                     makedirs(repetition_folder, exist_ok=True)
                     for file_ in listdir(folder):
                         copy2(join(folder, file_), join(repetition_folder, file_))
-
         return "ok"
 
     # TODO: track provenance
