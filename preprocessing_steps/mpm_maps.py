@@ -24,10 +24,10 @@ from common_steps import Step, default_config
 
 
 def mpm_maps_pipeline_cfg(dag, upstream_step, dataset_section):
-    default_config(dataset_section, 'DATASET_CONFIG', '')
+    default_config(dataset_section, 'INPUT_CONFIG', '')
     default_config(dataset_section, 'MPM_MAPS_SPM_FUNCTION', 'Preproc_mpm_maps')
 
-    dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
+    dataset_config = configuration.get(dataset_section, 'INPUT_CONFIG')
     pipeline_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/MPMs_Pipeline'
     misc_library_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/../Miscellaneous&Others'
     spm_function = configuration.get(dataset_section, 'MPM_MAPS_SPM_FUNCTION')

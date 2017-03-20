@@ -5,7 +5,7 @@
   Configuration variables used:
 
   * :preprocessing section
-    * INPUT_CONFIG
+    * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
 
 """
 
@@ -16,10 +16,12 @@ from textwrap import dedent
 from airflow import configuration
 from airflow_pipeline.operators import BashPipelineOperator
 
-from common_steps import Step
+from common_steps import Step, default_config
 
 
 def register_local_cfg(dag, upstream_step, preprocessing_section):
+    default_config(preprocessing_section, 'INPUT_CONFIG', '')
+
     dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
 
     return register_local(dag, upstream_step, dataset_config)

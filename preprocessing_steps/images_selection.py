@@ -5,7 +5,7 @@
   Configuration variables used:
 
   * :preprocessing section
-    * * INPUT_CONFIG: List of flags defining how incoming imaging data is organised.
+    * * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
   * :preprocessing:dicom_selection or :preprocessing:nifti_selection section
     * OUTPUT_FOLDER: destination folder for the selected images
     * CSV_PATH: TODO
@@ -19,10 +19,12 @@ from textwrap import dedent
 from airflow import configuration
 from airflow_pipeline.operators import PythonPipelineOperator
 
-from common_steps import Step
+from common_steps import Step, default_config
 
 
 def images_selection_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
+    default_config(preprocessing_section, 'INPUT_CONFIG', '')
+
     # TODO dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
     local_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
     csv_path = configuration.get(step_section, 'CSV_PATH')

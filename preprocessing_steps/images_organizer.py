@@ -7,7 +7,7 @@
   Configuration variables used:
 
   * :preprocessing section
-    * INPUT_CONFIG: List of flags defining how incoming imaging data is organised.
+    * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
   * :preprocessing:dicom_organiser or :preprocessing:nifti_organiser section
     * OUTPUT_FOLDER: destination folder for the organised images
     * DATA_STRUCTURE: TODO
@@ -30,6 +30,7 @@ from common_steps import Step, default_config
 
 
 def images_organizer_cfg(dag, upstream_step, preprocessing_section, step_section):
+    default_config(preprocessing_section, 'INPUT_CONFIG', '')
     default_config(step_section, "DOCKER_INPUT_DIR", "/input_folder")
     default_config(step_section, "DOCKER_OUTPUT_DIR", "/output_folder")
 

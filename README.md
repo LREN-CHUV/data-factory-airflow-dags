@@ -33,7 +33,7 @@ Requirements:
 
 * For each dataset, now configure the [data-factory:&lt;dataset&gt;:preprocessing] section:
    * INPUT_FOLDER: Folder containing the original imaging data to process. This data should have been already anonymised by a tool
-   * INPUT_CONFIG: List of flags defining how incoming imaging data is organised, values are
+   * INPUT_CONFIG: List of flags defining how incoming imaging data are organised, values are
       * boost: (optional) When enabled, we consider that all the files from a same folder share the same meta-data. The processing is (about 2 times) faster. This option is enabled by default.
       * session_id_by_patient: Rarely, a data set might use study IDs which are unique by patient (not for the whole study). E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session ID.
       * visit_id_in_patient_id: Rarely, a data set might mix patient IDs and visit IDs. E.g. : LREN data. In such a case, you have to enable this flag. This will try to split PatientID into VisitID and PatientID.
@@ -48,7 +48,7 @@ Requirements:
       * daily: input folder contains a sub-folder for the year containing daily sub-folders for each day of the year (format yyyyMMdd). Those daily sub-folders contain the folders for each scan to process.
       * flat: input folder contains a set of sub-folders each containing a scan to process.
    * PIPELINES: List of pipelines to execute. Values are
-      * copy_to_local: if used, input data is first copied to a local folder to speed-up processing.
+      * copy_to_local: if used, input data are first copied to a local folder to speed-up processing.
       * dicom_organiser: reorganise DICOM files in a scan folder for the following pipelines.
       * dicom_selection
       * dicom_to_nifti
@@ -73,9 +73,19 @@ Requirements:
 * If dicom_select_T1 is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_select_T1] section:
    * OUTPUT_FOLDER: destination folder for the selected T1 images
    * SPM_FUNCTION: SPM function called. Default to 'selectT1'
-   * PROTOCOLS_FILE
-   * PIPELINE_PATH
+   * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to PIPELINES_PATH + '/SelectT1_Pipeline'
    * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
+   * PROTOCOLS_FILE: path to the Protocols definition file defining the protocols used on the scanner. For PPMI data, SelectT1 requires a custom Protocols_definition_PPMI.txt file.
+
+* If dicom_to_nifti is used or required (when DICOM images are used as input), configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_to_nifti] section:
+   * OUTPUT_FOLDER: destination folder for the Nifti images
+   * BACKUP_FOLDER: backup folder for the Nitfi images
+   * SPM_FUNCTION: SPM function called. Default to 'DCM2NII_LREN'
+   * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to PIPELINES_PATH + '/Nifti_Conversion_Pipeline'
+   * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
+   * PROTOCOLS_FILE: path to the Protocols definition file defining the protocols used on the scanner.Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
+   * DCM2NII_PROGRAM: Path to DCM2NII program. Default to PIPELINE_PATH + '/dcm2nii'
+
 
    * EHR_SCANNERS
    * EHR_DATA_FOLDER
