@@ -8,7 +8,7 @@
     * * INPUT_CONFIG: List of flags defining how incoming imaging data is organised.
   * :preprocessing:dicom_selection or :preprocessing:nifti_selection section
     * OUTPUT_FOLDER: destination folder for the selected images
-    * CSV_PATH: TODO
+    * IMAGES_SELECTION_CSV_PATH: path to the CSV file containing the list of selected images (PatientID | ImageID).
 
 """
 
@@ -25,9 +25,9 @@ from common_steps import Step
 def images_selection_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
     # TODO dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
     local_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
-    csv_path = configuration.get(step_section, 'CSV_PATH')
+    images_selection_csv_path = configuration.get(step_section, 'IMAGES_SELECTION_CSV_PATH')
 
-    return images_selection_pipeline(dag, upstream_step, local_folder, csv_path)
+    return images_selection_pipeline(dag, upstream_step, local_folder, images_selection_csv_path)
 
 
 def images_selection_pipeline(dag, upstream_step,

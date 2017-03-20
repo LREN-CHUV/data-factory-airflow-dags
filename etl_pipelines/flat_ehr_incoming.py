@@ -24,19 +24,17 @@ from airflow_scan_folder.operators import FlatFolderOperator
 def flat_ehr_incoming_dag(dataset, folder, depth, email_errors_to, trigger_dag_id):
     # Folder to scan for new incoming daily EHR-extract folders containing CSV files and other kinds of clinical data.
 
-    # constants
-
-    START = datetime.utcnow()
-    START = datetime.combine(START.date(), time(START.hour, 0))
-
-    DAG_NAME = '%s_mri_flat_etl_incoming' % dataset.lower().replace(" ", "_")
-
     # Define the DAG
+
+    start = datetime.utcnow()
+    start = datetime.combine(start.date(), time(start.hour, 0))
+
+    dag_name = '%s_mri_flat_etl_incoming' % dataset.lower().replace(" ", "_")
 
     default_args = {
         'owner': 'airflow',
         'depends_on_past': False,
-        'start_date': START,
+        'start_date': start,
         'retries': 1,
         'retry_delay': timedelta(seconds=120),
         'email': email_errors_to,
@@ -44,7 +42,7 @@ def flat_ehr_incoming_dag(dataset, folder, depth, email_errors_to, trigger_dag_i
         'email_on_retry': True
     }
 
-    dag = DAG(dag_id=DAG_NAME,
+    dag = DAG(dag_id=dag_name,
               default_args=default_args,
               schedule_interval='@once')
 

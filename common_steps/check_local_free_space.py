@@ -23,6 +23,7 @@ from common_steps import Step
 
 def check_local_free_space_cfg(dag, upstream_step, pipeline_section, step_sections):
     min_free_space = configuration.getfloat(pipeline_section, 'MIN_FREE_SPACE')
+    local_folder = None
     for step_section in step_sections:
         local_folder = configuration.get(step_section, "OUTPUT_FOLDER")
         if local_folder:

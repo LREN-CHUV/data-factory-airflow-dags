@@ -68,7 +68,7 @@ Requirements:
 
 * If dicom_selection is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_selection] section:
    * OUTPUT_FOLDER: destination folder for the selected images
-   * CSV_PATH: path to the CSV file containing the list of selected images (PatientID | ImageID).
+   * IMAGES_SELECTION_CSV_PATH: path to the CSV file containing the list of selected images (PatientID | ImageID).
 
 * If dicom_select_T1 is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_select_T1] section:
    * OUTPUT_FOLDER: destination folder for the selected T1 images
