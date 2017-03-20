@@ -7,13 +7,13 @@
   Configuration variables used:
 
   * :preprocessing section
-    * INPUT_CONFIG
+    * INPUT_CONFIG: List of flags defining how incoming imaging data is organised.
   * :preprocessing:dicom_organiser or :preprocessing:nifti_organiser section
-    * OUTPUT_FOLDER
-    * DATA_STRUCTURE
-    * DOCKER_IMAGE
-    * DOCKER_INPUT_DIR
-    * DOCKER_OUTPUT_DIR
+    * OUTPUT_FOLDER: destination folder for the organised images
+    * DATA_STRUCTURE: TODO
+    * DOCKER_IMAGE: Docker image of the hierarchizer program
+    * DOCKER_INPUT_DIR: Input directory inside the Docker container. Default to '/input_folder'
+    * DOCKER_OUTPUT_DIR: Output directory inside the Docker container. Default to '/output_folder'
 
 """
 
@@ -26,10 +26,13 @@ from textwrap import dedent
 from airflow import configuration
 from airflow_pipeline.operators import DockerPipelineOperator
 
-from common_steps import Step
+from common_steps import Step, default_config
 
 
 def images_organizer_cfg(dag, upstream_step, preprocessing_section, step_section):
+    default_config(step_section, "DOCKER_INPUT_DIR", "/input_folder")
+    default_config(step_section, "DOCKER_OUTPUT_DIR", "/output_folder")
+
     dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
     local_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
     data_structure = configuration.get(step_section, 'DATA_STRUCTURE')

@@ -5,10 +5,10 @@
   Configuration variables used:
 
   * :preprocessing section
-    * INPUT_CONFIG
+    * * INPUT_CONFIG: List of flags defining how incoming imaging data is organised.
   * :preprocessing:dicom_selection or :preprocessing:nifti_selection section
-    * OUTPUT_FOLDER
-    * CSV_PATH
+    * OUTPUT_FOLDER: destination folder for the selected images
+    * CSV_PATH: TODO
 
 """
 
@@ -23,7 +23,7 @@ from common_steps import Step
 
 
 def images_selection_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
-    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
+    # TODO dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
     local_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
     csv_path = configuration.get(step_section, 'CSV_PATH')
 

@@ -7,10 +7,10 @@
   Configuration variables used:
 
   * :preprocessing section
-    * INPUT_CONFIG
-    * MIN_FREE_SPACE
+    * INPUT_CONFIG: List of flags defining how incoming imaging data is organised.
+    * MIN_FREE_SPACE: minimum percentage of free space available on local disk
   * :preprocessing:copy_to_local section
-    * OUTPUT_FOLDER
+    * OUTPUT_FOLDER: estination folder for the local copy
 
 """
 

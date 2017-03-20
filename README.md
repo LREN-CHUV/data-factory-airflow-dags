@@ -42,6 +42,7 @@ Requirements:
    * MAX_ACTIVE_RUNS: maximum number of folders containing scans to pre-process in parallel
    * MIN_FREE_SPACE: minimum percentage of free space available on local disk
    * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines.
+   * PIPELINES_PATH: path to the root folder containing the Matlab scripts for the pipelines
    * SCANNERS: List of methods describing how the preprocessing data folder is scanned for new work, values are
       * continuous: input folder is scanned frequently for new data. Sub-folders should contain a .ready file to indicate that processing can be performed on that folder.
       * daily: input folder contains a sub-folder for the year containing daily sub-folders for each day of the year (format yyyyMMdd). Those daily sub-folders contain the folders for each scan to process.
@@ -59,22 +60,22 @@ Requirements:
    * OUTPUT_FOLDER: destination folder for the local copy
 
 * If dicom_organiser is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_organiser] section:
-     * OUTPUT_FOLDER: destination folder for the organised images
-     * DATA_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
-     * DOCKER_IMAGE: Docker image of the hierarchizer program
-     * DOCKER_INPUT_DIR: Input directory inside the Docker container
-     * DOCKER_OUTPUT_DIR: Output directory inside the Docker container
+   * OUTPUT_FOLDER: destination folder for the organised images
+   * DATA_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
+   * DOCKER_IMAGE: Docker image of the hierarchizer program
+   * DOCKER_INPUT_DIR: Input directory inside the Docker container. Default to '/input_folder'
+   * DOCKER_OUTPUT_DIR: Output directory inside the Docker container. Default to '/output_folder'
 
 * If dicom_selection is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_selection] section:
-    * OUTPUT_FOLDER: destination folder for the selected images
-    * CSV_PATH: path to the CSV file containing the list of selected images (PatientID | ImageID).
+   * OUTPUT_FOLDER: destination folder for the selected images
+   * CSV_PATH: path to the CSV file containing the list of selected images (PatientID | ImageID).
 
 * If dicom_select_T1 is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_select_T1] section:
-  * OUTPUT_FOLDER
-  * SPM_FUNCTION: selectT1
-  * PROTOCOLS_FILE
-  * PIPELINE_PATH
-  * MISC_LIBRARY_PATH
+   * OUTPUT_FOLDER: destination folder for the selected T1 images
+   * SPM_FUNCTION: SPM function called. Default to 'selectT1'
+   * PROTOCOLS_FILE
+   * PIPELINE_PATH
+   * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
 
    * EHR_SCANNERS
    * EHR_DATA_FOLDER
