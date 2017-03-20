@@ -37,8 +37,8 @@ from common_steps import Step, default_config
 
 def dicom_to_nifti_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
     default_config(preprocessing_section, 'INPUT_CONFIG', '')
+    default_config(preprocessing_section, 'PIPELINES_PATH', '.')
     default_config(step_section, 'SPM_FUNCTION', 'DCM2NII_LREN')
-    default_config(step_section, 'PIPELINES_PATH', '.')
     default_config(step_section, 'PIPELINE_PATH', configuration.get(
         preprocessing_section, 'PIPELINES_PATH') + '/Nifti_Conversion_Pipeline')
     default_config(step_section, 'MISC_LIBRARY_PATH', configuration.get(preprocessing_section, 'MISC_LIBRARY_PATH'))

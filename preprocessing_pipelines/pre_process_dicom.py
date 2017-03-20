@@ -70,9 +70,6 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
     copy_to_local = 'copy_to_local' in preprocessing_pipelines
     dicom_to_nifti = 'dicom_to_nitfi' in preprocessing_pipelines or bool(
         set(preprocessing_pipelines).intersection(set(dicom_preparation_steps)))
-    mpm_maps = 'mpm_maps' in preprocessing_pipelines
-    neuro_morphometric_atlas = 'neuro_morphometric_atlas' in preprocessing_pipelines
-    export_features = 'export_features' in preprocessing_pipelines
 
     if copy_to_local:
         upstream_step = copy_to_local_cfg(dag, upstream_step, section, section + ':copy_to_local')
@@ -110,14 +107,16 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
         upstream_step = images_selection_pipeline_cfg(dag, upstream_step, section, section + ':nifti_selection')
     # endif
 
-    if mpm_maps:
-        upstream_step = mpm_maps_pipeline_cfg(dag, upstream_step, section)
+    if 'mpm_maps' in preprocessing_pipelines:
+        upstream_step = mpm_maps_pipeline_cfg(dag, upstream_step, section, section + ':mpm_maps')
     # endif
 
-    if neuro_morphometric_atlas:
-        upstream_step = neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, section)
-        if export_features:
-            upstream_step = features_to_i2b2_pipeline_cfg(dag, upstream_step, section)
+    if 'neuro_morphometric_atlas' in preprocessing_pipelines:
+        upstream_step = neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, section,
+                                                              section + ':neuro_morphometric_atlas')
+        if 'export_features' in preprocessing_pipelines:
+            upstream_step = features_to_i2b2_pipeline_cfg(dag, upstream_step, section,
+                                                          section + ':export_features')
         # endif
     # endif
 

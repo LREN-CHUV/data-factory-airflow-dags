@@ -1,15 +1,41 @@
 """
 
-  Pre processing step: Neuromorphometric Atlas
+  Pre processing step: Neuromorphometric Atlas.
+
+  Computes an individual Atlas based on the NeuroMorphometrics Atlas. This is based on the NeuroMorphometrics Toolbox.
+  This delivers three files:
+
+  1) Atlas File (*.nii);
+  2) Volumes of the Morphometric Atlas structures (*.txt);
+  3) Excel File (.xls) or *.csv containing the volume, and globals plus Multiparametric Maps (R2*, R1, MT, PD) for
+  each structure defined in the Subject Atlas.
+
+  In case of anatomical images different from Multiparametric Maps the outputs will be only the structure volumes.
 
   Configuration variables used:
 
-  * DATASET_CONFIG
-  * PIPELINES_PATH
-  * NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION
-  * NEURO_MORPHOMETRIC_ATLAS_OUTPUT_FOLDER
-  * NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER
-  * NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE
+  * :preprocessing section
+    * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
+    * PIPELINES_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
+  * :preprocessing:mpm_maps section
+    * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline.
+      Default to PIPELINES_PATH + '/MPMs_Pipeline'
+  * :preprocessing:neuro_morphometric_atlas section
+    * OUTPUT_FOLDER: destination folder for the Atlas File, the volumes of the Morphometric Atlas structures (*.txt),
+      the csv file containing the volume, and globals plus Multiparametric Maps (R2*, R1, MT, PD) for each structure
+      defined in the Subject Atlas.
+    * BACKUP_FOLDER: backup folder for the Atlas File, the volumes of the Morphometric Atlas structures (*.txt),
+      the csv file containing the volume, and globals plus Multiparametric Maps (R2*, R1, MT, PD) for each structure
+      defined in the Subject Atlas.
+    * SPM_FUNCTION: SPM function called. Default to 'NeuroMorphometric_pipeline'
+    * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline.
+      Default to PIPELINES_PATH + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
+    * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines.
+      Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
+    * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner.
+      Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
+    * TPM_TEMPLATE: Path to the the template used for segmentation step in case the image is not segmented.
+      Default to SPM_DIR + 'tpm/nwTPM_sl3.nii'
 
 """
 
@@ -23,24 +49,30 @@ from airflow_spm.operators import SpmPipelineOperator
 from common_steps import Step, default_config
 
 
-def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, dataset_section):
-    default_config(dataset_section, 'INPUT_CONFIG', '')
-    default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION',
-                   'NeuroMorphometric_pipeline')
-    default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE',
+def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
+    default_config(preprocessing_section, 'INPUT_CONFIG', '')
+    default_config(preprocessing_section, 'PIPELINES_PATH', '.')
+    default_config(step_section, 'SPM_FUNCTION', 'NeuroMorphometric_pipeline')
+    default_config(step_section, 'PIPELINE_PATH', configuration.get(
+        preprocessing_section, 'PIPELINES_PATH') + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label')
+    default_config(step_section, 'MISC_LIBRARY_PATH', configuration.get(preprocessing_section, 'MISC_LIBRARY_PATH'))
+    default_config(step_section, 'PROTOCOLS_DEFINITION_FILE',
+                   configuration.get(preprocessing_section, 'PROTOCOLS_FILE'))
+    default_config(step_section, 'TPM_TEMPLATE',
                    configuration.get('spm', 'SPM_DIR') + '/tpm/nwTPM_sl3.nii')
+    mpm_maps_section = preprocessing_section + ':mpm_maps'
+    default_config(mpm_maps_section, 'PIPELINE_PATH', configuration.get(
+        preprocessing_section, 'PIPELINES_PATH') + '/MPMs_Pipeline')
 
-    dataset_config = configuration.get(dataset_section, 'INPUT_CONFIG')
-    neuro_morphometric_atlas_pipeline_path = configuration.get(
-        dataset_section,
-        'PIPELINES_PATH') + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
-    mpm_maps_pipeline_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/MPMs_Pipeline'
-    misc_library_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/../Miscellaneous&Others'
-    protocols_file = configuration.get(dataset_section, 'PROTOCOLS_FILE')
-    spm_function = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION')
-    local_folder = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_OUTPUT_FOLDER')
-    server_folder = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SERVER_FOLDER')
-    tpm_template = configuration.get(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE')
+    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
+    pipeline_path = configuration.get(step_section, 'PIPELINE_PATH')
+    misc_library_path = configuration.get(step_section, 'MISC_LIBRARY_PATH')
+    spm_function = configuration.get(step_section, 'SPM_FUNCTION')
+    output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
+    backup_folder = configuration.get(step_section, 'BACKUP_FOLDER')
+    protocols_definition_file = configuration.get(step_section, 'PROTOCOLS_DEFINITION_FILE')
+    tpm_template = configuration.get(step_section, 'TPM_TEMPLATE')
+    mpm_maps_pipeline_path = configuration.get(mpm_maps_section, 'PIPELINE_PATH')
 
     # check that file exists if absolute path
     if len(tpm_template) > 0 and tpm_template[0] is '/':
@@ -49,26 +81,26 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, dataset_section):
 
     return neuro_morphometric_atlas_pipeline(dag, upstream_step,
                                              dataset_config=dataset_config,
-                                             neuro_morpho_atlas_pipeline_path=neuro_morphometric_atlas_pipeline_path,
-                                             mpm_maps_pipeline_path=mpm_maps_pipeline_path,
+                                             pipeline_path=pipeline_path,
                                              misc_library_path=misc_library_path,
                                              spm_function=spm_function,
-                                             local_folder=local_folder,
-                                             server_folder=server_folder,
+                                             output_folder=output_folder,
+                                             backup_folder=backup_folder,
+                                             protocols_definition_file=protocols_definition_file,
                                              tpm_template=tpm_template,
-                                             protocols_file=protocols_file)
+                                             mpm_maps_pipeline_path=mpm_maps_pipeline_path)
 
 
 def neuro_morphometric_atlas_pipeline(dag, upstream_step,
                                       dataset_config=None,
-                                      neuro_morpho_atlas_pipeline_path=None,
-                                      mpm_maps_pipeline_path=None,
+                                      pipeline_path=None,
                                       misc_library_path=None,
                                       spm_function='NeuroMorphometric_pipeline',
-                                      local_folder=None,
-                                      server_folder='',
+                                      output_folder=None,
+                                      backup_folder='',
+                                      protocols_definition_file=None,
                                       tpm_template='nwTPM_sl3.nii',
-                                      protocols_file=None):
+                                      mpm_maps_pipeline_path=None):
 
     def arguments_fn(folder, session_id, **kwargs):
         """
@@ -80,9 +112,9 @@ def neuro_morphometric_atlas_pipeline(dag, upstream_step,
 
         return [session_id,
                 parent_data_folder,
-                local_folder,
-                server_folder,
-                protocols_file,
+                output_folder,
+                backup_folder,
+                protocols_definition_file,
                 table_format,
                 tpm_template]
 
@@ -91,9 +123,9 @@ def neuro_morphometric_atlas_pipeline(dag, upstream_step,
         spm_function=spm_function,
         spm_arguments_callable=arguments_fn,
         matlab_paths=[misc_library_path,
-                      neuro_morpho_atlas_pipeline_path,
+                      pipeline_path,
                       mpm_maps_pipeline_path],
-        output_folder_callable=lambda session_id, **kwargs: (local_folder + '/' + session_id),
+        output_folder_callable=lambda session_id, **kwargs: (output_folder + '/' + session_id),
         pool='image_preprocessing',
         parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
@@ -125,7 +157,7 @@ def neuro_morphometric_atlas_pipeline(dag, upstream_step,
             * Remote folder: %s
 
             Depends on: __%s__
-            """ % (spm_function, local_folder, server_folder, upstream_step.task_id))
+            """ % (spm_function, output_folder, backup_folder, upstream_step.task_id))
 
     return Step(neuro_morphometric_atlas_pipeline, 'neuro_morphometric_atlas_pipeline',
                 upstream_step.priority_weight + 10)
