@@ -1,6 +1,8 @@
 """
 
-  Data export step: features to I2B2
+  Data export step: features to I2B2.
+
+  Exports neuroimaging features stored in CSV files to the I2B2 database.
 
   Configuration variables used:
 
@@ -10,6 +12,7 @@
     * INPUT_FOLDER
 
 """
+
 
 from datetime import timedelta
 from textwrap import dedent

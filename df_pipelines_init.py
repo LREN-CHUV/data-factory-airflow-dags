@@ -27,11 +27,11 @@ def register_dag(dag):
     return dag_id
 
 
-default_config('data-factory', 'MIPMAP_DB_CONFILE_FILE', '/dev/null')
+default_config('mipmap', 'DB_CONFIG_FILE', '/dev/null')
 
 dataset_sections = configuration.get('data-factory', 'DATASETS')
 email_errors_to = configuration.get('data-factory', 'EMAIL_ERRORS_TO')
-mipmap_db_confile_file = configuration.get('data-factory', 'MIPMAP_DB_CONFILE_FILE')
+mipmap_db_config_file = configuration.get('mipmap', 'DB_CONFIG_FILE')
 
 register_dag(mri_notify_failed_processing_dag())
 register_dag(mri_notify_skipped_processing_dag())
@@ -121,7 +121,7 @@ for dataset in dataset_sections.split(','):
 
     params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs,
                   min_free_space_local_folder=min_free_space_local_folder,
-                  mipmap_db_confile_file=mipmap_db_confile_file,
+                  mipmap_db_config_file=mipmap_db_config_file,
                   ehr_versioned_folder=ehr_versioned_folder,
                   ehr_to_i2b2_capture_docker_image=ehr_to_i2b2_capture_docker_image,
                   ehr_to_i2b2_capture_folder=ehr_to_i2b2_capture_folder)
