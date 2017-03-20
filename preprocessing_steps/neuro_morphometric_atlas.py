@@ -24,13 +24,13 @@ from common_steps import Step, default_config
 
 
 def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, dataset_section):
-    default_config(dataset_section, 'DATASET_CONFIG', '')
+    default_config(dataset_section, 'INPUT_CONFIG', '')
     default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_SPM_FUNCTION',
                    'NeuroMorphometric_pipeline')
     default_config(dataset_section, 'NEURO_MORPHOMETRIC_ATLAS_TPM_TEMPLATE',
                    configuration.get('spm', 'SPM_DIR') + '/tpm/nwTPM_sl3.nii')
 
-    dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
+    dataset_config = configuration.get(dataset_section, 'INPUT_CONFIG')
     neuro_morphometric_atlas_pipeline_path = configuration.get(
         dataset_section,
         'PIPELINES_PATH') + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'

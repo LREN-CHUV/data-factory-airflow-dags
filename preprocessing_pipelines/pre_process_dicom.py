@@ -106,6 +106,10 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
         upstream_step = images_organizer_cfg(dag, upstream_step, section, section + ':nifti_organizer')
     # endif
 
+    if 'nifti_selection' in preprocessing_pipelines:
+        upstream_step = images_selection_pipeline_cfg(dag, upstream_step, section, section + ':nifti_selection')
+    # endif
+
     if mpm_maps:
         upstream_step = mpm_maps_pipeline_cfg(dag, upstream_step, section)
     # endif
