@@ -28,7 +28,7 @@ from etl_steps.features_to_i2b2 import features_to_i2b2_pipeline_cfg
 
 shared_preparation_steps = ['copy_to_local']
 dicom_preparation_steps = ['dicom_organizer', 'dicom_selection', 'dicom_select_T1', 'dicom_to_nitfi']
-nifti_preparation_steps = ['nifti_organizer', 'nifti_selection', 'nifti_select_T1']
+nifti_preparation_steps = ['nifti_organizer', 'nifti_selection']
 preprocessing_steps = ['mpm_maps', 'neuro_morphometric_atlas']
 finalisation_steps = ['export_features']
 

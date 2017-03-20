@@ -4,11 +4,14 @@
 
   Configuration variables used:
 
-  * DATASET_CONFIG
-  * PIPELINES_PATH
-  * DICOM_SELECT_T1_SPM_FUNCTION
-  * DICOM_SELECT_T1_OUTPUT_FOLDER
-  * DICOM_SELECT_T1_PROTOCOLS_FILE
+  * :preprocessing section
+    * INPUT_CONFIG
+  * :preprocessing:dicom_select_T1 section
+    * OUTPUT_FOLDER
+    * SPM_FUNCTION
+    * PROTOCOLS_FILE
+    * PIPELINE_PATH
+    * MISC_LIBRARY_PATH
 
 """
 
@@ -23,16 +26,17 @@ from airflow_spm.operators import SpmPipelineOperator
 from common_steps import Step, default_config
 
 
-def dicom_select_t1_pipeline_cfg(dag, upstream_step, dataset_section):
-    default_config(dataset_section, 'DATASET_CONFIG', '')
-    default_config(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION', 'selectT1')
+def dicom_select_t1_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
+    default_config(preprocessing_section, 'DATASET_CONFIG', '')
+    default_config(step_section, 'SPM_FUNCTION', 'selectT1')
+    default_config(step_section, 'MISC_LIBRARY_PATH', configuration.get(preprocessing_section, 'MISC_LIBRARY_PATH'))
 
-    dataset_config = configuration.get(dataset_section, 'DATASET_CONFIG')
-    pipeline_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/SelectT1_Pipeline'
-    misc_library_path = configuration.get(dataset_section, 'PIPELINES_PATH') + '/../Miscellaneous&Others'
-    spm_function = configuration.get(dataset_section, 'DICOM_SELECT_T1_SPM_FUNCTION')
-    local_folder = configuration.get(dataset_section, 'DICOM_SELECT_T1_OUTPUT_FOLDER')
-    protocols_file = configuration.get(dataset_section, 'DICOM_SELECT_T1_PROTOCOLS_FILE')
+    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
+    pipeline_path = configuration.get(step_section, 'PIPELINE_PATH')
+    misc_library_path = configuration.get(step_section, 'MISC_LIBRARY_PATH')
+    spm_function = configuration.get(step_section, 'SPM_FUNCTION')
+    local_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
+    protocols_file = configuration.get(step_section, 'PROTOCOLS_FILE')
 
     return dicom_select_t1_pipeline(dag, upstream_step,
                                     dataset_config=dataset_config,

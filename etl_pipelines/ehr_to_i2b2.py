@@ -1,6 +1,6 @@
 """
 
-Take EHR data located in a study folder and convert it to I2B2
+Take EHR data located in a study folder and convert it to I2B2.
 
 Poll a base directory for incoming CSV files ready for processing. We assume that
 CSV files are already anonymised and organised with the following directory structure:
@@ -13,6 +13,7 @@ CSV files are already anonymised and organised with the following directory stru
            _ ...
 
 """
+
 
 from datetime import datetime, timedelta
 from textwrap import dedent
@@ -140,7 +141,7 @@ def ehr_to_i2b2_dag(dataset, email_errors_to, max_active_runs, min_free_space_lo
         environment=None,
         cpus=1,
         mem_limit='256m',
-        container_tmp_dir='/tmp/airflow', # nosec
+        container_tmp_dir='/tmp/airflow',  # nosec
         container_input_dir='/opt/source',
         container_output_dir='/opt/target',
         output_folder_callable=lambda relative_context_path, **kwargs: "%s/%s" % (
