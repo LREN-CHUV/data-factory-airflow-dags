@@ -1,0 +1,60 @@
+authors:
+  - author: Ludovic Claude
+    author_email:
+      - ludovic.claude@chuv.ch
+      - ludovic.claude54@googlemail.com
+    organisation: LREN-CHUV
+    organisation_badge: https://img.shields.io/badge/CHUV-LREN-AF4C64.svg
+  - author: Mirco Nasuti
+    author_email:
+      - mirco.nasuti@chuv.ch
+    organisation: LREN-CHUV
+    organisation_badge: https://img.shields.io/badge/CHUV-LREN-AF4C64.svg
+
+platform: MIP
+component:
+  mip_building_block: data-factory
+  nature: plugin
+
+license:
+  name: Apache 2.0
+  badge: https://img.shields.io/badge/license-Apache--2.0-blue.svg
+  link: https://github.com/LREN-CHUV/data-factory-airflow-dags/blob/master/LICENSE
+
+code_repositories:
+  - name: chuv-gitlab/HBPMedical
+    visibility: private
+    link: https://___.chuv.ch/data-factory/data-factory-airflow-dags/
+    git_clone: https://___.chuv.ch/data-factory/data-factory-airflow-dags.git
+  - name: github/LREN-CHUV
+    visibility: public
+    link: https://github.io/LREN-CHUV/data-factory-airflow-dags/
+    git_clone: https://github.io/LREN-CHUV/data-factory-airflow-dags.git
+  - name: github/HBPMedical
+    visibility: public
+    link: https://github.io/HBPMedical/data-factory-airflow-dags/
+    git_clone: https://github.io/HBPMedical/data-factory-airflow-dags.git
+
+code_quality_checks:
+  codacy:
+    badge: https://api.codacy.com/project/badge/Grade/8c5c9dc3cfb8492f870369c973f3cc8c
+    link: "https://www.codacy.com/app/hbp-mip/data-factory-airflow-dags?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=LREN-CHUV/data-factory-airflow-dags&amp;utm_campaign=Badge_Grade"
+  landscape:
+    badge: "https://landscape.io/github/LREN-CHUV/data-factory-airflow-dags/master/landscape.svg?style=flat"
+    link: https://landscape.io/github/LREN-CHUV/data-factory-airflow-dags/master
+
+testing:
+  unit_testing: []
+
+release_management:
+  current_version: 0.4.0
+  current_code_release: https://github.com/HBPMedical/data-factory-airflow-dags/archive/0.4.0.zip
+  release_script: 'publish.sh'
+
+continuous_integration: []
+
+distribution:
+  git:
+    link: https://github.com/HBPMedical/data-factory-airflow-dags.git
+
+planning: []

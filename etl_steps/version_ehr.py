@@ -2,6 +2,8 @@
 
   ETL steps: version EHR
 
+  Copy files to a versioned folder.
+
   Configuration variables used:
 
   * etl section:
@@ -60,9 +62,9 @@ def version_ehr_pipeline(dag, upstream_step, output_folder=None, min_free_space=
         version_ehr_pipeline.set_upstream(upstream_step.task)
 
     version_ehr_pipeline.doc_md = dedent("""\
-    # Copy EHR files to local %s folder
+    # Copy EHR files to a versioned folder
 
-    Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
+    The target folder %s is versioned as a local Git repository.
     """ % output_folder)
 
     return Step(version_ehr_pipeline, 'version_ehr_pipeline', upstream_step.priority_weight + 10)

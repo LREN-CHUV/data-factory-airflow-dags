@@ -26,16 +26,15 @@ from i2b2_import import features_csv_import
 
 
 def features_to_i2b2_pipeline_cfg(dag, upstream_step, etl_section, section):
-    dataset = "{{ dag_run.conf['dataset'] }}"
     dataset_config = configuration.get(etl_section, 'INPUT_CONFIG')
     input_folder = configuration.get(section, 'INPUT_FOLDER')
 
-    return features_to_i2b2_pipeline(dag, upstream_step, input_folder, dataset, dataset_config)
+    return features_to_i2b2_pipeline(dag, upstream_step, input_folder, dataset_config)
 
 
-def features_to_i2b2_pipeline(dag, upstream_step, input_folder=None, dataset='', dataset_config=None):
+def features_to_i2b2_pipeline(dag, upstream_step, input_folder=None, dataset_config=None):
 
-    def features_to_i2b2_fn(**kwargs):
+    def features_to_i2b2_fn(dataset, **kwargs):
         """
           Import brain features from CSV files to I2B2 DB
         """

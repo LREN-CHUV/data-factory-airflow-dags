@@ -1,0 +1,3 @@
+airflow-imaging-plugins>=0.4.2
+mri-meta-extract>=1.4.6
+i2b2-import>=1.5.3
