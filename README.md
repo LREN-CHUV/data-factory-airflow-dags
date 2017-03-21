@@ -55,7 +55,7 @@ Requirements:
       * dicom_organiser: reorganise DICOM files in a scan folder for the following pipelines.
       * dicom_selection
       * dicom_to_nifti
-      * nifti_organizer
+      * nifti_organiser
       * nifti_selection
       * mpm_maps
       * neuro_morphometric_atlas
