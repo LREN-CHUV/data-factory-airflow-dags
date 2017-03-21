@@ -63,6 +63,6 @@ def map_ehr_to_i2b2_pipeline(dag, upstream_step, output_folder=None, docker_imag
     * Local folder: __%s__
 
     Depends on: __%s__
-    """ % (docker_image, output_folder, upstream_step.task))
+    """ % (docker_image, output_folder, upstream_step.task_id))
 
     return Step(map_ehr_to_i2b2_pipeline, 'map_ehr_to_i2b2_pipeline', upstream_step.priority_weight + 10)
