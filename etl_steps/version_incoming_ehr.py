@@ -8,7 +8,7 @@ Configuration variables used:
 
 * etl section:
     * MIN_FREE_SPACE
-* :etl:version_ehr section:
+* :etl:version_incoming_ehr section:
     * OUTPUT_FOLDER
 
 """
@@ -22,14 +22,14 @@ from airflow_pipeline.operators import BashPipelineOperator
 from common_steps import Step
 
 
-def version_ehr_pipeline_cfg(dag, upstream_step, etl_section, step_section):
+def version_incoming_ehr_pipeline_cfg(dag, upstream_step, etl_section, step_section):
     min_free_space = configuration.get(etl_section, 'MIN_FREE_SPACE')
     output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
 
-    return version_ehr_pipeline(dag, upstream_step, output_folder, min_free_space)
+    return version_incoming_ehr_pipeline(dag, upstream_step, output_folder, min_free_space)
 
 
-def version_ehr_pipeline(dag, upstream_step, output_folder=None, min_free_space=None):
+def version_incoming_ehr_pipeline(dag, upstream_step, output_folder=None, min_free_space=None):
 
     version_incoming_ehr_cmd = dedent("""
             export HOME=/usr/local/airflow
@@ -43,7 +43,7 @@ def version_ehr_pipeline(dag, upstream_step, output_folder=None, min_free_space=
             git rev-parse HEAD
         """)
 
-    version_ehr_pipeline = BashPipelineOperator(
+    version_incoming_ehr_pipeline = BashPipelineOperator(
         task_id='version_incoming_ehr',
         bash_command=version_incoming_ehr_cmd,
         params={'min_free_space_local_folder': min_free_space,
@@ -59,12 +59,12 @@ def version_ehr_pipeline(dag, upstream_step, output_folder=None, min_free_space=
     )
 
     if upstream_step.task:
-        version_ehr_pipeline.set_upstream(upstream_step.task)
+        version_incoming_ehr_pipeline.set_upstream(upstream_step.task)
 
-    version_ehr_pipeline.doc_md = dedent("""\
+    version_incoming_ehr_pipeline.doc_md = dedent("""\
     # Copy EHR files to a versioned folder
 
     The target folder %s is versioned as a local Git repository.
     """ % output_folder)
 
-    return Step(version_ehr_pipeline, 'version_ehr_pipeline', upstream_step.priority_weight + 10)
+    return Step(version_incoming_ehr_pipeline, 'version_incoming_ehr_pipeline', upstream_step.priority_weight + 10)

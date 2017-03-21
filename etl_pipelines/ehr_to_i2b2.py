@@ -7,10 +7,9 @@ CSV files are already anonymised and organised with the following directory stru
 
   2016
      _ 20160407
-        _ PR01471_CC082251
-           _ patients.csv
-           _ diseases.csv
-           _ ...
+        _ patients.csv
+        _ diseases.csv
+        _ ...
 
 """
 
@@ -23,8 +22,8 @@ from common_steps import initial_step
 from common_steps.check_local_free_space import check_local_free_space_cfg
 from common_steps.prepare_pipeline import prepare_pipeline
 
-from etl_steps.ehr_to_i2b2 import ehr_to_i2b2_pipeline_cfg
-from etl_steps.version_ehr import version_ehr_pipeline_cfg
+from etl_steps.map_ehr_to_i2b2 import map_ehr_to_i2b2_pipeline_cfg
+from etl_steps.version_incoming_ehr import version_incoming_ehr_pipeline_cfg
 
 
 steps_with_file_outputs = ['version_incoming_ehr']
@@ -58,12 +57,15 @@ def ehr_to_i2b2_dag(dataset, section, email_errors_to, max_active_runs):
 
     upstream_step = prepare_pipeline(dag, upstream_step, False)
 
-    upstream_step = version_ehr_pipeline_cfg(dag, upstream_step, section)
+    upstream_step = version_incoming_ehr_pipeline_cfg(dag, upstream_step, section)
 
-    # Next: Python to build provenance_details
+    # TODO Next: Python to build provenance_details
 
     # Call MipMap on versioned folder
+    map_ehr_to_i2b2_pipeline_cfg(dag, upstream_step, section, section + ':map_ehr_to_i2b2')
 
-    ehr_to_i2b2_pipeline_cfg(dag, upstream_step, section)
+    # TODO Call MipMap to convert original data in I2B2 format to the MIP CDE (Common Data Elements)
+    # also in I2B2 format but stored in another database
+    # map_i2b2_to_mip_i2b2_pipeline_cfg(dag, upstream_step, section, section + ':map_i2b2_to_mip_i2b2')
 
     return dag

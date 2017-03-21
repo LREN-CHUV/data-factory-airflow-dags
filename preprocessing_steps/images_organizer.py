@@ -10,7 +10,7 @@ Configuration variables used:
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
 * :preprocessing:dicom_organiser or :preprocessing:nifti_organiser section
     * OUTPUT_FOLDER: destination folder for the organised images
-    * DATA_STRUCTURE: TODO
+    * DATA_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
     * DOCKER_IMAGE: Docker image of the hierarchizer program
     * DOCKER_INPUT_DIR: Input directory inside the Docker container. Default to '/input_folder'
     * DOCKER_OUTPUT_DIR: Output directory inside the Docker container. Default to '/output_folder'
