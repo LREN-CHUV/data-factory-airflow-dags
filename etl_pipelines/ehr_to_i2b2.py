@@ -57,7 +57,7 @@ def ehr_to_i2b2_dag(dataset, section, email_errors_to, max_active_runs):
 
     upstream_step = prepare_pipeline(dag, upstream_step, False)
 
-    upstream_step = version_incoming_ehr_pipeline_cfg(dag, upstream_step, section)
+    upstream_step = version_incoming_ehr_pipeline_cfg(dag, upstream_step, section, section + ':version_incoming_ehr')
 
     # TODO Next: Python to build provenance_details
 
