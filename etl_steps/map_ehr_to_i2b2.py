@@ -45,7 +45,7 @@ def map_ehr_to_i2b2_pipeline(dag, upstream_step, output_folder=None, docker_imag
             "/opt/postgresdb.properties:/etc/mipmap/postgresdb.properties"
         ],
         pool='io_intensive',
-        parent_task=upstream_step.task,
+        parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=24),
         on_failure_trigger_dag_id='mri_notify_failed_processing',

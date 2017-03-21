@@ -51,7 +51,7 @@ def version_incoming_ehr_pipeline(dag, upstream_step, output_folder=None, min_fr
                 },
         output_folder_callable=lambda relative_context_path, **kwargs: "%s/%s" % (
             output_folder, relative_context_path),
-        parent_task=upstream_step.task,
+        parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=3),
         on_failure_trigger_dag_id='mri_notify_failed_processing',
