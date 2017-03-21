@@ -128,14 +128,10 @@ Requirements:
       * daily: input folder contains a sub-folder for the year, this folder contains daily sub-folders for each day of the year (format yyyyMMdd). Those daily sub-folders in turn contain the EHR files in CSV format to process.
       * flat: input folder contains the EHR files in CSV format to process.
     * PIPELINES: List of pipelines to execute. Values are
-      * copy_to_local: if used, input data are first copied to a local folder to speed-up processing.
+      * map_ehr_to_i2b2: .
 
-* TODO EHR config...
-   * EHR_TO_I2B2_CAPTURE_DOCKER_IMAGE
-   * EHR_TO_I2B2_CAPTURE_FOLDER
-   * EHR_VERSIONED_FOLDER
-   * IMAGES_ORGANIZER_DATASET_TYPE: image type (e.g. DICOM, NIFTI)
-   * IMAGES_ORGANIZER_DATA_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
+* Configure the [data-factory:&lt;dataset&gt;:ehr:map_ehr_to_i2b2] section:
+    * DOCKER_IMAGE
 
 Sample configuration:
 
