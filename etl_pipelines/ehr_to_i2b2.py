@@ -52,8 +52,8 @@ def ehr_to_i2b2_dag(dataset, section, email_errors_to, max_active_runs):
         schedule_interval=None,
         max_active_runs=max_active_runs)
 
-    upstream_step = check_local_free_space_cfg(dag, initial_step, section, steps_with_file_outputs.map(
-        lambda p: section + ':' + p))
+    upstream_step = check_local_free_space_cfg(dag, initial_step, section,
+                                               map(lambda p: section + ':' + p, steps_with_file_outputs))
 
     upstream_step = prepare_pipeline(dag, upstream_step, False)
 
