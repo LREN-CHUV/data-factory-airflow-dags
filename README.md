@@ -131,7 +131,10 @@ Requirements:
       * map_ehr_to_i2b2: .
 
 * Configure the [data-factory:&lt;dataset&gt;:ehr:map_ehr_to_i2b2] section:
-    * DOCKER_IMAGE
+    * DOCKER_IMAGE: Docker image of the tool that maps EHR data to an I2B2 schema.
+
+* Configure the [data-factory:&lt;dataset&gt;:ehr:version_incoming_ehr] section:
+    * OUTPUT_FOLDER: output folder used to store versioned EHR data.
 
 Sample configuration:
 

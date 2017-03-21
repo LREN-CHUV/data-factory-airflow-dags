@@ -1,14 +1,14 @@
 """
 
-ETL steps: version EHR
+ETL steps: version incoming EHR
 
 Copy files to a versioned folder.
 
 Configuration variables used:
 
-* etl section:
+* :ehr section:
     * MIN_FREE_SPACE
-* :etl:version_incoming_ehr section:
+* :ehr:version_incoming_ehr section:
     * OUTPUT_FOLDER
 
 """
@@ -22,8 +22,8 @@ from airflow_pipeline.operators import BashPipelineOperator
 from common_steps import Step
 
 
-def version_incoming_ehr_pipeline_cfg(dag, upstream_step, etl_section, step_section):
-    min_free_space = configuration.get(etl_section, 'MIN_FREE_SPACE')
+def version_incoming_ehr_pipeline_cfg(dag, upstream_step, ehr_section, step_section):
+    min_free_space = configuration.get(ehr_section, 'MIN_FREE_SPACE')
     output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
 
     return version_incoming_ehr_pipeline(dag, upstream_step, output_folder, min_free_space)
