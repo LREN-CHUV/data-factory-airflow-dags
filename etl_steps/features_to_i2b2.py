@@ -6,9 +6,9 @@ Exports neuroimaging features stored in CSV files to the I2B2 database.
 
 Configuration variables used:
 
-* :etl section
+* :ehr section
     * INPUT_CONFIG
-* :etl:export_features section
+* :ehr:export_features section
     * INPUT_FOLDER
 
 """

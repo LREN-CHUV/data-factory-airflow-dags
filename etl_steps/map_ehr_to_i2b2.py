@@ -4,9 +4,9 @@ ETL steps: Map EHR data to I2B2.
 
 Configuration variables used:
 
-* :etl section
+* :ehr section
     * MIN_FREE_SPACE
-* :etl:map_ehr_to_i2b2 section:
+* :ehr:map_ehr_to_i2b2 section:
     * DOCKER_IMAGE
 
 """
