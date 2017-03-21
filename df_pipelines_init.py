@@ -83,11 +83,13 @@ for dataset in dataset_sections.split(','):
                          email_errors_to=email_errors_to,
                          trigger_dag_id=pre_process_dicom_dag_id))
 
-    # Set the default configuration for the preprocessing of the dataset
-    default_config(dataset_section, 'EHR_SCANNERS', '')
-    default_config(dataset_section, 'EHR_DATA_FOLDER_DEPTH', '1')
+    ehr_section = dataset_section + ':ehr'
 
-    ehr_scanners = configuration.get(dataset_section, 'EHR_SCANNERS')
+    # Set the default configuration for the preprocessing of the dataset
+    default_config(ehr_section, 'SCANNERS', '')
+    default_config(ehr_section, 'INPUT_FOLDER_DEPTH', '1')
+
+    ehr_scanners = configuration.get(ehr_section, 'SCANNERS')
 
     ehr_versioned_folder = None
     ehr_to_i2b2_capture_docker_image = None
@@ -95,32 +97,28 @@ for dataset in dataset_sections.split(','):
 
     if ehr_scanners != '':
         ehr_scanners = ehr_scanners.split(',')
-        ehr_data_folder = configuration.get(dataset_section, 'EHR_DATA_FOLDER')
-        ehr_versioned_folder = configuration.get(dataset_section, 'EHR_VERSIONED_FOLDER')
+        ehr_input_folder = configuration.get(ehr_section, 'INPUT_FOLDER')
+        ehr_versioned_folder = configuration.get(dataset_section, 'VERSIONED_FOLDER')
         ehr_to_i2b2_capture_docker_image = configuration.get(dataset_section, 'EHR_TO_I2B2_CAPTURE_DOCKER_IMAGE')
         ehr_to_i2b2_capture_folder = configuration.get(dataset_section, 'EHR_TO_I2B2_CAPTURE_FOLDER')
 
         if 'daily' in ehr_scanners:
-            name = '%s_daily_ehr_dag' % dataset.lower().replace(" ", "_")
-            globals()[name] = daily_ehr_incoming_dag(
-                dataset=dataset, folder=ehr_data_folder, email_errors_to=email_errors_to,
-                trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower())
-            logging.info("Add DAG %s", globals()[name].dag_id)
+            register_dag(daily_ehr_incoming_dag(
+                dataset=dataset, folder=ehr_input_folder, email_errors_to=email_errors_to,
+                trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower()))
 
         if 'flat' in ehr_scanners:
-            ehr_data_folder_depth = int(configuration.get(dataset_section, 'EHR_DATA_FOLDER_DEPTH'))
-            name = '%s_flat_ehr_dag' % dataset.lower().replace(" ", "_")
-            globals()[name] = flat_ehr_incoming_dag(
-                dataset=dataset, folder=ehr_data_folder, depth=ehr_data_folder_depth,
+            ehr_input_folder_depth = int(configuration.get(ehr_section, 'INPUT_FOLDER_DEPTH'))
+            register_dag(flat_ehr_incoming_dag(
+                dataset=dataset, folder=ehr_input_folder, depth=ehr_input_folder_depth,
                 email_errors_to=email_errors_to,
-                trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower())
-            logging.info("Add DAG %s", globals()[name].dag_id)
+                trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower()))
 
-    min_free_space_local_folder = configuration.getfloat(
-        dataset_section, 'MIN_FREE_SPACE')
+    min_free_space = configuration.getfloat(
+        ehr_section, 'MIN_FREE_SPACE')
 
     params = dict(dataset=dataset, email_errors_to=email_errors_to, max_active_runs=max_active_runs,
-                  min_free_space_local_folder=min_free_space_local_folder,
+                  min_free_space=min_free_space,
                   mipmap_db_config_file=mipmap_db_config_file,
                   ehr_versioned_folder=ehr_versioned_folder,
                   ehr_to_i2b2_capture_docker_image=ehr_to_i2b2_capture_docker_image,

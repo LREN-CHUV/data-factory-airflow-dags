@@ -121,6 +121,8 @@ Requirements:
     * TPM_TEMPLATE: Path to the the template used for segmentation step in case the image is not segmented. Default to SPM_DIR + 'tpm/nwTPM_sl3.nii'
 
 * For each dataset, now configure the [data-factory:&lt;dataset&gt;:ehr] section:
+    * INPUT_FOLDER: Folder containing the original EHR data to process. This data should have been already anonymised by a tool
+    * INPUT_FOLDER_DEPTH: When a flat scanner is used, indicates the depth of folders to traverse before reaching EHR data. Default to 1.
     * MIN_FREE_SPACE: minimum percentage of free space available on local disk
     * SCANNERS: List of methods describing how the EHR data folder is scanned for new work, values are
       * daily: input folder contains a sub-folder for the year, this folder contains daily sub-folders for each day of the year (format yyyyMMdd). Those daily sub-folders in turn contain the EHR files in CSV format to process.
@@ -129,9 +131,6 @@ Requirements:
       * copy_to_local: if used, input data are first copied to a local folder to speed-up processing.
 
 * TODO EHR config...
-   * EHR_SCANNERS
-   * EHR_DATA_FOLDER
-   * EHR_DATA_FOLDER_DEPTH
    * EHR_TO_I2B2_CAPTURE_DOCKER_IMAGE
    * EHR_TO_I2B2_CAPTURE_FOLDER
    * EHR_VERSIONED_FOLDER
