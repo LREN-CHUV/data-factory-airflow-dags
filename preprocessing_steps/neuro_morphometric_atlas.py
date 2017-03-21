@@ -57,7 +57,7 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
         preprocessing_section, 'PIPELINES_PATH') + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label')
     default_config(step_section, 'MISC_LIBRARY_PATH', configuration.get(preprocessing_section, 'MISC_LIBRARY_PATH'))
     default_config(step_section, 'PROTOCOLS_DEFINITION_FILE',
-                   configuration.get(preprocessing_section, 'PROTOCOLS_FILE'))
+                   configuration.get(step_section, 'PROTOCOLS_FILE'))
     default_config(step_section, 'TPM_TEMPLATE',
                    configuration.get('spm', 'SPM_DIR') + '/tpm/nwTPM_sl3.nii')
     mpm_maps_section = preprocessing_section + ':mpm_maps'
