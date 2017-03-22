@@ -98,11 +98,11 @@ Checks that SPM is running as expected.
 for dataset in dataset_sections.split(','):
     dataset_section = 'data-factory:%s' % dataset
 
-    dataset_name = configuration.get(dataset_section, 'DATASET')
+    dataset_name = configuration.get(dataset_section, 'DATASET_LABEL')
     min_free_space_local_folder = configuration.getfloat(
-        dataset_section, 'MIN_FREE_SPACE')
+        dataset_section + ':preprocessing', 'MIN_FREE_SPACE')
     dicom_local_folder = configuration.get(
-        dataset_section, 'DICOM_OUTPUT_FOLDER')
+        dataset_section + ':preprocessing:copy_to_local', 'OUTPUT_FOLDER')
 
     check_free_space = FreeSpaceSensor(
         task_id='%s_check_free_space' % dataset_name.lower().replace(" ", "_"),

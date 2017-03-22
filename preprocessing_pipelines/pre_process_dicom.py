@@ -11,7 +11,7 @@ from common_steps.check_local_free_space import check_local_free_space_cfg
 from preprocessing_steps.cleanup_local import cleanup_local_cfg
 from preprocessing_steps.copy_to_local import copy_to_local_cfg
 from preprocessing_steps.register_local import register_local_cfg
-from preprocessing_steps.images_organizer import images_organizer_cfg
+from preprocessing_steps.images_organiser import images_organiser_cfg
 from preprocessing_steps.images_selection import images_selection_pipeline_cfg
 from preprocessing_steps.dicom_select_t1 import dicom_select_t1_pipeline_cfg
 from preprocessing_steps.dicom_to_nifti import dicom_to_nifti_pipeline_cfg
@@ -23,8 +23,8 @@ from etl_steps.features_to_i2b2 import features_to_i2b2_pipeline_cfg
 
 
 shared_preparation_steps = ['copy_to_local']
-dicom_preparation_steps = ['dicom_organizer', 'dicom_selection', 'dicom_select_T1', 'dicom_to_nitfi']
-nifti_preparation_steps = ['nifti_organizer', 'nifti_selection']
+dicom_preparation_steps = ['dicom_organiser', 'dicom_selection', 'dicom_select_T1', 'dicom_to_nitfi']
+nifti_preparation_steps = ['nifti_organiser', 'nifti_selection']
 preprocessing_steps = ['mpm_maps', 'neuro_morphometric_atlas']
 finalisation_steps = ['export_features']
 
@@ -58,8 +58,8 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
         schedule_interval=None,
         max_active_runs=max_active_runs)
 
-    upstream_step = check_local_free_space_cfg(dag, initial_step, section, steps_with_file_outputs.map(
-        lambda p: section + ':' + p))
+    upstream_step = check_local_free_space_cfg(dag, initial_step, section,
+                                               map(lambda p: section + ':' + p, steps_with_file_outputs))
 
     upstream_step = prepare_pipeline(dag, upstream_step, True)
 
@@ -75,8 +75,8 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
 
     if dicom_to_nifti:
 
-        if 'dicom_organizer' in preprocessing_pipelines:
-            upstream_step = images_organizer_cfg(dag, upstream_step, section, section + ':dicom_organizer')
+        if 'dicom_organiser' in preprocessing_pipelines:
+            upstream_step = images_organiser_cfg(dag, upstream_step, section, section + ':dicom_organiser')
         # endif
 
         if 'dicom_selection' in preprocessing_pipelines:
@@ -95,8 +95,8 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
         # endif
     # endif
 
-    if 'nifti_organizer' in preprocessing_pipelines:
-        upstream_step = images_organizer_cfg(dag, upstream_step, section, section + ':nifti_organizer')
+    if 'nifti_organiser' in preprocessing_pipelines:
+        upstream_step = images_organiser_cfg(dag, upstream_step, section, section + ':nifti_organiser')
     # endif
 
     if 'nifti_selection' in preprocessing_pipelines:

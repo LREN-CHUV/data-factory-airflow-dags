@@ -6,7 +6,7 @@ Cleanup the local folder created during copy_to_local step.
 
 Configuration variables used:
 
-    * :preprocessing:copy_to_local section
+* :preprocessing:copy_to_local section
     * OUTPUT_FOLDER: destination folder for the local copy
 
 """

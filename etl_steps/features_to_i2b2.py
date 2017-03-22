@@ -6,10 +6,8 @@ Exports neuroimaging features stored in CSV files to the I2B2 database.
 
 Configuration variables used:
 
-* :etl section
+* :ehr section
     * INPUT_CONFIG
-* :etl:export_features section
-    * INPUT_FOLDER
 
 """
 
@@ -27,7 +25,8 @@ from i2b2_import import features_csv_import
 
 def features_to_i2b2_pipeline_cfg(dag, upstream_step, etl_section, section):
     dataset_config = configuration.get(etl_section, 'INPUT_CONFIG')
-    input_folder = configuration.get(section, 'INPUT_FOLDER')
+    # TODO : replace input_folder = ???
+    input_folder = '/fake'
 
     return features_to_i2b2_pipeline(dag, upstream_step, input_folder, dataset_config)
 

@@ -1,6 +1,6 @@
 """
 
-Pre processing step: images organizer.
+Pre processing step: images organiser.
 
 Reorganises DICOM files in a scan folder for the following pipelines.
 
@@ -29,7 +29,7 @@ from airflow_pipeline.operators import DockerPipelineOperator
 from common_steps import Step, default_config
 
 
-def images_organizer_cfg(dag, upstream_step, preprocessing_section, step_section):
+def images_organiser_cfg(dag, upstream_step, preprocessing_section, step_section):
     default_config(preprocessing_section, 'INPUT_CONFIG', '')
     default_config(step_section, "DOCKER_INPUT_DIR", "/input_folder")
     default_config(step_section, "DOCKER_OUTPUT_DIR", "/output_folder")
@@ -41,10 +41,10 @@ def images_organizer_cfg(dag, upstream_step, preprocessing_section, step_section
     docker_input_dir = configuration.get(step_section, 'DOCKER_INPUT_DIR')
     docker_output_dir = configuration.get(step_section, 'DOCKER_OUTPUT_DIR')
 
-    m = re.search('.*:preprocessing:(.*)_organizer', step_section)
+    m = re.search('.*:preprocessing:(.*)_organiser', step_section)
     dataset_type = m.group(1)
 
-    return images_organizer(dag, upstream_step, dataset_config,
+    return images_organiser(dag, upstream_step, dataset_config,
                             dataset_type=dataset_type,
                             data_structure=data_structure,
                             local_folder=local_folder,
@@ -53,7 +53,7 @@ def images_organizer_cfg(dag, upstream_step, preprocessing_section, step_section
                             docker_output_dir=docker_output_dir)
 
 
-def images_organizer(dag, upstream_step,  dataset_config,
+def images_organiser(dag, upstream_step, dataset_config,
                      dataset_type, data_structure,
                      local_folder,
                      docker_image='hbpmip/hierarchizer:latest',
@@ -61,10 +61,10 @@ def images_organizer(dag, upstream_step,  dataset_config,
                      docker_output_dir='/output_folder'):
 
     type_of_images_param = "--type " + dataset_type
-    structure_param = "--output_folder_organization " + str(data_structure.split(':'))
+    structure_param = "--output_folder_organisation " + str(data_structure.split(':'))
 
-    images_organizer_pipeline = DockerPipelineOperator(
-        task_id='images_organizer_pipeline',
+    images_organiser_pipeline = DockerPipelineOperator(
+        task_id='images_organiser_pipeline',
         output_folder_callable=lambda session_id, **kwargs: local_folder + '/' + session_id,
         pool='io_intensive',
         parent_task=upstream_step.task_id,
@@ -81,10 +81,10 @@ def images_organizer(dag, upstream_step,  dataset_config,
     )
 
     if upstream_step.task:
-        images_organizer_pipeline.set_upstream(upstream_step.task)
+        images_organiser_pipeline.set_upstream(upstream_step.task)
 
-    images_organizer_pipeline.doc_md = dedent("""\
-        # Images organizer pipeline
+    images_organiser_pipeline.doc_md = dedent("""\
+        # Images organiser pipeline
 
         Reorganise DICOM/NIFTI files to fit the structure expected by the following pipelines.
 
@@ -95,4 +95,4 @@ def images_organizer(dag, upstream_step,  dataset_config,
         Depends on: __%s__
         """ % (local_folder, upstream_step.task_id))
 
-    return Step(images_organizer_pipeline, 'images_organizer_pipeline', upstream_step.priority_weight + 10)
+    return Step(images_organiser_pipeline, 'images_organiser_pipeline', upstream_step.priority_weight + 10)
