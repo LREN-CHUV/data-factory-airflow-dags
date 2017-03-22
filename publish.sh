@@ -42,7 +42,7 @@ git describe --exact-match > /dev/null || (
     break
   done
   new_version=$(bumpversion --dry-run --list patch | grep current_version | sed -r s,"^.*=",,)
-  read -p "Release version $new_version? [y/N] >" ok
+  read -p "Release version $new_version? [y/N] > " ok
   if [ "$ok" != "y" ]; then
     echo "Release aborted"
     exit 1
