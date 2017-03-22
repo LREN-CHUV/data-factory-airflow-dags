@@ -1,4 +1,4 @@
-"""Pre-process DICOM files in a study folder"""
+"""Pre-process images (DICOM or NIFTI files) in a study folder"""
 
 from datetime import datetime, timedelta
 
@@ -12,8 +12,6 @@ from preprocessing_steps.cleanup_local import cleanup_local_cfg
 from preprocessing_steps.copy_to_local import copy_to_local_cfg
 from preprocessing_steps.register_local import register_local_cfg
 from preprocessing_steps.images_organiser import images_organiser_cfg
-from preprocessing_steps.images_selection import images_selection_pipeline_cfg
-from preprocessing_steps.dicom_select_t1 import dicom_select_t1_pipeline_cfg
 from preprocessing_steps.dicom_to_nifti import dicom_to_nifti_pipeline_cfg
 from preprocessing_steps.mpm_maps import mpm_maps_pipeline_cfg
 from preprocessing_steps.neuro_morphometric_atlas import neuro_morphometric_atlas_pipeline_cfg
@@ -23,8 +21,8 @@ from etl_steps.features_to_i2b2 import features_to_i2b2_pipeline_cfg
 
 
 shared_preparation_steps = ['copy_to_local']
-dicom_preparation_steps = ['dicom_organiser', 'dicom_selection', 'dicom_select_T1', 'dicom_to_nitfi']
-nifti_preparation_steps = ['nifti_organiser', 'nifti_selection']
+dicom_preparation_steps = ['dicom_organiser', 'dicom_to_nitfi']
+nifti_preparation_steps = ['nifti_organiser']
 preprocessing_steps = ['mpm_maps', 'neuro_morphometric_atlas']
 finalisation_steps = ['export_features']
 
@@ -39,7 +37,7 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
 
     # Define the DAG
 
-    dag_name = '%s_mri_pre_process_dicom' % dataset.lower().replace(" ", "_")
+    dag_name = '%s_pre_process_images' % dataset.lower().replace(" ", "_")
 
     default_args = {
         'owner': 'airflow',
@@ -79,14 +77,6 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
             upstream_step = images_organiser_cfg(dag, upstream_step, section, section + ':dicom_organiser')
         # endif
 
-        if 'dicom_selection' in preprocessing_pipelines:
-            upstream_step = images_selection_pipeline_cfg(dag, upstream_step, section, section + ':dicom_selection')
-        # endif
-
-        if 'dicom_select_T1' in preprocessing_pipelines:
-            upstream_step = dicom_select_t1_pipeline_cfg(dag, upstream_step, section, section + ':dicom_select_T1')
-        # endif
-
         upstream_step = dicom_to_nifti_pipeline_cfg(dag, upstream_step, section, section + ':dicom_to_nifti')
 
         if copy_to_local:
@@ -97,10 +87,6 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
 
     if 'nifti_organiser' in preprocessing_pipelines:
         upstream_step = images_organiser_cfg(dag, upstream_step, section, section + ':nifti_organiser')
-    # endif
-
-    if 'nifti_selection' in preprocessing_pipelines:
-        upstream_step = images_selection_pipeline_cfg(dag, upstream_step, section, section + ':nifti_selection')
     # endif
 
     if 'mpm_maps' in preprocessing_pipelines:

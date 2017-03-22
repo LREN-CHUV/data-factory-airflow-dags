@@ -21,6 +21,8 @@ Configuration variables used:
 
 """
 
+# TODO: This whole step should be replaced by the standard image filtering done by the scanners
+
 import os
 
 from datetime import timedelta
