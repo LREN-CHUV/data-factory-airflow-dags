@@ -13,7 +13,7 @@ from preprocessing_pipelines.mri_notify_successful_processing import mri_notify_
 from preprocessing_pipelines.continuously_pre_process_incoming import continuously_preprocess_incoming_dag
 from preprocessing_pipelines.daily_pre_process_incoming import daily_preprocess_incoming_dag
 from preprocessing_pipelines.flat_pre_process_incoming import flat_preprocess_incoming_dag
-from preprocessing_pipelines.pre_process_images import pre_process_dicom_dag
+from preprocessing_pipelines.pre_process_images import pre_process_images_dag
 from etl_pipelines.daily_ehr_incoming import daily_ehr_incoming_dag
 from etl_pipelines.flat_ehr_incoming import flat_ehr_incoming_dag
 from etl_pipelines.ehr_to_i2b2 import ehr_to_i2b2_dag
@@ -58,30 +58,30 @@ for dataset in dataset_sections.split(','):
     logging.info("Create pipelines for dataset %s using scannners %s and pipelines %s",
                  dataset_label, preprocessing_scanners, preprocessing_pipelines)
 
-    pre_process_dicom_dag_id = register_dag(pre_process_dicom_dag(dataset=dataset,
-                                                                  section=preprocessing_section,
-                                                                  email_errors_to=email_errors_to,
-                                                                  max_active_runs=max_active_runs,
-                                                                  preprocessing_pipelines=preprocessing_pipelines))
+    pre_process_images_dag_id = register_dag(pre_process_images_dag(dataset=dataset,
+                                                                    section=preprocessing_section,
+                                                                    email_errors_to=email_errors_to,
+                                                                    max_active_runs=max_active_runs,
+                                                                    preprocessing_pipelines=preprocessing_pipelines))
 
     if 'continuous' in preprocessing_scanners:
         register_dag(continuously_preprocess_incoming_dag(
                          dataset=dataset,
                          folder=preprocessing_input_folder,
                          email_errors_to=email_errors_to,
-                         trigger_dag_id=pre_process_dicom_dag_id))
+                         trigger_dag_id=pre_process_images_dag_id))
     if 'daily' in preprocessing_scanners:
         register_dag(daily_preprocess_incoming_dag(
                          dataset=dataset,
                          folder=preprocessing_input_folder,
                          email_errors_to=email_errors_to,
-                         trigger_dag_id=pre_process_dicom_dag_id))
+                         trigger_dag_id=pre_process_images_dag_id))
     if 'flat' in preprocessing_scanners:
         register_dag(flat_preprocess_incoming_dag(
                          dataset=dataset,
                          folder=preprocessing_input_folder,
                          email_errors_to=email_errors_to,
-                         trigger_dag_id=pre_process_dicom_dag_id))
+                         trigger_dag_id=pre_process_images_dag_id))
 
     ehr_section = dataset_section + ':ehr'
 

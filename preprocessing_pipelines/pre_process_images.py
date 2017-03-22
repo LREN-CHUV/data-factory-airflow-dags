@@ -32,7 +32,7 @@ all_preprocessing_steps = shared_preparation_steps + dicom_preparation_steps + \
     nifti_preparation_steps + preprocessing_steps + finalisation_steps
 
 
-def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, preprocessing_pipelines=''):
+def pre_process_images_dag(dataset, section, email_errors_to, max_active_runs, preprocessing_pipelines=''):
 
     # Define the DAG
 
