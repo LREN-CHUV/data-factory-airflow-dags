@@ -6,7 +6,7 @@ Exports neuroimaging features stored in CSV files to the I2B2 database.
 
 Configuration variables used:
 
-* :ehr section
+* :preprocessing section
     * INPUT_CONFIG
 
 """
@@ -22,8 +22,8 @@ from common_steps import Step
 from i2b2_import import features_csv_import
 
 
-def features_to_i2b2_pipeline_cfg(dag, upstream_step, etl_section, section):
-    input_config = configuration.get(etl_section, 'INPUT_CONFIG')
+def features_to_i2b2_pipeline_cfg(dag, upstream_step, preprocessing_section, section):
+    input_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
 
     return features_to_i2b2_pipeline(dag, upstream_step, input_config)
 
