@@ -66,22 +66,22 @@ for dataset in dataset_sections.split(','):
 
     if 'continuous' in preprocessing_scanners:
         register_dag(continuously_preprocess_incoming_dag(
-                         dataset=dataset,
-                         folder=preprocessing_input_folder,
-                         email_errors_to=email_errors_to,
-                         trigger_dag_id=pre_process_images_dag_id))
+            dataset=dataset,
+            folder=preprocessing_input_folder,
+            email_errors_to=email_errors_to,
+            trigger_dag_id=pre_process_images_dag_id))
     if 'daily' in preprocessing_scanners:
         register_dag(daily_preprocess_incoming_dag(
-                         dataset=dataset,
-                         folder=preprocessing_input_folder,
-                         email_errors_to=email_errors_to,
-                         trigger_dag_id=pre_process_images_dag_id))
+            dataset=dataset,
+            folder=preprocessing_input_folder,
+            email_errors_to=email_errors_to,
+            trigger_dag_id=pre_process_images_dag_id))
     if 'flat' in preprocessing_scanners:
         register_dag(flat_preprocess_incoming_dag(
-                         dataset=dataset,
-                         folder=preprocessing_input_folder,
-                         email_errors_to=email_errors_to,
-                         trigger_dag_id=pre_process_images_dag_id))
+            dataset=dataset,
+            folder=preprocessing_input_folder,
+            email_errors_to=email_errors_to,
+            trigger_dag_id=pre_process_images_dag_id))
 
     ehr_section = dataset_section + ':ehr'
 
@@ -110,9 +110,6 @@ for dataset in dataset_sections.split(','):
     min_free_space = configuration.getfloat(
         ehr_section, 'MIN_FREE_SPACE')
 
-    params = dict(dataset=dataset, section=ehr_section, email_errors_to=email_errors_to,
-                  max_active_runs=max_active_runs)
-
-    name = '%s_ehr_to_i2b2_dag' % dataset.lower().replace(" ", "_")
-    globals()[name] = ehr_to_i2b2_dag(**params)
-    logging.info("Add DAG %s", globals()[name].dag_id)
+    register_dag(ehr_to_i2b2_dag(dataset=dataset, section=ehr_section,
+                                 email_errors_to=email_errors_to,
+                                 max_active_runs=max_active_runs))

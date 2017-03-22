@@ -4,8 +4,6 @@ ETL steps: Map EHR data to I2B2.
 
 Configuration variables used:
 
-* :ehr section
-    * MIN_FREE_SPACE
 * :ehr:map_ehr_to_i2b2 section:
     * DOCKER_IMAGE
 
@@ -21,10 +19,9 @@ from common_steps import Step
 
 
 def map_ehr_to_i2b2_pipeline_cfg(dag, upstream_step, etl_section, step_section):
-    min_free_space = configuration.get(etl_section, 'MIN_FREE_SPACE')
     docker_image = configuration.get(step_section, 'DOCKER_IMAGE')
 
-    return map_ehr_to_i2b2_pipeline(dag, upstream_step, min_free_space, docker_image)
+    return map_ehr_to_i2b2_pipeline(dag, upstream_step, docker_image)
 
 
 def map_ehr_to_i2b2_pipeline(dag, upstream_step, docker_image=''):
