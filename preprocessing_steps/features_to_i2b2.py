@@ -7,7 +7,7 @@ Exports neuroimaging features stored in CSV files to the I2B2 database.
 Configuration variables used:
 
 * data-factory section
-  * I2B2_DB_SQL_ALCHEMY_CONN
+  * I2B2_SQL_ALCHEMY_CONN
 * :preprocessing section
     * INPUT_CONFIG
 
@@ -26,7 +26,7 @@ from i2b2_import import features_csv_import
 
 def features_to_i2b2_pipeline_cfg(dag, upstream_step, data_factory_section, preprocessing_section):
     input_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
-    i2b2_conn = configuration.get(data_factory_section, 'I2B2_DB_SQL_ALCHEMY_CONN')
+    i2b2_conn = configuration.get(data_factory_section, 'I2B2_SQL_ALCHEMY_CONN')
 
     return features_to_i2b2_pipeline(dag, upstream_step, i2b2_conn, input_config)
 

@@ -7,8 +7,8 @@ Import meta-data from the data catalog to the I2B2 database.
 Configuration variables used:
 
   * data-factory section
-    * DATA_CATALOG_DB_SQL_ALCHEMY_CONN
-    * I2B2_DB_SQL_ALCHEMY_CONN
+    * DATA_CATALOG_SQL_ALCHEMY_CONN
+    * I2B2_SQL_ALCHEMY_CONN
 
 """
 
@@ -25,8 +25,8 @@ from i2b2_import import data_catalog_import
 
 
 def catalog_to_i2b2_pipeline_cfg(dag, upstream_step, data_factory_section):
-    data_catalog_conn = configuration.get(data_factory_section, 'DATA_CATALOG_DB_SQL_ALCHEMY_CONN')
-    i2b2_conn = configuration.get(data_factory_section, 'I2B2_DB_SQL_ALCHEMY_CONN')
+    data_catalog_conn = configuration.get(data_factory_section, 'DATA_CATALOG_SQL_ALCHEMY_CONN')
+    i2b2_conn = configuration.get(data_factory_section, 'I2B2_SQL_ALCHEMY_CONN')
 
     return catalog_to_i2b2_pipeline(dag, upstream_step, data_catalog_conn, i2b2_conn)
 
