@@ -42,7 +42,7 @@ def dicom_select_t1_pipeline_cfg(dag, upstream_step, preprocessing_section, step
         preprocessing_section, 'PIPELINES_PATH') + '/SelectT1_Pipeline')
     default_config(step_section, 'MISC_LIBRARY_PATH', configuration.get(preprocessing_section, 'MISC_LIBRARY_PATH'))
     default_config(step_section, 'PROTOCOLS_DEFINITION_FILE',
-                   configuration.get(step_section, 'PROTOCOLS_FILE'))
+                   configuration.get(preprocessing_section, 'PROTOCOLS_DEFINITION_FILE'))
 
     dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
     pipeline_path = configuration.get(step_section, 'PIPELINE_PATH')
