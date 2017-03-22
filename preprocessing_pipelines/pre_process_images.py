@@ -23,7 +23,7 @@ shared_preparation_steps = ['copy_to_local']
 dicom_preparation_steps = ['dicom_organiser', 'dicom_to_nitfi']
 nifti_preparation_steps = ['nifti_organiser']
 preprocessing_steps = ['mpm_maps', 'neuro_morphometric_atlas']
-finalisation_steps = ['export_features']
+finalisation_steps = ['export_features', 'catalog_to_i2b2']
 
 steps_with_file_outputs = shared_preparation_steps + dicom_preparation_steps + \
     nifti_preparation_steps + preprocessing_steps
