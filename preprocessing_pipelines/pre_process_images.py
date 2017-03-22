@@ -5,19 +5,18 @@ from datetime import datetime, timedelta
 from airflow import DAG
 
 from common_steps import initial_step
-from common_steps.prepare_pipeline import prepare_pipeline
 from common_steps.check_local_free_space import check_local_free_space_cfg
-
+from common_steps.prepare_pipeline import prepare_pipeline
+from preprocessing_steps.catalog_to_i2b2 import catalog_to_i2b2_pipeline_cfg
 from preprocessing_steps.cleanup_local import cleanup_local_cfg
 from preprocessing_steps.copy_to_local import copy_to_local_cfg
-from preprocessing_steps.register_local import register_local_cfg
-from preprocessing_steps.images_organiser import images_organiser_cfg
 from preprocessing_steps.dicom_to_nifti import dicom_to_nifti_pipeline_cfg
+from preprocessing_steps.features_to_i2b2 import features_to_i2b2_pipeline_cfg
+from preprocessing_steps.images_organiser import images_organiser_cfg
 from preprocessing_steps.mpm_maps import mpm_maps_pipeline_cfg
 from preprocessing_steps.neuro_morphometric_atlas import neuro_morphometric_atlas_pipeline_cfg
 from preprocessing_steps.notify_success import notify_success
-
-from etl_steps.features_to_i2b2 import features_to_i2b2_pipeline_cfg
+from preprocessing_steps.register_local import register_local_cfg
 
 
 shared_preparation_steps = ['copy_to_local']
@@ -98,6 +97,10 @@ def pre_process_dicom_dag(dataset, section, email_errors_to, max_active_runs, pr
                                                               section + ':neuro_morphometric_atlas')
         if 'export_features' in preprocessing_pipelines:
             upstream_step = features_to_i2b2_pipeline_cfg(dag, upstream_step, section, section + ':export_features')
+        # endif
+
+        if 'catalog_to_i2b2' in preprocessing_pipelines:
+            upstream_step = catalog_to_i2b2_pipeline_cfg(dag, upstream_step, section, section + ':catalog_to_i2b2')
         # endif
     # endif
 

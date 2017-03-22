@@ -1,6 +1,6 @@
 """
 
-Data export step: features to I2B2.
+ETL step: features to I2B2.
 
 Exports neuroimaging features stored in CSV files to the I2B2 database.
 
@@ -10,7 +10,6 @@ Configuration variables used:
     * INPUT_CONFIG
 
 """
-
 
 from datetime import timedelta
 from textwrap import dedent
@@ -24,20 +23,18 @@ from i2b2_import import features_csv_import
 
 
 def features_to_i2b2_pipeline_cfg(dag, upstream_step, etl_section, section):
-    dataset_config = configuration.get(etl_section, 'INPUT_CONFIG')
-    # TODO : replace input_folder = ???
-    input_folder = '/fake'
+    input_config = configuration.get(etl_section, 'INPUT_CONFIG')
 
-    return features_to_i2b2_pipeline(dag, upstream_step, input_folder, dataset_config)
+    return features_to_i2b2_pipeline(dag, upstream_step, input_config)
 
 
-def features_to_i2b2_pipeline(dag, upstream_step, input_folder=None, dataset_config=None):
+def features_to_i2b2_pipeline(dag, upstream_step, input_config=None):
 
-    def features_to_i2b2_fn(dataset, **kwargs):
+    def features_to_i2b2_fn(folder, dataset, **kwargs):
         """
-          Import brain features from CSV files to I2B2 DB
+          Import neuroimaging features from CSV files to I2B2 DB
         """
-        features_csv_import.folder2db(input_folder, dataset, dataset_config)
+        features_csv_import.folder2db(folder, dataset, input_config)
 
         return "ok"
 
@@ -64,4 +61,4 @@ def features_to_i2b2_pipeline(dag, upstream_step, input_folder=None, dataset_con
         Depends on: __%s__
         """ % upstream_step.task_id)
 
-    return Step(features_to_i2b2_pipeline, 'images_selection_pipeline', upstream_step.priority_weight + 10)
+    return Step(features_to_i2b2_pipeline, 'features_to_i2b2_pipeline', upstream_step.priority_weight + 10)
