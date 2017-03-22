@@ -62,6 +62,8 @@ def images_organiser(dag, upstream_step, dataset_config,
 
     type_of_images_param = "--type " + dataset_type
     structure_param = "--output_folder_organisation " + str(data_structure.split(':'))
+    incoming_dataset_param = "--incoming_dataset {{ dag_run.conf['dataset'] }}"
+    command = "%s %s %s" % (type_of_images_param, structure_param, incoming_dataset_param)
 
     images_organiser_pipeline = DockerPipelineOperator(
         task_id='images_organiser_pipeline',
@@ -75,7 +77,7 @@ def images_organiser(dag, upstream_step, dataset_config,
         dataset_config=dataset_config,
         dag=dag,
         image=docker_image,
-        command=["--incoming_dataset {{ dag_run.conf['dataset'] }}", type_of_images_param, structure_param],
+        command=command,
         container_input_dir=docker_input_dir,
         container_output_dir=docker_output_dir
     )

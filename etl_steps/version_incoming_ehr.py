@@ -44,7 +44,7 @@ def version_incoming_ehr_pipeline(dag, upstream_step, output_folder=None, min_fr
         """)
 
     version_incoming_ehr_pipeline = BashPipelineOperator(
-        task_id='version_incoming_ehr',
+        task_id='version_incoming_ehr_pipeline',
         bash_command=version_incoming_ehr_cmd,
         params={'min_free_space_local_folder': min_free_space,
                 'ehr_versioned_folder': output_folder

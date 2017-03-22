@@ -27,7 +27,7 @@ def map_ehr_to_i2b2_pipeline_cfg(dag, upstream_step, etl_section, step_section):
     return map_ehr_to_i2b2_pipeline(dag, upstream_step, min_free_space, docker_image)
 
 
-def map_ehr_to_i2b2_pipeline(dag, upstream_step, output_folder=None, docker_image=''):
+def map_ehr_to_i2b2_pipeline(dag, upstream_step, docker_image=''):
 
     map_ehr_to_i2b2_pipeline = DockerPipelineOperator(
         task_id='map_ehr_to_i2b2_capture',
@@ -39,8 +39,7 @@ def map_ehr_to_i2b2_pipeline(dag, upstream_step, output_folder=None, docker_imag
         container_tmp_dir='/tmp/airflow',  # nosec
         container_input_dir='/opt/source',
         container_output_dir='/opt/target',
-        output_folder_callable=lambda relative_context_path, **kwargs: "%s/%s" % (
-            output_folder, relative_context_path),
+        output_folder_callable=None,
         volumes=[
             "/opt/postgresdb.properties:/etc/mipmap/postgresdb.properties"
         ],
@@ -60,9 +59,7 @@ def map_ehr_to_i2b2_pipeline(dag, upstream_step, output_folder=None, docker_imag
 
     Docker image: __%s__
 
-    * Local folder: __%s__
-
     Depends on: __%s__
-    """ % (docker_image, output_folder, upstream_step.task_id))
+    """ % (docker_image, upstream_step.task_id))
 
     return Step(map_ehr_to_i2b2_pipeline, 'map_ehr_to_i2b2_pipeline', upstream_step.priority_weight + 10)
