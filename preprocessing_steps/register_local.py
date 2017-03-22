@@ -19,7 +19,7 @@ from airflow_pipeline.operators import BashPipelineOperator
 from common_steps import Step, default_config
 
 
-def register_local_cfg(dag, upstream_step, preprocessing_section, step_section=None):
+def register_local_cfg(dag, upstream_step, preprocessing_section):
     default_config(preprocessing_section, 'INPUT_CONFIG', '')
 
     dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')

@@ -21,7 +21,7 @@ from airflow.operators import BashOperator
 from common_steps import Step
 
 
-def cleanup_local_cfg(dag, upstream_step, preprocessing_section=None, step_section=None):
+def cleanup_local_cfg(dag, upstream_step, step_section=None):
     cleanup_folder = configuration.get(step_section, "OUTPUT_FOLDER")
 
     return cleanup_local(dag, upstream_step, cleanup_folder)

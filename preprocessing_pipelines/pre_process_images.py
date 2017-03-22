@@ -67,7 +67,7 @@ def pre_process_images_dag(dataset, section, email_errors_to, max_active_runs, p
     if copy_to_local:
         upstream_step = copy_to_local_cfg(dag, upstream_step, section, section + ':copy_to_local')
     else:
-        upstream_step = register_local_cfg(dag, upstream_step, section, section + ':register_local')
+        upstream_step = register_local_cfg(dag, upstream_step, section)
     # endif
 
     if dicom_to_nifti:
@@ -79,7 +79,7 @@ def pre_process_images_dag(dataset, section, email_errors_to, max_active_runs, p
         upstream_step = dicom_to_nifti_pipeline_cfg(dag, upstream_step, section, section + ':dicom_to_nifti')
 
         if copy_to_local:
-            copy_step = cleanup_local_cfg(dag, upstream_step, section, section + ':copy_to_local')
+            copy_step = cleanup_local_cfg(dag, upstream_step, section + ':copy_to_local')
             upstream_step.priority_weight = copy_step.priority_weight
         # endif
     # endif
@@ -96,11 +96,11 @@ def pre_process_images_dag(dataset, section, email_errors_to, max_active_runs, p
         upstream_step = neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, section,
                                                               section + ':neuro_morphometric_atlas')
         if 'export_features' in preprocessing_pipelines:
-            upstream_step = features_to_i2b2_pipeline_cfg(dag, upstream_step, section, section + ':export_features')
+            upstream_step = features_to_i2b2_pipeline_cfg(dag, upstream_step, 'data-factory', section)
         # endif
 
         if 'catalog_to_i2b2' in preprocessing_pipelines:
-            upstream_step = catalog_to_i2b2_pipeline_cfg(dag, upstream_step, section, section + ':catalog_to_i2b2')
+            upstream_step = catalog_to_i2b2_pipeline_cfg(dag, upstream_step, 'data-factory')
         # endif
     # endif
 
