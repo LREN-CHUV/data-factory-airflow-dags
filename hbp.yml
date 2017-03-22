@@ -1,3 +1,8 @@
+description: ""
+
+long_description: "
+"
+
 authors:
   - author: Ludovic Claude
     author_email:
@@ -58,3 +63,5 @@ distribution:
     link: https://github.com/HBPMedical/data-factory-airflow-dags.git
 
 planning: []
+
+related_projects: []

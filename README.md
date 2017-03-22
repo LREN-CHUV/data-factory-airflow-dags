@@ -46,6 +46,7 @@ Requirements:
     * MIN_FREE_SPACE: minimum percentage of free space available on local disk
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines.
     * PIPELINES_PATH: path to the root folder containing the Matlab scripts for the pipelines
+    * PROTOCOLS_DEFINITION_FILE: path to the default protocols definition file defining the protocols used on the scanner.
     * SCANNERS: List of methods describing how the preprocessing data folder is scanned for new work, values are
       * continuous: input folder is scanned frequently for new data. Sub-folders should contain a .ready file to indicate that processing can be performed on that folder.
       * daily: input folder contains a sub-folder for the year, this folder contains daily sub-folders for each day of the year (format yyyyMMdd). Those daily sub-folders in turn contain the folders for each scan to process.
@@ -81,7 +82,7 @@ Requirements:
     * SPM_FUNCTION: SPM function called. Default to 'selectT1'
     * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to PIPELINES_PATH + '/SelectT1_Pipeline'
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
-    * PROTOCOLS_FILE: path to the Protocols definition file defining the protocols used on the scanner. For PPMI data, SelectT1 requires a custom Protocols_definition_PPMI.txt file.
+    * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner. For PPMI data, SelectT1 requires a custom Protocols_definition_PPMI.txt file.
 
 * If dicom_to_nifti is used or required (when DICOM images are used as input), configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_to_nifti] section:
     * OUTPUT_FOLDER: destination folder for the Nifti images
@@ -89,7 +90,7 @@ Requirements:
     * SPM_FUNCTION: SPM function called. Default to 'DCM2NII_LREN'
     * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to PIPELINES_PATH + '/Nifti_Conversion_Pipeline'
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
-    * PROTOCOLS_FILE: path to the Protocols definition file defining the protocols used on the scanner.Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
+    * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner. Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * DCM2NII_PROGRAM: Path to DCM2NII program. Default to PIPELINE_PATH + '/dcm2nii'
 
 * If nifti_organiser is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:nifti_organiser] section:
@@ -109,7 +110,7 @@ Requirements:
     * SPM_FUNCTION: SPM function called. Default to 'Preproc_mpm_maps'
     * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to PIPELINES_PATH + '/MPMs_Pipeline'
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
-    * PROTOCOLS_FILE: path to the Protocols definition file defining the protocols used on the scanner.Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
+    * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner. Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
 
 * If neuro_morphometric_atlas is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:neuro_morphometric_atlas] section:
     * OUTPUT_FOLDER: destination folder for the Atlas File, the volumes of the Morphometric Atlas structures (.txt), the csv file containing the volume, and globals plus Multiparametric Maps (R2*, R1, MT, PD) for each structure defined in the Subject Atlas.
@@ -117,7 +118,7 @@ Requirements:
     * SPM_FUNCTION: SPM function called. Default to 'NeuroMorphometric_pipeline'
     * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to PIPELINES_PATH + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
-    * PROTOCOLS_FILE: path to the Protocols definition file defining the protocols used on the scanner.Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
+    * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner. Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * TPM_TEMPLATE: Path to the the template used for segmentation step in case the image is not segmented. Default to SPM_DIR + 'tpm/nwTPM_sl3.nii'
 
 * For each dataset, now configure the [data-factory:&lt;dataset&gt;:ehr] section:
