@@ -6,7 +6,7 @@ Requirements:
 
 * airflow-imaging-plugins
 * mri-preprocessing-pipeline
-* mri-meta-extract
+* data-tracking
 
 ## Setup and configuration
 
