@@ -43,6 +43,7 @@ def catalog_to_i2b2_pipeline(dag, upstream_step, data_catalog_conn, i2b2_conn):
 
     catalog_to_i2b2_pipeline = PythonPipelineOperator(
         task_id='catalog_to_i2b2_pipeline',
+        parent_task=upstream_step.task_id,
         python_callable=catalog_to_i2b2_fn,
         pool='io_intensive',
         execution_timeout=timedelta(hours=6),
