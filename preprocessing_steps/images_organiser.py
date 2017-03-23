@@ -10,7 +10,7 @@ Configuration variables used:
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
 * :preprocessing:dicom_organiser or :preprocessing:nifti_organiser section
     * OUTPUT_FOLDER: destination folder for the organised images
-    * DATA_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
+    * OUTPUT_FOLDER_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
     * DOCKER_IMAGE: Docker image of the hierarchizer program
     * DOCKER_INPUT_DIR: Input directory inside the Docker container. Default to '/input_folder'
     * DOCKER_OUTPUT_DIR: Output directory inside the Docker container. Default to '/output_folder'
@@ -36,17 +36,17 @@ def images_organiser_cfg(dag, upstream_step, preprocessing_section, step_section
 
     dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
     local_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
-    data_structure = configuration.get(step_section, 'DATA_STRUCTURE')
+    output_folder_structure = configuration.get(step_section, 'OUTPUT_FOLDER_STRUCTURE')
     docker_image = configuration.get(step_section, 'DOCKER_IMAGE')
     docker_input_dir = configuration.get(step_section, 'DOCKER_INPUT_DIR')
     docker_output_dir = configuration.get(step_section, 'DOCKER_OUTPUT_DIR')
 
     m = re.search('.*:preprocessing:(.*)_organiser', step_section)
-    dataset_type = m.group(1)
+    dataset_type = m.group(1).upper()
 
     return images_organiser(dag, upstream_step, dataset_config,
                             dataset_type=dataset_type,
-                            data_structure=data_structure,
+                            output_folder_structure=output_folder_structure,
                             local_folder=local_folder,
                             docker_image=docker_image,
                             docker_input_dir=docker_input_dir,
@@ -54,14 +54,14 @@ def images_organiser_cfg(dag, upstream_step, preprocessing_section, step_section
 
 
 def images_organiser(dag, upstream_step, dataset_config,
-                     dataset_type, data_structure,
+                     dataset_type, output_folder_structure,
                      local_folder,
                      docker_image='hbpmip/hierarchizer:latest',
                      docker_input_dir='/input_folder',
                      docker_output_dir='/output_folder'):
 
     type_of_images_param = "--type " + dataset_type
-    structure_param = "--output_folder_organisation " + str(data_structure.split(':'))
+    structure_param = "--output_folder_organisation " + output_folder_structure
     incoming_dataset_param = "--incoming_dataset {{ dag_run.conf['dataset'] }}"
     command = "%s %s %s" % (type_of_images_param, structure_param, incoming_dataset_param)
 

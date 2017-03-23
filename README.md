@@ -69,7 +69,7 @@ Requirements:
 
 * If dicom_organiser is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_organiser] section:
     * OUTPUT_FOLDER: destination folder for the organised images
-    * DATA_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
+    * OUTPUT_FOLDER_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
     * DOCKER_IMAGE: Docker image of the hierarchizer program
     * DOCKER_INPUT_DIR: Input directory inside the Docker container. Default to '/input_folder'
     * DOCKER_OUTPUT_DIR: Output directory inside the Docker container. Default to '/output_folder'
@@ -96,7 +96,7 @@ Requirements:
 
 * If nifti_organiser is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:nifti_organiser] section:
     * OUTPUT_FOLDER: destination folder for the organised images
-    * DATA_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
+    * OUTPUT_FOLDER_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
     * DOCKER_IMAGE: Docker image of the hierarchizer program
     * DOCKER_INPUT_DIR: Input directory inside the Docker container. Default to '/input_folder'
     * DOCKER_OUTPUT_DIR: Output directory inside the Docker container. Default to '/output_folder'
