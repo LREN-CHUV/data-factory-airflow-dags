@@ -16,7 +16,7 @@ from datetime import timedelta
 from textwrap import dedent
 
 from airflow import configuration
-from airflow.operators import BashOperator
+from airflow.operators.bash_operator import BashOperator
 
 from common_steps import Step
 

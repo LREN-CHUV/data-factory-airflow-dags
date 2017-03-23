@@ -11,7 +11,7 @@ None
 
 from textwrap import dedent
 
-from airflow.operators import TriggerDagRunOperator
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow_pipeline.pipelines import pipeline_trigger
 
 from common_steps import Step

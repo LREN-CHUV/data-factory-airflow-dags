@@ -46,7 +46,6 @@ def catalog_to_i2b2_pipeline(dag, upstream_step, data_catalog_conn, i2b2_conn):
         python_callable=catalog_to_i2b2_fn,
         pool='io_intensive',
         execution_timeout=timedelta(hours=6),
-        on_skip_trigger_dag_id='mri_notify_skipped_processing',
         on_failure_trigger_dag_id='mri_notify_failed_processing',
         dag=dag
     )

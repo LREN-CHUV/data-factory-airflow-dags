@@ -48,7 +48,6 @@ def features_to_i2b2_pipeline(dag, upstream_step, i2b2_conn, input_config=None):
         parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=6),
-        on_skip_trigger_dag_id='mri_notify_skipped_processing',
         on_failure_trigger_dag_id='mri_notify_failed_processing',
         dag=dag
     )

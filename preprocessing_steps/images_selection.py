@@ -69,7 +69,6 @@ def images_selection_pipeline(dag, upstream_step,
         parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=6),
-        on_skip_trigger_dag_id='mri_notify_skipped_processing',
         on_failure_trigger_dag_id='mri_notify_failed_processing',
         dag=dag
     )

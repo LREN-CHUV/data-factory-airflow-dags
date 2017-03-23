@@ -57,7 +57,6 @@ def metadata_files_to_i2b2_dag(dataset, section, email_errors_to, max_active_run
         kwargs=arguments_fn,
         pool='io_intensive',
         execution_timeout=timedelta(hours=6),
-        on_skip_trigger_dag_id='mri_notify_skipped_processing',
         on_failure_trigger_dag_id='mri_notify_failed_processing',
         dag=dag
     )

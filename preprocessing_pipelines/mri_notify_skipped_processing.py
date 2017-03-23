@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 from airflow import DAG, configuration
-from airflow.operators import SlackAPIPostOperator
+from airflow.operators.slack_operator import SlackAPIPostOperator
 
 
 def mri_notify_skipped_processing_dag():
