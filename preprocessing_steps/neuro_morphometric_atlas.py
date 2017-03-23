@@ -35,7 +35,7 @@ Configuration variables used:
     * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner.
       Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * TPM_TEMPLATE: Path to the the template used for segmentation step in case the image is not segmented.
-      Default to SPM_DIR + 'tpm/nwTPM_sl3.nii'
+      Default to SPM_DIR + '/tpm/nwTPM_sl3.nii'
 
 """
 
