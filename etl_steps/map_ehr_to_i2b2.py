@@ -27,7 +27,7 @@ def map_ehr_to_i2b2_pipeline_cfg(dag, upstream_step, etl_section, step_section):
 def map_ehr_to_i2b2_pipeline(dag, upstream_step, docker_image=''):
 
     map_ehr_to_i2b2_pipeline = DockerPipelineOperator(
-        task_id='map_ehr_to_i2b2_capture',
+        task_id='map_ehr_to_i2b2_pipeline',
         image=docker_image,
         force_pull=False,
         api_version="1.18",
@@ -40,10 +40,9 @@ def map_ehr_to_i2b2_pipeline(dag, upstream_step, docker_image=''):
         volumes=[
             "/opt/postgresdb.properties:/etc/mipmap/postgresdb.properties"
         ],
-        pool='io_intensive',
         parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
-        execution_timeout=timedelta(hours=24),
+        execution_timeout=timedelta(minutes=60),
         on_failure_trigger_dag_id='mri_notify_failed_processing',
         dag=dag
     )

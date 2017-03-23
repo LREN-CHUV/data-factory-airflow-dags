@@ -38,8 +38,8 @@ def version_incoming_ehr_pipeline(dag, upstream_step, output_folder=None, min_fr
             rsync -av $AIRFLOW_INPUT_DIR/ $AIRFLOW_OUTPUT_DIR/
             cd {{ params['ehr_versioned_folder'] }}
             git add $AIRFLOW_OUTPUT_DIR/
-            git commit -m "Add EHR acquired on \
-            {{ task_instance.xcom_pull(key='relative_context_path', task_ids='prepare_pipeline') }}"
+            CONTEXT="{{ task_instance.xcom_pull(key='relative_context_path', task_ids='prepare_pipeline') }}"
+            git commit -m "Add EHR acquired on $CONTEXT"
             git rev-parse HEAD
         """)
 
@@ -53,7 +53,7 @@ def version_incoming_ehr_pipeline(dag, upstream_step, output_folder=None, min_fr
             output_folder, relative_context_path),
         parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
-        execution_timeout=timedelta(hours=3),
+        execution_timeout=timedelta(minutes=30),
         on_failure_trigger_dag_id='mri_notify_failed_processing',
         dag=dag
     )
