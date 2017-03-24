@@ -89,11 +89,13 @@ def images_organiser(dag, upstream_step, dataset_config,
 
         Reorganise DICOM/NIFTI files to fit the structure expected by the following pipelines.
 
-        Reorganised DICOM/NIFTI files are stored the the following locations:
+        Docker image: __%s__
 
-        * Local folder: __%s__
+        Reorganised files are stored in the following location:
+
+        * Target folder: __%s__
 
         Depends on: __%s__
-        """ % (local_folder, upstream_step.task_id))
+        """ % (docker_image, local_folder, upstream_step.task_id))
 
     return Step(images_organiser_pipeline, 'images_organiser_pipeline', upstream_step.priority_weight + 10)

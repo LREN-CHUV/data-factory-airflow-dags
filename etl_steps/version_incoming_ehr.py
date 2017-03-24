@@ -64,9 +64,9 @@ def version_incoming_ehr_pipeline(dag, upstream_step, output_folder=None, min_fr
     version_incoming_ehr_pipeline.doc_md = dedent("""\
     # Copy EHR files to a versioned folder
 
-    * Local folder: __%s__
+    * Target folder: __%s__
 
     The folder %s is versioned as a local Git repository.
-    """ % output_folder)
+    """ % (output_folder, output_folder))
 
     return Step(version_incoming_ehr_pipeline, 'version_incoming_ehr_pipeline', upstream_step.priority_weight + 10)

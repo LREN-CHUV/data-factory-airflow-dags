@@ -117,9 +117,9 @@ def dicom_to_nifti_pipeline(dag, upstream_step,
     This function convert the dicom files to Nifti format using the SPM tools and
     [dcm2nii](http://www.mccauslandcenter.sc.edu/mricro/mricron/dcm2nii.html) tool developed by Chris Rorden.
 
-    Nifti files are stored the the following locations:
+    Nifti files are stored in the following locations:
 
-    * Local folder: __%s__
+    * Target folder: __%s__
     * Remote folder: __%s__
 
     Depends on: __%s__

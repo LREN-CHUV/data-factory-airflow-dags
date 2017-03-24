@@ -144,6 +144,7 @@ def neuro_morphometric_atlas_pipeline(dag, upstream_step,
 
             This function computes an individual Atlas based on the NeuroMorphometrics Atlas. This is based on the
             NeuroMorphometrics Toolbox.
+
             This delivers three files:
 
             1. Atlas File (*.nii);
@@ -153,8 +154,8 @@ def neuro_morphometric_atlas_pipeline(dag, upstream_step,
 
             The atlas is calculated locally and finally copied to a remote folder:
 
-            * Local folder: %s
-            * Remote folder: %s
+            * Target folder: __%s__
+            * Remote folder: __%s__
 
             Depends on: __%s__
             """ % (spm_function, output_folder, backup_folder, upstream_step.task_id))

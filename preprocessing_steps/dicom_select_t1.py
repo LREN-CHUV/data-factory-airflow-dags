@@ -100,15 +100,13 @@ def dicom_select_t1_pipeline(dag, upstream_step,
         dicom_select_t1_pipeline.set_upstream(upstream_step.task)
 
     dicom_select_t1_pipeline.doc_md = dedent("""\
-        # select T1 DICOM pipeline
+        # Selects only T1 images from a set of various DICOM images.
 
         SPM function: __%s__
 
-        Selects only T1 images from a set of various DICOM images.
+        Selected DICOM files are stored in the following location:
 
-        Selected DICOM files are stored the the following locations:
-
-        * Local folder: __%s__
+        * Target folder: __%s__
 
         Depends on: __%s__
         """ % (spm_function, output_folder, upstream_step.task_id))

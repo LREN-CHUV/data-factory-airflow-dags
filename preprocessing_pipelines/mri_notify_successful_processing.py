@@ -50,7 +50,7 @@ def mri_notify_successful_processing_dag():
     post_on_slack.doc_md = """\
     # Post information about the processed MRI scan session on Slack
 
-    Post information about the processed MRI scan session on Slack channel %s
+    Slack channel: __%s__
     """ % slack_channel
 
     return dag

@@ -26,14 +26,17 @@ from common_steps import Step, default_config
 def images_selection_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
     default_config(preprocessing_section, 'INPUT_CONFIG', '')
 
-    # TODO: dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
+    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
     local_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
     images_selection_csv_path = configuration.get(step_section, 'IMAGES_SELECTION_CSV_PATH')
 
-    return images_selection_pipeline(dag, upstream_step, local_folder, images_selection_csv_path)
+    return images_selection_pipeline(dag, upstream_step, dataset_config, local_folder, images_selection_csv_path)
 
+
+# TODO: add software_versions
 
 def images_selection_pipeline(dag, upstream_step,
+                              dataset_config=None,
                               local_folder=None, csv_path=None):
 
     def images_selection_fn(folder, **kwargs):
@@ -60,7 +63,6 @@ def images_selection_pipeline(dag, upstream_step,
                         copy2(join(folder, file_), join(repetition_folder, file_))
         return "ok"
 
-    # TODO: track provenance
     images_selection_pipeline = PythonPipelineOperator(
         task_id='images_selection_pipeline',
         python_callable=images_selection_fn,
@@ -70,6 +72,7 @@ def images_selection_pipeline(dag, upstream_step,
         priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=6),
         on_failure_trigger_dag_id='mri_notify_failed_processing',
+        dataset_config=dataset_config,
         dag=dag
     )
 
@@ -84,7 +87,7 @@ def images_selection_pipeline(dag, upstream_step,
 
         Selected DICOM/NIFTI files are stored the the following locations:
 
-        * Local folder: __%s__
+        * Target folder: __%s__
 
         Depends on: __%s__
         """ % (local_folder, upstream_step.task_id))

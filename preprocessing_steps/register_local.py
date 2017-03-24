@@ -51,7 +51,7 @@ def register_local(dag, upstream_step, dataset_config):
     register_local.doc_md = dedent("""\
         # Register incoming files for provenance
 
-        This step does nothing except register the files in the input folder for provenance.
+        This step does nothing except register the files present in the input folder to track provenance.
         """)
 
     return Step(register_local, 'register_local', upstream_step.priority_weight + 10)

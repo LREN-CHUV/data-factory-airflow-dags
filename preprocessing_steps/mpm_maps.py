@@ -114,7 +114,7 @@ def mpm_maps_pipeline(dag, upstream_step,
 
             The MPMs are calculated locally and finally copied to a remote folder:
 
-            * Local folder: __%s__
+            * Target folder: __%s__
             * Remote folder: __%s__
 
             Depends on: __%s__

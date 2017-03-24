@@ -65,9 +65,13 @@ def copy_to_local(dag, upstream_step, min_free_space, output_folder,
         copy_to_local.set_upstream(upstream_step.task)
 
     copy_to_local.doc_md = dedent("""\
-    # Copy DICOM files to local %s folder
+        # Copy DICOM files to a local folder
 
-    Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
-    """ % output_folder)
+        Speed-up the processing of DICOM files by first copying them from a shared folder to the local hard-drive.
+
+        * Target folder: __%s__
+
+        Depends on: __%s__
+    """ % (output_folder, upstream_step.task_id))
 
     return Step(copy_to_local, 'copy_to_local', upstream_step.priority_weight + 10)
