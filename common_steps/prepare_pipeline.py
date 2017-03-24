@@ -31,7 +31,9 @@ def prepare_pipeline(dag, upstream_step, include_spm_facts=True):
     prepare_pipeline.doc_md = dedent("""\
     # Prepare pipeline
 
-    Add information required by the Pipeline operators.
+    Add information used by the other pipeline operators downstream.
+
+    This includes dataset and folder to process, information to help tracking provenance.
     """)
 
     return Step(prepare_pipeline, 'prepare_pipeline', upstream_step.priority_weight + 10)
