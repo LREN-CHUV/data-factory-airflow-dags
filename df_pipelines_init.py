@@ -1,4 +1,4 @@
-""" Initialise the DAGs for all the pipelines required to process different datasets containing MRI images """
+"""Initialise the DAGs for all the pipelines required to process different datasets containing MRI images"""
 
 # Please keep keywords airflow and DAG in this file, otherwise the safe mode in DagBag may skip this file
 

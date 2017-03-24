@@ -25,29 +25,29 @@ component:
 license:
   name: Apache 2.0
   badge: https://img.shields.io/badge/license-Apache--2.0-blue.svg
-  link: https://github.com/LREN-CHUV/data-factory-airflow-dags/blob/master/LICENSE
+  url: https://github.com/LREN-CHUV/data-factory-airflow-dags/blob/master/LICENSE
 
 code_repositories:
   - name: chuv-gitlab/HBPMedical
     visibility: private
-    link: https://___.chuv.ch/data-factory/data-factory-airflow-dags/
+    url: https://___.chuv.ch/data-factory/data-factory-airflow-dags/
     git_clone: https://___.chuv.ch/data-factory/data-factory-airflow-dags.git
   - name: github/LREN-CHUV
     visibility: public
-    link: https://github.io/LREN-CHUV/data-factory-airflow-dags/
+    url: https://github.io/LREN-CHUV/data-factory-airflow-dags/
     git_clone: https://github.io/LREN-CHUV/data-factory-airflow-dags.git
   - name: github/HBPMedical
     visibility: public
-    link: https://github.io/HBPMedical/data-factory-airflow-dags/
+    url: https://github.io/HBPMedical/data-factory-airflow-dags/
     git_clone: https://github.io/HBPMedical/data-factory-airflow-dags.git
 
 code_quality_checks:
   codacy:
-    badge: https://api.codacy.com/project/badge/Grade/8c5c9dc3cfb8492f870369c973f3cc8c
-    link: "https://www.codacy.com/app/hbp-mip/data-factory-airflow-dags?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=LREN-CHUV/data-factory-airflow-dags&amp;utm_campaign=Badge_Grade"
+    badge: https://api.codacy.com/project/badge/Grade/b8a8557738114e4f819c0f2a91ba996a
+    url: "https://www.codacy.com/app/hbp-mip/data-factory-airflow-dags?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=LREN-CHUV/data-factory-airflow-dags&amp;utm_campaign=Badge_Grade"
   landscape:
     badge: "https://landscape.io/github/LREN-CHUV/data-factory-airflow-dags/master/landscape.svg?style=flat"
-    link: https://landscape.io/github/LREN-CHUV/data-factory-airflow-dags/master
+    url: https://landscape.io/github/LREN-CHUV/data-factory-airflow-dags/master
 
 testing:
   unit_testing: []
@@ -61,7 +61,7 @@ continuous_integration: []
 
 distribution:
   git:
-    link: https://github.com/HBPMedical/data-factory-airflow-dags.git
+    url: https://github.com/HBPMedical/data-factory-airflow-dags.git
 
 planning: []
 

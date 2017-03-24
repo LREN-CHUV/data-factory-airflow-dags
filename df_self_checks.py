@@ -1,4 +1,4 @@
-""" Runs self-checks """
+"""Runs self-checks"""
 
 import os
 import logging
