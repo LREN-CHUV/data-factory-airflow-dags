@@ -20,7 +20,7 @@ authors:
 platform: MIP
 component:
   mip_building_block: data-factory
-  nature: plugin
+  nature: tool
 
 license:
   name: Apache 2.0
