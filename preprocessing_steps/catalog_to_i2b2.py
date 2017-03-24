@@ -34,9 +34,7 @@ def catalog_to_i2b2_pipeline_cfg(dag, upstream_step, data_factory_section):
 def catalog_to_i2b2_pipeline(dag, upstream_step, data_catalog_conn, i2b2_conn):
 
     def catalog_to_i2b2_fn(**kwargs):
-        """
-          Import meta-data from data catalog DB to I2B2 DB
-        """
+        """Import meta-data from data catalog DB to I2B2 DB"""
         data_catalog_import.catalog2i2b2(data_catalog_conn, i2b2_conn)
 
         return "ok"

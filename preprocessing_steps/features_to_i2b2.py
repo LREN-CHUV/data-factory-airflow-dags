@@ -34,9 +34,7 @@ def features_to_i2b2_pipeline_cfg(dag, upstream_step, data_factory_section, prep
 def features_to_i2b2_pipeline(dag, upstream_step, i2b2_conn, input_config=None):
 
     def features_to_i2b2_fn(folder, dataset, **kwargs):
-        """
-          Import neuroimaging features from CSV files to I2B2 DB
-        """
+        """Import neuroimaging features from CSV files to I2B2 DB"""
         features_csv_import.folder2db(folder, i2b2_conn, dataset, input_config)
 
         return "ok"
