@@ -24,11 +24,11 @@ from airflow_pipeline.operators import BashPipelineOperator
 from common_steps import Step, default_config
 
 
-def copy_all_to_local_cfg(dag, upstream_step, preprocessing_section, step_section):
-    default_config(preprocessing_section, 'INPUT_CONFIG', '')
+def copy_all_to_local_cfg(dag, upstream_step, reorganisation_section, step_section):
+    default_config(reorganisation_section, 'INPUT_CONFIG', '')
 
-    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
-    min_free_space = configuration.getfloat(preprocessing_section, 'MIN_FREE_SPACE')
+    dataset_config = configuration.get(reorganisation_section, 'INPUT_CONFIG')
+    min_free_space = configuration.getfloat(reorganisation_section, 'MIN_FREE_SPACE')
     output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
 
     return copy_all_to_local(dag, upstream_step, min_free_space, output_folder, dataset_config)
