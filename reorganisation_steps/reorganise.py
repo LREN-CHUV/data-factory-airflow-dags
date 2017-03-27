@@ -41,7 +41,7 @@ def reorganise_cfg(dag, upstream_step, reorganisation_section, step_section):
     docker_input_dir = configuration.get(step_section, 'DOCKER_INPUT_DIR')
     docker_output_dir = configuration.get(step_section, 'DOCKER_OUTPUT_DIR')
 
-    m = re.search('.*:reorganisation:(.*)_reorganiser', step_section)
+    m = re.search('.*:reorganisation:(.*)_reorganise', step_section)
     dataset_type = m.group(1).upper()
 
     return reorganise(dag, upstream_step, dataset_config,
