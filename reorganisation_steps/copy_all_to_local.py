@@ -50,11 +50,9 @@ def copy_all_to_local(dag, upstream_step, min_free_space, output_folder, dataset
         bash_command=copy_all_to_local_cmd,
         params={'min_free_space': min_free_space},
         output_folder_callable=output_folder,
-        pool='remote_file_copy',
         parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=3),
-        on_failure_trigger_dag_id='mri_notify_failed_processing',
         dataset_config=dataset_config,
         dag=dag
     )

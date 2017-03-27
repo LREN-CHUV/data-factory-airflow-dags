@@ -15,7 +15,7 @@ from reorganisation_steps.trigger_ehr import trigger_ehr_cfg
 
 
 preparation_steps = ['copy_all_to_local']
-reorganisation_steps = ['reorganise']
+reorganisation_steps = ['dicom_reorganise', 'nifti_reorganise']
 finalisation_steps = ['trigger_preprocessing', 'trigger_ehr']
 
 steps_with_file_outputs = preparation_steps + reorganisation_steps
