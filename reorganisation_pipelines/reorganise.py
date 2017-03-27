@@ -21,7 +21,7 @@ finalisation_steps = ['trigger_preprocessing', 'trigger_ehr']
 steps_with_file_outputs = preparation_steps + reorganisation_steps
 
 
-def pre_process_images_dag(dataset, section, email_errors_to, max_active_runs, preprocessing_pipelines=''):
+def reorganise_dag(dataset, section, email_errors_to, max_active_runs, reorganisation_pipelines=''):
 
     # Define the DAG
 
@@ -54,11 +54,11 @@ def pre_process_images_dag(dataset, section, email_errors_to, max_active_runs, p
     copy_step = cleanup_local_cfg(dag, upstream_step, section + ':copy_all_to_local')
     upstream_step.priority_weight = copy_step.priority_weight
 
-    if 'trigger_preprocessing' in preprocessing_pipelines:
+    if 'trigger_preprocessing' in reorganisation_pipelines:
         upstream_step = trigger_preprocessing_cfg(dag, upstream_step, section, section + ':trigger_preprocessing')
     # endif
 
-    if 'trigger_ehr' in preprocessing_pipelines:
+    if 'trigger_ehr' in reorganisation_pipelines:
         upstream_step = trigger_ehr_cfg(dag, upstream_step, section, section + ':trigger_ehr')
     # endif
 

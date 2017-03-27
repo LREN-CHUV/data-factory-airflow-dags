@@ -17,6 +17,8 @@ from preprocessing_pipelines.pre_process_images import pre_process_images_dag
 from etl_pipelines.daily_ehr_incoming import daily_ehr_incoming_dag
 from etl_pipelines.flat_ehr_incoming import flat_ehr_incoming_dag
 from etl_pipelines.ehr_to_i2b2 import ehr_to_i2b2_dag
+from reorganisation_pipelines.flat_reorganise import flat_reorganisation_dag
+from reorganisation_pipelines.reorganise import reorganise_dag
 
 
 def register_dag(dag):
@@ -37,16 +39,31 @@ register_dag(mri_notify_failed_processing_dag())
 register_dag(mri_notify_skipped_processing_dag())
 register_dag(mri_notify_successful_processing_dag())
 
-for dataset in dataset_sections.split(','):
-    dataset_section = 'data-factory:%s' % dataset
-    dataset_label = configuration.get(dataset_section, 'DATASET_LABEL')
-    preprocessing_section = dataset_section + ':preprocessing'
 
+def register_reorganisation_dags():
+    reorganisation_section = dataset_section + ':reorganisation'
+    reorganisation_input_folder = configuration.get(reorganisation_section, 'INPUT_FOLDER')
+    max_active_runs = int(configuration.get(reorganisation_section, 'MAX_ACTIVE_RUNS'))
+    reorganisation_pipelines = configuration.get(reorganisation_section, 'PIPELINES').split(',')
+
+    reorganisation_dag_id = register_dag(reorganise_dag(dataset=dataset,
+                                                        section=reorganisation_section,
+                                                        email_errors_to=email_errors_to,
+                                                        max_active_runs=max_active_runs,
+                                                        reorganisation_pipelines=reorganisation_pipelines))
+    register_dag(flat_reorganisation_dag(
+        dataset=dataset,
+        folder=reorganisation_input_folder,
+        email_errors_to=email_errors_to,
+        trigger_dag_id=reorganisation_dag_id))
+
+
+def register_preprocessing_dags():
+    preprocessing_section = dataset_section + ':preprocessing'
     # Set the default configuration for the preprocessing of the dataset
     default_config(preprocessing_section, 'SCANNERS', 'daily')
     default_config(preprocessing_section, 'PIPELINES',
                    'copy_to_local,dicom_to_nifti,mpm_maps,neuro_morphometric_atlas')
-
     preprocessing_input_folder = configuration.get(
         preprocessing_section, 'INPUT_FOLDER')
     preprocessing_scanners = configuration.get(
@@ -54,16 +71,13 @@ for dataset in dataset_sections.split(','):
     preprocessing_pipelines = configuration.get(
         preprocessing_section, 'PIPELINES').split(',')
     max_active_runs = int(configuration.get(preprocessing_section, 'MAX_ACTIVE_RUNS'))
-
     logging.info("Create pipelines for dataset %s using scannners %s and pipelines %s",
                  dataset_label, preprocessing_scanners, preprocessing_pipelines)
-
     pre_process_images_dag_id = register_dag(pre_process_images_dag(dataset=dataset,
                                                                     section=preprocessing_section,
                                                                     email_errors_to=email_errors_to,
                                                                     max_active_runs=max_active_runs,
                                                                     preprocessing_pipelines=preprocessing_pipelines))
-
     if 'continuous' in preprocessing_scanners:
         register_dag(continuously_preprocess_incoming_dag(
             dataset=dataset,
@@ -83,14 +97,14 @@ for dataset in dataset_sections.split(','):
             email_errors_to=email_errors_to,
             trigger_dag_id=pre_process_images_dag_id))
 
-    ehr_section = dataset_section + ':ehr'
 
+def register_ehr_dags():
+    ehr_section = dataset_section + ':ehr'
     # Set the default configuration for the preprocessing of the dataset
     default_config(ehr_section, 'SCANNERS', '')
     default_config(ehr_section, 'INPUT_FOLDER_DEPTH', '1')
-
     ehr_scanners = configuration.get(ehr_section, 'SCANNERS')
-
+    max_active_runs = int(configuration.get(ehr_section, 'MAX_ACTIVE_RUNS'))
     if ehr_scanners != '':
         ehr_scanners = ehr_scanners.split(',')
         ehr_input_folder = configuration.get(ehr_section, 'INPUT_FOLDER')
@@ -106,10 +120,15 @@ for dataset in dataset_sections.split(','):
                 dataset=dataset, folder=ehr_input_folder, depth=ehr_input_folder_depth,
                 email_errors_to=email_errors_to,
                 trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower()))
-
-    min_free_space = configuration.getfloat(
-        ehr_section, 'MIN_FREE_SPACE')
-
     register_dag(ehr_to_i2b2_dag(dataset=dataset, section=ehr_section,
                                  email_errors_to=email_errors_to,
                                  max_active_runs=max_active_runs))
+
+
+for dataset in dataset_sections.split(','):
+    dataset_section = 'data-factory:%s' % dataset
+    dataset_label = configuration.get(dataset_section, 'DATASET_LABEL')
+
+    register_reorganisation_dags()
+    register_preprocessing_dags()
+    register_ehr_dags()
