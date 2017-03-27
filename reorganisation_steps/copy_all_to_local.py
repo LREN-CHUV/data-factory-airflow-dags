@@ -31,10 +31,10 @@ def copy_all_to_local_cfg(dag, upstream_step, reorganisation_section, step_secti
     min_free_space = configuration.getfloat(reorganisation_section, 'MIN_FREE_SPACE')
     output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
 
-    return copy_all_to_local(dag, upstream_step, min_free_space, output_folder, dataset_config)
+    return copy_all_to_local_step(dag, upstream_step, min_free_space, output_folder, dataset_config)
 
 
-def copy_all_to_local(dag, upstream_step, min_free_space, output_folder, dataset_config):
+def copy_all_to_local_step(dag, upstream_step, min_free_space, output_folder, dataset_config):
 
     copy_all_to_local_cmd = dedent("""
         used="$(df -h /home | grep '/' | grep -Po '[^ ]*(?=%)')"
@@ -49,7 +49,7 @@ def copy_all_to_local(dag, upstream_step, min_free_space, output_folder, dataset
         task_id='copy_all_to_local',
         bash_command=copy_all_to_local_cmd,
         params={'min_free_space': min_free_space},
-        output_folder_callable=output_folder,
+        output_folder_callable=lambda **kwargs: output_folder,
         parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=3),
