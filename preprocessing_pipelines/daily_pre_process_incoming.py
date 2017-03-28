@@ -27,19 +27,17 @@ from airflow_scan_folder.operators import ScanDailyFolderOperator
 def daily_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):
     # Folder to scan for new incoming session folders containing DICOM images.
 
-    # constants
+    start = datetime.utcnow()
+    start = datetime.combine(start.date(), time(start.hour, 0))
 
-    START = datetime.utcnow()
-    START = datetime.combine(START.date(), time(START.hour, 0))
-
-    DAG_NAME = '%s_mri_daily_pre_process_incoming' % dataset.lower().replace(" ", "_")
+    dag_name = '%s_mri_daily_pre_process_incoming' % dataset.lower().replace(" ", "_")
 
     # Define the DAG
 
     default_args = {
         'owner': 'airflow',
         'depends_on_past': False,
-        'start_date': START,
+        'start_date': start,
         'retries': 1,
         'retry_delay': timedelta(seconds=120),
         'email': email_errors_to,
@@ -47,7 +45,7 @@ def daily_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_
         'email_on_retry': True
     }
 
-    dag = DAG(dag_id=DAG_NAME,
+    dag = DAG(dag_id=dag_name,
               default_args=default_args,
               schedule_interval='@daily')
 

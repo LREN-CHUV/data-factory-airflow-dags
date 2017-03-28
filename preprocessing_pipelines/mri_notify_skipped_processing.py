@@ -7,9 +7,7 @@ from airflow.operators.slack_operator import SlackAPIPostOperator
 
 def mri_notify_skipped_processing_dag():
 
-    # constants
-
-    DAG_NAME = 'mri_notify_skipped_processing'
+    dag_name = 'mri_notify_skipped_processing'
 
     slack_token = str(configuration.get('data-factory', 'SLACK_TOKEN'))
     slack_channel = str(configuration.get('data-factory', 'SLACK_CHANNEL'))
@@ -29,7 +27,7 @@ def mri_notify_skipped_processing_dag():
     }
 
     dag = DAG(
-        dag_id=DAG_NAME,
+        dag_id=dag_name,
         default_args=default_args,
         schedule_interval=None)
 
