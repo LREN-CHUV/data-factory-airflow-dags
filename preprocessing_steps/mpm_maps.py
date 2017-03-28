@@ -52,24 +52,24 @@ def mpm_maps_pipeline_cfg(dag, upstream_step, preprocessing_section, step_sectio
     backup_folder = configuration.get(step_section, 'BACKUP_FOLDER')
     protocols_definition_file = configuration.get(step_section, 'PROTOCOLS_DEFINITION_FILE')
 
-    return mpm_maps_pipeline(dag, upstream_step,
-                             dataset_config=dataset_config,
-                             pipeline_path=pipeline_path,
-                             misc_library_path=misc_library_path,
-                             spm_function=spm_function,
-                             output_folder=output_folder,
-                             backup_folder=backup_folder,
-                             protocols_definition_file=protocols_definition_file)
+    return mpm_maps_pipeline_step(dag, upstream_step,
+                                  dataset_config=dataset_config,
+                                  pipeline_path=pipeline_path,
+                                  misc_library_path=misc_library_path,
+                                  spm_function=spm_function,
+                                  output_folder=output_folder,
+                                  backup_folder=backup_folder,
+                                  protocols_definition_file=protocols_definition_file)
 
 
-def mpm_maps_pipeline(dag, upstream_step,
-                      dataset_config='',
-                      spm_function='Preproc_mpm_maps',
-                      pipeline_path=None,
-                      misc_library_path=None,
-                      output_folder=None,
-                      backup_folder=None,
-                      protocols_definition_file=None):
+def mpm_maps_pipeline_step(dag, upstream_step,
+                           dataset_config='',
+                           spm_function='Preproc_mpm_maps',
+                           pipeline_path=None,
+                           misc_library_path=None,
+                           output_folder=None,
+                           backup_folder=None,
+                           protocols_definition_file=None):
 
     def arguments_fn(folder, session_id, pipeline_params_config_file='Preproc_mpm_maps_pipeline_config.txt', **kwargs):
         """

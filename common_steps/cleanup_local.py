@@ -24,10 +24,10 @@ from common_steps import Step
 def cleanup_local_cfg(dag, upstream_step, step_section=None):
     cleanup_folder = configuration.get(step_section, "OUTPUT_FOLDER")
 
-    return cleanup_local(dag, upstream_step, cleanup_folder)
+    return cleanup_local_step(dag, upstream_step, cleanup_folder)
 
 
-def cleanup_local(dag, upstream_step, cleanup_folder):
+def cleanup_local_step(dag, upstream_step, cleanup_folder):
 
     cleanup_local_cmd = dedent("""
             rm -rf {{ params["cleanup_folder"] }}/{{ dag_run.conf["session_id"] }}

@@ -31,12 +31,10 @@ def copy_to_local_cfg(dag, upstream_step, preprocessing_section, step_section):
     min_free_space = configuration.getfloat(preprocessing_section, 'MIN_FREE_SPACE')
     output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
 
-    return copy_to_local(dag, upstream_step, min_free_space,
-                         output_folder, dataset_config)
+    return copy_to_local_step(dag, upstream_step, min_free_space, output_folder, dataset_config)
 
 
-def copy_to_local(dag, upstream_step, min_free_space, output_folder,
-                  dataset_config):
+def copy_to_local_step(dag, upstream_step, min_free_space, output_folder, dataset_config):
 
     copy_to_local_cmd = dedent("""
         used="$(df -h /home | grep '/' | grep -Po '[^ ]*(?=%)')"

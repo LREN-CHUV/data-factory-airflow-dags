@@ -28,10 +28,10 @@ def features_to_i2b2_pipeline_cfg(dag, upstream_step, data_factory_section, prep
     input_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
     i2b2_conn = configuration.get(data_factory_section, 'I2B2_SQL_ALCHEMY_CONN')
 
-    return features_to_i2b2_pipeline(dag, upstream_step, i2b2_conn, input_config)
+    return features_to_i2b2_pipeline_step(dag, upstream_step, i2b2_conn, input_config)
 
 
-def features_to_i2b2_pipeline(dag, upstream_step, i2b2_conn, input_config=None):
+def features_to_i2b2_pipeline_step(dag, upstream_step, i2b2_conn, input_config=None):
 
     def features_to_i2b2_fn(folder, dataset, **kwargs):
         """Import neuroimaging features from CSV files to I2B2 DB"""

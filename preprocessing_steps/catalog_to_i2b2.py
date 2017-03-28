@@ -28,10 +28,10 @@ def catalog_to_i2b2_pipeline_cfg(dag, upstream_step, data_factory_section):
     data_catalog_conn = configuration.get(data_factory_section, 'DATA_CATALOG_SQL_ALCHEMY_CONN')
     i2b2_conn = configuration.get(data_factory_section, 'I2B2_SQL_ALCHEMY_CONN')
 
-    return catalog_to_i2b2_pipeline(dag, upstream_step, data_catalog_conn, i2b2_conn)
+    return catalog_to_i2b2_pipeline_step(dag, upstream_step, data_catalog_conn, i2b2_conn)
 
 
-def catalog_to_i2b2_pipeline(dag, upstream_step, data_catalog_conn, i2b2_conn):
+def catalog_to_i2b2_pipeline_step(dag, upstream_step, data_catalog_conn, i2b2_conn):
 
     def catalog_to_i2b2_fn(**kwargs):
         """Import meta-data from data catalog DB to I2B2 DB"""

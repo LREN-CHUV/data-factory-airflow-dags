@@ -26,10 +26,10 @@ def version_incoming_ehr_pipeline_cfg(dag, upstream_step, ehr_section, step_sect
     min_free_space = configuration.get(ehr_section, 'MIN_FREE_SPACE')
     output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
 
-    return version_incoming_ehr_pipeline(dag, upstream_step, output_folder, min_free_space)
+    return version_incoming_ehr_pipeline_step(dag, upstream_step, output_folder, min_free_space)
 
 
-def version_incoming_ehr_pipeline(dag, upstream_step, output_folder=None, min_free_space=None):
+def version_incoming_ehr_pipeline_step(dag, upstream_step, output_folder=None, min_free_space=None):
 
     version_incoming_ehr_cmd = dedent("""
             export HOME=/usr/local/airflow

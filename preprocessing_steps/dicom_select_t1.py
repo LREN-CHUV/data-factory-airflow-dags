@@ -51,22 +51,22 @@ def dicom_select_t1_pipeline_cfg(dag, upstream_step, preprocessing_section, step
     output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
     protocols_definition_file = configuration.get(step_section, 'PROTOCOLS_DEFINITION_FILE')
 
-    return dicom_select_t1_pipeline(dag, upstream_step,
-                                    dataset_config=dataset_config,
-                                    pipeline_path=pipeline_path,
-                                    misc_library_path=misc_library_path,
-                                    spm_function=spm_function,
-                                    output_folder=output_folder,
-                                    protocols_definition_file=protocols_definition_file)
+    return dicom_select_t1_pipeline_step(dag, upstream_step,
+                                         dataset_config=dataset_config,
+                                         pipeline_path=pipeline_path,
+                                         misc_library_path=misc_library_path,
+                                         spm_function=spm_function,
+                                         output_folder=output_folder,
+                                         protocols_definition_file=protocols_definition_file)
 
 
-def dicom_select_t1_pipeline(dag, upstream_step,
-                             dataset_config=None,
-                             spm_function='selectT1',
-                             pipeline_path=None,
-                             misc_library_path=None,
-                             output_folder=None,
-                             protocols_definition_file=None):
+def dicom_select_t1_pipeline_step(dag, upstream_step,
+                                  dataset_config=None,
+                                  spm_function='selectT1',
+                                  pipeline_path=None,
+                                  misc_library_path=None,
+                                  output_folder=None,
+                                  protocols_definition_file=None):
 
     def arguments_fn(folder, session_id, **kwargs):
         """

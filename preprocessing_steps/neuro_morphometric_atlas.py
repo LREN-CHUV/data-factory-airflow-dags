@@ -79,28 +79,28 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
         if not os.path.isfile(tpm_template):
             raise OSError("TPM template file %s does not exist" % tpm_template)
 
-    return neuro_morphometric_atlas_pipeline(dag, upstream_step,
-                                             dataset_config=dataset_config,
-                                             pipeline_path=pipeline_path,
-                                             misc_library_path=misc_library_path,
-                                             spm_function=spm_function,
-                                             output_folder=output_folder,
-                                             backup_folder=backup_folder,
-                                             protocols_definition_file=protocols_definition_file,
-                                             tpm_template=tpm_template,
-                                             mpm_maps_pipeline_path=mpm_maps_pipeline_path)
+    return neuro_morphometric_atlas_pipeline_step(dag, upstream_step,
+                                                  dataset_config=dataset_config,
+                                                  pipeline_path=pipeline_path,
+                                                  misc_library_path=misc_library_path,
+                                                  spm_function=spm_function,
+                                                  output_folder=output_folder,
+                                                  backup_folder=backup_folder,
+                                                  protocols_definition_file=protocols_definition_file,
+                                                  tpm_template=tpm_template,
+                                                  mpm_maps_pipeline_path=mpm_maps_pipeline_path)
 
 
-def neuro_morphometric_atlas_pipeline(dag, upstream_step,
-                                      dataset_config=None,
-                                      pipeline_path=None,
-                                      misc_library_path=None,
-                                      spm_function='NeuroMorphometric_pipeline',
-                                      output_folder=None,
-                                      backup_folder='',
-                                      protocols_definition_file=None,
-                                      tpm_template='nwTPM_sl3.nii',
-                                      mpm_maps_pipeline_path=None):
+def neuro_morphometric_atlas_pipeline_step(dag, upstream_step,
+                                           dataset_config=None,
+                                           pipeline_path=None,
+                                           misc_library_path=None,
+                                           spm_function='NeuroMorphometric_pipeline',
+                                           output_folder=None,
+                                           backup_folder='',
+                                           protocols_definition_file=None,
+                                           tpm_template='nwTPM_sl3.nii',
+                                           mpm_maps_pipeline_path=None):
 
     def arguments_fn(folder, session_id, **kwargs):
         """

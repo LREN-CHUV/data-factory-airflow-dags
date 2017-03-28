@@ -55,26 +55,26 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream_step, preprocessing_section, step_
     protocols_definition_file = configuration.get(step_section, 'PROTOCOLS_DEFINITION_FILE')
     dcm2nii_program = configuration.get(step_section, 'DCM2NII_PROGRAM')
 
-    return dicom_to_nifti_pipeline(dag, upstream_step,
-                                   dataset_config=dataset_config,
-                                   pipeline_path=pipeline_path,
-                                   misc_library_path=misc_library_path,
-                                   spm_function=spm_function,
-                                   output_folder=output_folder,
-                                   backup_folder=backup_folder,
-                                   protocols_definition_file=protocols_definition_file,
-                                   dcm2nii_program=dcm2nii_program)
+    return dicom_to_nifti_pipeline_step(dag, upstream_step,
+                                        dataset_config=dataset_config,
+                                        pipeline_path=pipeline_path,
+                                        misc_library_path=misc_library_path,
+                                        spm_function=spm_function,
+                                        output_folder=output_folder,
+                                        backup_folder=backup_folder,
+                                        protocols_definition_file=protocols_definition_file,
+                                        dcm2nii_program=dcm2nii_program)
 
 
-def dicom_to_nifti_pipeline(dag, upstream_step,
-                            dataset_config='',
-                            spm_function='DCM2NII_LREN',
-                            pipeline_path=None,
-                            misc_library_path=None,
-                            output_folder=None,
-                            backup_folder=None,
-                            protocols_definition_file=None,
-                            dcm2nii_program=None):
+def dicom_to_nifti_pipeline_step(dag, upstream_step,
+                                 dataset_config='',
+                                 spm_function='DCM2NII_LREN',
+                                 pipeline_path=None,
+                                 misc_library_path=None,
+                                 output_folder=None,
+                                 backup_folder=None,
+                                 protocols_definition_file=None,
+                                 dcm2nii_program=None):
 
     def arguments_fn(folder, session_id, **kwargs):
         """

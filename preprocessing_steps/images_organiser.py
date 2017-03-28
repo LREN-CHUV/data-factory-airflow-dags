@@ -44,21 +44,20 @@ def images_organiser_cfg(dag, upstream_step, preprocessing_section, step_section
     m = re.search('.*:preprocessing:(.*)_organiser', step_section)
     dataset_type = m.group(1).upper()
 
-    return images_organiser(dag, upstream_step, dataset_config,
-                            dataset_type=dataset_type,
-                            output_folder_structure=output_folder_structure,
-                            local_folder=local_folder,
-                            docker_image=docker_image,
-                            docker_input_dir=docker_input_dir,
-                            docker_output_dir=docker_output_dir)
+    return images_organiser_pipeline_step(dag, upstream_step, dataset_config,
+                                          dataset_type=dataset_type,
+                                          output_folder_structure=output_folder_structure,
+                                          local_folder=local_folder,
+                                          docker_image=docker_image,
+                                          docker_input_dir=docker_input_dir,
+                                          docker_output_dir=docker_output_dir)
 
 
-def images_organiser(dag, upstream_step, dataset_config,
-                     dataset_type, output_folder_structure,
-                     local_folder,
-                     docker_image='hbpmip/hierarchizer:latest',
-                     docker_input_dir='/input_folder',
-                     docker_output_dir='/output_folder'):
+def images_organiser_pipeline_step(dag, upstream_step, dataset_config, dataset_type, output_folder_structure,
+                                   local_folder,
+                                   docker_image='hbpmip/hierarchizer:latest',
+                                   docker_input_dir='/input_folder',
+                                   docker_output_dir='/output_folder'):
 
     type_of_images_param = "--type " + dataset_type
     structure_param = "--output_folder_organisation " + output_folder_structure

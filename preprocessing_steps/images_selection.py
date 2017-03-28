@@ -30,14 +30,12 @@ def images_selection_pipeline_cfg(dag, upstream_step, preprocessing_section, ste
     local_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
     images_selection_csv_path = configuration.get(step_section, 'IMAGES_SELECTION_CSV_PATH')
 
-    return images_selection_pipeline(dag, upstream_step, dataset_config, local_folder, images_selection_csv_path)
+    return images_selection_pipeline_step(dag, upstream_step, dataset_config, local_folder, images_selection_csv_path)
 
 
 # TODO: add software_versions
 
-def images_selection_pipeline(dag, upstream_step,
-                              dataset_config=None,
-                              local_folder=None, csv_path=None):
+def images_selection_pipeline_step(dag, upstream_step, dataset_config=None, local_folder=None, csv_path=None):
 
     def images_selection_fn(folder, **kwargs):
         """

@@ -44,21 +44,19 @@ def reorganise_cfg(dag, upstream_step, reorganisation_section, step_section):
     m = re.search('.*:reorganisation:(.*)_reorganise', step_section)
     dataset_type = m.group(1).upper()
 
-    return reorganise(dag, upstream_step, dataset_config,
-                      dataset_type=dataset_type,
-                      output_folder_structure=output_folder_structure,
-                      local_folder=local_folder,
-                      docker_image=docker_image,
-                      docker_input_dir=docker_input_dir,
-                      docker_output_dir=docker_output_dir)
+    return reorganise_pipeline_step(dag, upstream_step, dataset_config,
+                                    dataset_type=dataset_type,
+                                    output_folder_structure=output_folder_structure,
+                                    local_folder=local_folder,
+                                    docker_image=docker_image,
+                                    docker_input_dir=docker_input_dir,
+                                    docker_output_dir=docker_output_dir)
 
 
-def reorganise(dag, upstream_step, dataset_config,
-               dataset_type, output_folder_structure,
-               local_folder,
-               docker_image='hbpmip/hierarchizer:latest',
-               docker_input_dir='/input_folder',
-               docker_output_dir='/output_folder'):
+def reorganise_pipeline_step(dag, upstream_step, dataset_config, dataset_type, output_folder_structure, local_folder,
+                             docker_image='hbpmip/hierarchizer:latest',
+                             docker_input_dir='/input_folder',
+                             docker_output_dir='/output_folder'):
 
     type_of_images_param = "--type " + dataset_type
     structure_param = "--output_folder_organisation " + output_folder_structure

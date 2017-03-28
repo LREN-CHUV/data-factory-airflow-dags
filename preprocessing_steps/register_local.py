@@ -24,10 +24,10 @@ def register_local_cfg(dag, upstream_step, preprocessing_section):
 
     dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
 
-    return register_local(dag, upstream_step, dataset_config)
+    return register_local_step(dag, upstream_step, dataset_config)
 
 
-def register_local(dag, upstream_step, dataset_config):
+def register_local_step(dag, upstream_step, dataset_config):
 
     # Register local data into the Data catalog/provenance tables
 

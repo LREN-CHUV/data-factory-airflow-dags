@@ -21,10 +21,10 @@ from common_steps import Step
 def map_ehr_to_i2b2_pipeline_cfg(dag, upstream_step, etl_section, step_section):
     docker_image = configuration.get(step_section, 'DOCKER_IMAGE')
 
-    return map_ehr_to_i2b2_pipeline(dag, upstream_step, docker_image)
+    return map_ehr_to_i2b2_pipeline_step(dag, upstream_step, docker_image)
 
 
-def map_ehr_to_i2b2_pipeline(dag, upstream_step, docker_image=''):
+def map_ehr_to_i2b2_pipeline_step(dag, upstream_step, docker_image=''):
 
     map_ehr_to_i2b2_pipeline = DockerPipelineOperator(
         task_id='map_ehr_to_i2b2_pipeline',

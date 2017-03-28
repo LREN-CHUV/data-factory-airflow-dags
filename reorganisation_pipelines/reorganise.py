@@ -55,8 +55,8 @@ def reorganise_dag(dataset, section, email_errors_to, max_active_runs, reorganis
     elif 'nifti_reorganise' in reorganisation_pipelines:
         upstream_step = reorganise_cfg(dag, upstream_step, section, section + ':nifti_reorganise')
 
-    copy_step = cleanup_local_cfg(dag, upstream_step, section + ':copy_all_to_local')
-    upstream_step.priority_weight = copy_step.priority_weight
+    cleanup_step = cleanup_local_cfg(dag, upstream_step, section + ':copy_all_to_local')
+    upstream_step.priority_weight = cleanup_step.priority_weight
 
     if 'trigger_preprocessing' in reorganisation_pipelines:
         upstream_step = trigger_preprocessing(dag, upstream_step, dataset)
