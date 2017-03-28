@@ -7,11 +7,11 @@ from airflow import DAG
 from common_steps import initial_step
 from common_steps.check_local_free_space import check_local_free_space_cfg
 from common_steps.prepare_pipeline import prepare_pipeline
-from common_steps.cleanup_local import cleanup_local_cfg
+from reorganisation_steps.cleanup_all_local import cleanup_all_local_cfg
 from reorganisation_steps.copy_all_to_local import copy_all_to_local_cfg
 from reorganisation_steps.reorganise import reorganise_cfg
-from reorganisation_steps.trigger_preprocessing import trigger_preprocessing_pipeline_step
 from reorganisation_steps.trigger_ehr import trigger_ehr_pipeline_step
+from reorganisation_steps.trigger_preprocessing import trigger_preprocessing_pipeline_step
 
 
 preparation_steps = ['copy_all_to_local']
@@ -55,7 +55,7 @@ def reorganise_dag(dataset, section, email_errors_to, max_active_runs, reorganis
     elif 'nifti_reorganise' in reorganisation_pipelines:
         upstream_step = reorganise_cfg(dag, upstream_step, section, section + ':nifti_reorganise')
 
-    cleanup_step = cleanup_local_cfg(dag, upstream_step, section + ':copy_all_to_local')
+    cleanup_step = cleanup_all_local_cfg(dag, upstream_step, section + ':copy_all_to_local')
     upstream_step.priority_weight = cleanup_step.priority_weight
 
     if 'trigger_preprocessing' in reorganisation_pipelines:

@@ -6,9 +6,9 @@ from airflow import DAG
 
 from common_steps import initial_step
 from common_steps.check_local_free_space import check_local_free_space_cfg
-from common_steps.cleanup_local import cleanup_local_cfg
 from common_steps.prepare_pipeline import prepare_pipeline
 from preprocessing_steps.catalog_to_i2b2 import catalog_to_i2b2_pipeline_cfg
+from preprocessing_steps.cleanup_local import cleanup_local_cfg
 from preprocessing_steps.copy_to_local import copy_to_local_cfg
 from preprocessing_steps.dicom_to_nifti import dicom_to_nifti_pipeline_cfg
 from preprocessing_steps.features_to_i2b2 import features_to_i2b2_pipeline_cfg
