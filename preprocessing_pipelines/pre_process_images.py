@@ -12,7 +12,6 @@ from preprocessing_steps.catalog_to_i2b2 import catalog_to_i2b2_pipeline_cfg
 from preprocessing_steps.copy_to_local import copy_to_local_cfg
 from preprocessing_steps.dicom_to_nifti import dicom_to_nifti_pipeline_cfg
 from preprocessing_steps.features_to_i2b2 import features_to_i2b2_pipeline_cfg
-from preprocessing_steps.images_organiser import images_organiser_cfg
 from preprocessing_steps.mpm_maps import mpm_maps_pipeline_cfg
 from preprocessing_steps.neuro_morphometric_atlas import neuro_morphometric_atlas_pipeline_cfg
 from preprocessing_steps.notify_success import notify_success
@@ -72,20 +71,12 @@ def pre_process_images_dag(dataset, section, email_errors_to, max_active_runs, p
 
     if dicom_to_nifti:
 
-        if 'dicom_organiser' in preprocessing_pipelines:
-            upstream_step = images_organiser_cfg(dag, upstream_step, section, section + ':dicom_organiser')
-        # endif
-
         upstream_step = dicom_to_nifti_pipeline_cfg(dag, upstream_step, section, section + ':dicom_to_nifti')
 
         if copy_to_local:
             copy_step = cleanup_local_cfg(dag, upstream_step, section + ':copy_to_local')
             upstream_step.priority_weight = copy_step.priority_weight
         # endif
-    # endif
-
-    if 'nifti_organiser' in preprocessing_pipelines:
-        upstream_step = images_organiser_cfg(dag, upstream_step, section, section + ':nifti_organiser')
     # endif
 
     if 'mpm_maps' in preprocessing_pipelines:
