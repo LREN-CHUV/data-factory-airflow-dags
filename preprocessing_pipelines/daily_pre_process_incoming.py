@@ -22,6 +22,11 @@ from datetime import datetime, timedelta, time
 from textwrap import dedent
 from airflow import DAG
 from airflow_scan_folder.operators import ScanDailyFolderOperator
+from airflow_scan_folder.operators.common import extract_context_from_session_path, default_look_for_ready_marker_file
+from airflow_scan_folder.operators.common import session_folder_trigger_dagrun
+from airflow_scan_folder.operators.common import default_build_daily_folder_path_callable
+
+from . import lren_accept_folder, lren_build_daily_folder_path_callable
 
 
 def daily_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):
@@ -45,16 +50,29 @@ def daily_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_
         'email_on_retry': True
     }
 
+    # Run the DAG daily
     dag = DAG(dag_id=dag_name,
               default_args=default_args,
               schedule_interval='@daily')
 
+    accept_folder_fn = None
+    build_daily_folder_path_callable = default_build_daily_folder_path_callable
+
+    if dataset.lower() == 'lren':
+        accept_folder_fn = lren_accept_folder
+        build_daily_folder_path_callable = lren_build_daily_folder_path_callable
+
     scan_dirs = ScanDailyFolderOperator(
         task_id='scan_dirs',
+        dataset=dataset,
         folder=folder,
         trigger_dag_id=trigger_dag_id,
+        trigger_dag_run_callable=session_folder_trigger_dagrun,
+        extract_context_callable=extract_context_from_session_path,
+        accept_folder_callable=accept_folder_fn,
+        build_daily_folder_path_callable=build_daily_folder_path_callable,
+        look_for_ready_marker_file=default_look_for_ready_marker_file,
         execution_timeout=timedelta(minutes=30),
-        dataset=dataset,
         dag=dag)
 
     scan_dirs.doc_md = dedent("""\

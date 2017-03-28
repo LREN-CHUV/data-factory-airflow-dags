@@ -18,7 +18,7 @@ or a date folder with a date older than today.
 from datetime import datetime, timedelta, time
 from textwrap import dedent
 from airflow import DAG
-from airflow_scan_folder.operators import FlatFolderOperator
+from airflow_scan_folder.operators import ScanFlatFolderOperator
 
 
 def flat_ehr_incoming_dag(dataset, folder, depth, email_errors_to, trigger_dag_id):
@@ -46,7 +46,7 @@ def flat_ehr_incoming_dag(dataset, folder, depth, email_errors_to, trigger_dag_i
               default_args=default_args,
               schedule_interval='@once')
 
-    scan_dirs = FlatFolderOperator(
+    scan_dirs = ScanFlatFolderOperator(
         task_id='scan_dirs',
         folder=folder,
         depth=depth,

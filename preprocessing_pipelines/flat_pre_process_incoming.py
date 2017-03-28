@@ -16,7 +16,11 @@ We assume that Dicom files are already processed by the hierarchize.sh script wi
 from datetime import datetime, timedelta, time
 from textwrap import dedent
 from airflow import DAG
-from airflow_scan_folder.operators import ScanFolderOperator
+from airflow_scan_folder.operators import ScanFlatFolderOperator
+from airflow_scan_folder.operators.common import extract_context_from_session_path
+from airflow_scan_folder.operators.common import session_folder_trigger_dagrun
+
+from . import lren_accept_folder
 
 
 def flat_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):
@@ -44,11 +48,19 @@ def flat_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_i
               default_args=default_args,
               schedule_interval='@once')
 
-    scan_dirs = ScanFolderOperator(
+    accept_folder_fn = None
+
+    if dataset.lower() == 'lren':
+        accept_folder_fn = lren_accept_folder
+
+    scan_dirs = ScanFlatFolderOperator(
         task_id='scan_dirs',
+        dataset=dataset,
         folder=folder,
         trigger_dag_id=trigger_dag_id,
-        dataset=dataset,
+        trigger_dag_run_callable=session_folder_trigger_dagrun,
+        extract_context_callable=extract_context_from_session_path,
+        accept_folder_callable=accept_folder_fn,
         execution_timeout=timedelta(minutes=30),
         dag=dag)
 
