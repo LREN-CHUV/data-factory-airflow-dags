@@ -21,7 +21,8 @@ finalisation_steps = ['trigger_preprocessing', 'trigger_ehr']
 steps_with_file_outputs = preparation_steps + reorganisation_steps
 
 
-def reorganise_dag(dataset, section, email_errors_to, max_active_runs, reorganisation_pipelines=''):
+def reorganise_dag(dataset, section, email_errors_to, max_active_runs,
+                   reorganisation_pipelines=''):
 
     # Define the DAG
 

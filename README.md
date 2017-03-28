@@ -35,6 +35,23 @@ Requirements:
     * DATASET_LABEL: Name of the dataset
 
 
+* For each dataset, configure the [data-factory:&lt;dataset&gt;:reorganise] section if you need to reorganise an input folder containing only files or folders that will be split into several folders, one per visit for example:
+    * INPUT_FOLDER: Folder containing the original imaging data to process. This data should have been already anonymised by a tool
+    * INPUT_CONFIG: List of flags defining how incoming imaging data are organised, values are defined below in the preprocessing section.
+    * MAX_ACTIVE_RUNS: maximum number of reorganisation tasks in parallel
+    * PIPELINES: List of pipelines to execute. Values are
+      * copy_to_local: if used, input data are first copied to a local folder to speed-up processing.
+      * dicom_reorganise: TODO
+      * nifti_reorganise: TODO
+      * trigger_preprocessing: scan the current folder and triggers preprocessing of images on each folder discovered
+      * trigger_ehr: scan the current folder and triggers importation of EHR data on each folder discovered
+
+* If trigger_preprocessing is used, configure the [data-factory:&lt;dataset&gt;:reorganise:trigger_preprocessing] section:
+    * DEPTH: depth of folders to explore when triggering importation of EHR data
+
+* If trigger_ehr is used, configure the [data-factory:&lt;dataset&gt;:reorganise:trigger_ehr] section:
+    * DEPTH: depth of folders to explore when triggering preprocessing
+
 * For each dataset, now configure the [data-factory:&lt;dataset&gt;:preprocessing] section:
     * INPUT_FOLDER: Folder containing the original imaging data to process. This data should have been already anonymised by a tool
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised, values are
@@ -54,14 +71,14 @@ Requirements:
       * flat: input folder contains a set of sub-folders each containing a scan to process.
     * PIPELINES: List of pipelines to execute. Values are
       * copy_to_local: if used, input data are first copied to a local folder to speed-up processing.
-      * dicom_organiser: reorganise DICOM files in a scan folder for the following pipelines.
-      * dicom_selection
-      * dicom_to_nifti
-      * nifti_organiser
-      * nifti_selection
-      * mpm_maps
-      * neuro_morphometric_atlas
-      * export_features
+      * dicom_organiser: TODO - still there? reorganise DICOM files in a scan folder for the following pipelines.
+      * dicom_select_T1: select only T1 weighted images
+      * dicom_to_nifti: convert all DICOM files to Nifti format.
+      * nifti_organiser: TODO - still there?
+      * mpm_maps: computes the Multiparametric Maps (MPMs) and brain segmentation in different tissue maps.
+      * neuro_morphometric_atlas: computes an individual Atlas based on the NeuroMorphometrics Atlas.
+      * export_features: exports neuroimaging features stored in CSV files to the I2B2 database
+      * catalog_to_i2b2: exports meta-data from the data catalog to the I2B2 database.
 
 
 * If copy_to_local is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:copy_to_local] section:
@@ -69,7 +86,7 @@ Requirements:
 
 * If dicom_organiser is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_organiser] section:
     * OUTPUT_FOLDER: destination folder for the organised images
-    * OUTPUT_FOLDER_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
+    * OUTPUT_FOLDER_STRUCTURE: folder hierarchy (e.g. '#PatientID/#StudyID/#SeriesDescription/#SeriesNumber')
     * DOCKER_IMAGE: Docker image of the hierarchizer program
     * DOCKER_INPUT_DIR: Input directory inside the Docker container. Default to '/input_folder'
     * DOCKER_OUTPUT_DIR: Output directory inside the Docker container. Default to '/output_folder'
@@ -96,7 +113,7 @@ Requirements:
 
 * If nifti_organiser is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:nifti_organiser] section:
     * OUTPUT_FOLDER: destination folder for the organised images
-    * OUTPUT_FOLDER_STRUCTURE: folder hierarchy (e.g. 'PatientID:AcquisitionDate:SeriesDescription:SeriesDate')
+    * OUTPUT_FOLDER_STRUCTURE: folder hierarchy (e.g. '#PatientID/#StudyID/#SeriesDescription/#SeriesNumber')
     * DOCKER_IMAGE: Docker image of the hierarchizer program
     * DOCKER_INPUT_DIR: Input directory inside the Docker container. Default to '/input_folder'
     * DOCKER_OUTPUT_DIR: Output directory inside the Docker container. Default to '/output_folder'
@@ -142,46 +159,89 @@ Sample configuration:
 
 ```
 
+[spm]
+spm_dir = /opt/spm12
+[mipmap]
+db_config_file = /dev/null
 [data-factory]
+data_catalog_sql_alchemy_conn = postgresql://data_catalog:datacatalogpwd@demo:4321/data_catalog
 datasets = main
 email_errors_to =
-mipmap_db_confile_file = /dev/null
+i2b2_sql_alchemy_conn = postgresql://i2b2:i2b2pwd@demo:4321/i2b2
 slack_channel = #data
 slack_channel_user = Airflow
 slack_token =
-sql_alchemy_conn = postgresql://data_catalog:datacatalogpwd@demo:4321/data_catalog
 [data-factory:main]
-dataset = Demo
-dataset_config = boost
-dicom_files_pattern = **/*.dcm
-dicom_local_folder = /data/incoming
-dicom_select_T1_local_folder = /data/select_T1
-dicom_select_T1_protocols_file = /opt/airflow-scripts/mri-preprocessing-pipeline/Protocols_definition.txt
-ehr_data_folder = /data/ehr_demo
-ehr_data_folder_depth = 0
-ehr_scanners = flat
-ehr_to_i2b2_capture_docker_image = hbpmip/mipmap-demo-ehr-to-i2b2:0.1
-ehr_to_i2b2_capture_folder = /data/ehr_i2b2_capture
-ehr_versioned_folder = /data/ehr_versioned
-images_organizer_data_structure = PatientID:AcquisitionDate:SeriesDescription:SeriesDate
-images_organizer_dataset_type = DICOM
-images_organizer_docker_image = hbpmip/hierarchizer:latest
-images_organizer_local_folder = /data/organizer
-images_selection_csv_path = /data/incoming/images_selection.csv
-images_selection_local_folder = /data/images_selection
+dataset_label = Demo
+[data-factory:main:preprocessing]
+input_config = boost
+input_folder = /data/demo
 max_active_runs = 30
-min_free_space_local_folder = 0.3
-mpm_maps_local_folder = /data/mpm_maps
-mpm_maps_server_folder =
-neuro_morphometric_atlas_TPM_template = /opt/spm12/tpm/nwTPM_sl3.nii
-neuro_morphometric_atlas_local_folder = /data/neuro_morphometric_atlas
-neuro_morphometric_atlas_server_folder =
-nifti_local_folder = /data/nifti
-nifti_server_folder =
+min_free_space = 0.3
+misc_library_path = /opt/airflow-scripts/mri-preprocessing-pipeline/Miscellaneous&Others
+pipelines = dicom_to_nifti,mpm_maps,neuro_morphometric_atlas,export_features,catalog_to_i2b2
 pipelines_path = /opt/airflow-scripts/mri-preprocessing-pipeline/Pipelines
-preprocessing_data_folder = /data/demo
-preprocessing_pipelines = dicom_organizer,images_selection,dicom_select_T1,dicom_to_nifti,mpm_maps,neuro_morphometric_atlas
-preprocessing_scanners = flat
-protocols_file = /opt/airflow-scripts/mri-preprocessing-pipeline/Protocols_definition.txt
+protocols_definition_file = /opt/airflow-scripts/mri-preprocessing-pipeline/Protocols_definition.txt
+scanners = flat
+[data-factory:main:preprocessing:copy_to_local]
+output_folder = /data/incoming
+[data-factory:main:preprocessing:dicom_to_nifti]
+backup_folder =
+dcm2nii_program = /opt/airflow-scripts/mri-preprocessing-pipeline/Pipelines/Nifti_Conversion_Pipeline/dcm2nii
+misc_library_path = /opt/airflow-scripts/mri-preprocessing-pipeline/Miscellaneous&Others
+output_folder = /data/nifti
+pipeline_path = /opt/airflow-scripts/mri-preprocessing-pipeline/Pipelines
+protocols_definition_file = /opt/airflow-scripts/mri-preprocessing-pipeline/Protocols_definition.txt
+spm_function = DCM2NII_LREN
+[data-factory:main:preprocessing:mpm_maps]
+backup_folder =
+misc_library_path = /opt/airflow-scripts/mri-preprocessing-pipeline/Miscellaneous&Others
+output_folder = /data/mpm_maps
+pipeline_path = /opt/airflow-scripts/mri-preprocessing-pipeline/Pipelines
+protocols_definition_file = /opt/airflow-scripts/mri-preprocessing-pipeline/Protocols_definition.txt
+spm_function = Preproc_mpm_maps
+[data-factory:main:preprocessing:neuro_morphometric_atlas]
+backup_folder =
+misc_library_path = /opt/airflow-scripts/mri-preprocessing-pipeline/Miscellaneous&Others
+output_folder = /data/neuro_morphometric_atlas
+pipeline_path = /opt/airflow-scripts/mri-preprocessing-pipeline/Pipelines
+protocols_definition_file = /opt/airflow-scripts/mri-preprocessing-pipeline/Protocols_definition.txt
+spm_function = NeuroMorphometric_pipeline
+tpm_template = /opt/spm12/tpm/nwTPM_sl3.nii
+[data-factory:main:ehr]
+input_folder = /data/ehr_demo
+input_folder_depth = 0
+max_active_runs = 30
+min_free_space = 0.3
+pipelines =
+scanners = flat
+[data-factory:main:ehr:map_ehr_to_i2b2]
+docker_image = hbpmip/mipmap-demo-ehr-to-i2b2:0.1
+[data-factory:main:ehr:version_incoming_ehr]
+output_folder = /data/ehr_versioned
+[data-factory:main:reorganisation]
+input_config = boost
+input_folder = /data/demo
+max_active_runs = 30
+min_free_space = 0.3
+pipelines = dicom_reorganise,trigger_preprocessing
+[data-factory:main:reorganisation:copy_all_to_local]
+output_folder = /data/all_incoming
+[data-factory:main:reorganisation:dicom_reorganise]
+docker_image = hbpmip/hierarchizer:1.1.1
+docker_input_dir = /input_folder
+docker_output_dir = /output_folder
+output_folder = /data/dicom_organised
+output_folder_structure = #PatientID/#StudyID/#SeriesDescription/#SeriesNumber
+[data-factory:main:reorganisation:nifti_reorganise]
+docker_image = hbpmip/hierarchizer:1.1.1
+docker_input_dir = /input_folder
+docker_output_dir = /output_folder
+output_folder = /data/nifti_organised
+output_folder_structure = #PatientID/#StudyID/#SeriesDescription/#SeriesNumber
+[data-factory:main:reorganisation:trigger_preprocessing]
+depth = 1
+[data-factory:main:reorganisation:trigger_ehr]
+depth = 0
 
 ```

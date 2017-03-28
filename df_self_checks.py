@@ -6,6 +6,7 @@ import logging
 from datetime import datetime, timedelta
 from textwrap import dedent
 from airflow import DAG
+from airflow.operators.latest_only_operator import LatestOnlyOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow_spm.operators import SpmOperator
 from airflow_freespace.operators import FreeSpaceSensor
@@ -65,6 +66,17 @@ dag = DAG(
     default_args=default_args,
     schedule_interval='@hourly')
 
+latest_only = LatestOnlyOperator(
+    task_id='latest_only',
+    dag=dag
+)
+
+latest_only.doc_md = """\
+# Skip old checks
+
+Old checks are skipped and only the most recent run is used for the self-checks.
+"""
+
 check_python = PythonOperator(
     task_id='check_python',
     python_callable=check_python_fn,
@@ -77,6 +89,8 @@ check_python.doc_md = """\
 
 Displays some technical information about the Python runtime.
 """
+
+check_python.set_upstream(latest_only)
 
 
 check_spm = SpmOperator(
