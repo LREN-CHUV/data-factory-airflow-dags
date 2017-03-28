@@ -35,7 +35,7 @@ def reorganise_cfg(dag, upstream_step, reorganisation_section, step_section):
     default_config(step_section, "DOCKER_OUTPUT_DIR", "/output_folder")
 
     dataset_config = configuration.get(reorganisation_section, 'INPUT_CONFIG')
-    local_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
+    output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
     output_folder_structure = configuration.get(step_section, 'OUTPUT_FOLDER_STRUCTURE')
     docker_image = configuration.get(step_section, 'DOCKER_IMAGE')
     docker_input_dir = configuration.get(step_section, 'DOCKER_INPUT_DIR')
@@ -47,13 +47,13 @@ def reorganise_cfg(dag, upstream_step, reorganisation_section, step_section):
     return reorganise_pipeline_step(dag, upstream_step, dataset_config,
                                     dataset_type=dataset_type,
                                     output_folder_structure=output_folder_structure,
-                                    local_folder=local_folder,
+                                    output_folder=output_folder,
                                     docker_image=docker_image,
                                     docker_input_dir=docker_input_dir,
                                     docker_output_dir=docker_output_dir)
 
 
-def reorganise_pipeline_step(dag, upstream_step, dataset_config, dataset_type, output_folder_structure, local_folder,
+def reorganise_pipeline_step(dag, upstream_step, dataset_config, dataset_type, output_folder_structure, output_folder,
                              docker_image='hbpmip/hierarchizer:latest',
                              docker_input_dir='/input_folder',
                              docker_output_dir='/output_folder'):
@@ -65,7 +65,7 @@ def reorganise_pipeline_step(dag, upstream_step, dataset_config, dataset_type, o
 
     reorganise_pipeline = DockerPipelineOperator(
         task_id='reorganise_pipeline',
-        output_folder_callable=lambda session_id, **kwargs: local_folder + '/' + session_id,
+        output_folder_callable=lambda **kwargs: output_folder,
         pool='io_intensive',
         parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
@@ -94,6 +94,6 @@ def reorganise_pipeline_step(dag, upstream_step, dataset_config, dataset_type, o
         * Target folder: __%s__
 
         Depends on: __%s__
-        """ % (docker_image, local_folder, upstream_step.task_id))
+        """ % (docker_image, output_folder, upstream_step.task_id))
 
     return Step(reorganise_pipeline, reorganise_pipeline.task_id, upstream_step.priority_weight + 10)

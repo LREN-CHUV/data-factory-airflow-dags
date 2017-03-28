@@ -1,19 +1,34 @@
 from textwrap import dedent
 
-from airflow.operators.dagrun_operator import TriggerDagRunOperator
-from airflow_pipeline.pipelines import pipeline_trigger
+from airflow import configuration
 
-from common_steps import Step
+from airflow_scan_folder.operators import ScanFlatFolderPipelineOperator
+
+from common_steps import Step, default_config
 
 
-def trigger_ehr_pipeline_step(dag, upstream_step, dataset):
+def trigger_ehr_pipeline_cfg(dag, upstream_step, dataset, section, step_section):
+    default_config(section, 'INPUT_CONFIG', '')
+    default_config(step_section, 'DEPTH', '0')
+
+    dataset_config = configuration.get(section, 'INPUT_CONFIG')
+    depth = int(configuration.get(step_section, 'DEPTH'))
+
+    trigger_ehr_pipeline_step(dag, upstream_step, dataset=dataset,
+                              dataset_config=dataset_config,
+                              depth=depth)
+
+
+def trigger_ehr_pipeline_step(dag, upstream_step, dataset, dataset_config, depth=1):
 
     trigger_dag_id = '%s_mri_flat_etl_incoming' % dataset.lower().replace(" ", "_")
 
-    trigger_ehr_pipeline = TriggerDagRunOperator(
+    trigger_ehr_pipeline = ScanFlatFolderPipelineOperator(
         task_id="trigger_ehr_pipeline",
         trigger_dag_id=trigger_dag_id,
-        python_callable=pipeline_trigger(upstream_step.task_id),
+        depth=depth,
+        dataset_config=dataset_config,
+        parent_task=upstream_step.task_id,
         priority_weight=999,
         dag=dag
     )

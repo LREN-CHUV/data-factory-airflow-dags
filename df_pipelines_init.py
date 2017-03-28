@@ -40,7 +40,7 @@ register_dag(mri_notify_skipped_processing_dag())
 register_dag(mri_notify_successful_processing_dag())
 
 
-def register_reorganisation_dags():
+def register_reorganisation_dags(dataset, dataset_section):
     reorganisation_section = dataset_section + ':reorganisation'
     reorganisation_input_folder = configuration.get(reorganisation_section, 'INPUT_FOLDER')
     max_active_runs = int(configuration.get(reorganisation_section, 'MAX_ACTIVE_RUNS'))
@@ -58,7 +58,8 @@ def register_reorganisation_dags():
         trigger_dag_id=reorganisation_dag_id))
 
 
-def register_preprocessing_dags():
+def register_preprocessing_dags(dataset, dataset_section):
+    dataset_label = configuration.get(dataset_section, 'DATASET_LABEL')
     preprocessing_section = dataset_section + ':preprocessing'
     # Set the default configuration for the preprocessing of the dataset
     default_config(preprocessing_section, 'SCANNERS', 'daily')
@@ -98,7 +99,7 @@ def register_preprocessing_dags():
             trigger_dag_id=pre_process_images_dag_id))
 
 
-def register_ehr_dags():
+def register_ehr_dags(dataset, dataset_section):
     ehr_section = dataset_section + ':ehr'
     # Set the default configuration for the preprocessing of the dataset
     default_config(ehr_section, 'SCANNERS', '')
@@ -127,8 +128,7 @@ def register_ehr_dags():
 
 for dataset in dataset_sections.split(','):
     dataset_section = 'data-factory:%s' % dataset
-    dataset_label = configuration.get(dataset_section, 'DATASET_LABEL')
 
-    register_reorganisation_dags()
-    register_preprocessing_dags()
-    register_ehr_dags()
+    register_reorganisation_dags(dataset, dataset_section)
+    register_preprocessing_dags(dataset, dataset_section)
+    register_ehr_dags(dataset, dataset_section)
