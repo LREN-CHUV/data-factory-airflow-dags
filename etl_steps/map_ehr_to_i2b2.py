@@ -58,4 +58,4 @@ def map_ehr_to_i2b2_pipeline_step(dag, upstream_step, docker_image=''):
     Depends on: __%s__
     """ % (docker_image, upstream_step.task_id))
 
-    return Step(map_ehr_to_i2b2_pipeline, 'map_ehr_to_i2b2_pipeline', upstream_step.priority_weight + 10)
+    return Step(map_ehr_to_i2b2_pipeline, map_ehr_to_i2b2_pipeline.task_id, upstream_step.priority_weight + 10)

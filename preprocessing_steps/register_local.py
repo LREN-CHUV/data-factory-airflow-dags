@@ -54,4 +54,4 @@ def register_local_step(dag, upstream_step, dataset_config):
         This step does nothing except register the files present in the input folder to track provenance.
         """)
 
-    return Step(register_local, 'register_local', upstream_step.priority_weight + 10)
+    return Step(register_local, register_local.task_id, upstream_step.priority_weight + 10)

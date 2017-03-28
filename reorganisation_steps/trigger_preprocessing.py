@@ -26,4 +26,4 @@ def trigger_preprocessing(dag, upstream_step, dataset):
     Trigger pre-processing pipelines.
     """)
 
-    return Step(trigger_preprocessing_step, 'trigger_preprocessing_step', upstream_step.priority_weight + 10)
+    return Step(trigger_preprocessing_step, trigger_preprocessing_step.task_id, upstream_step.priority_weight + 10)

@@ -72,4 +72,4 @@ def copy_to_local_step(dag, upstream_step, min_free_space, output_folder, datase
         Depends on: __%s__
     """ % (output_folder, upstream_step.task_id))
 
-    return Step(copy_to_local, 'copy_to_local', upstream_step.priority_weight + 10)
+    return Step(copy_to_local, copy_to_local.task_id, upstream_step.priority_weight + 10)

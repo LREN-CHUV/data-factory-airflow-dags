@@ -60,4 +60,4 @@ def catalog_to_i2b2_pipeline_step(dag, upstream_step, data_catalog_conn, i2b2_co
         Depends on: __%s__
         """ % upstream_step.task_id)
 
-    return Step(catalog_to_i2b2_pipeline, 'catalog_to_i2b2_pipeline', upstream_step.priority_weight + 10)
+    return Step(catalog_to_i2b2_pipeline, catalog_to_i2b2_pipeline.task_id, upstream_step.priority_weight + 10)

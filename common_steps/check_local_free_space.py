@@ -53,4 +53,4 @@ def check_local_free_space_step(dag, upstream_step, min_free_space, local_folder
     Check that there is at least %.0f%% free space on the disk hosting folder %s for processing, wait otherwise.
     """ % (min_free_space, local_folder))
 
-    return Step(check_local_free_space, 'check_local_free_space', upstream_step.priority_weight + 10)
+    return Step(check_local_free_space, check_local_free_space.task_id, upstream_step.priority_weight + 10)

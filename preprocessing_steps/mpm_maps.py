@@ -120,4 +120,4 @@ def mpm_maps_pipeline_step(dag, upstream_step,
             Depends on: __%s__
             """ % (spm_function, output_folder, backup_folder, upstream_step.task_id))
 
-    return Step(mpm_maps_pipeline, 'mpm_maps_pipeline', upstream_step.priority_weight + 10)
+    return Step(mpm_maps_pipeline, mpm_maps_pipeline.task_id, upstream_step.priority_weight + 10)

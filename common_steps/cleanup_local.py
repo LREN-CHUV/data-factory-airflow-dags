@@ -51,4 +51,4 @@ def cleanup_local_step(dag, upstream_step, cleanup_folder):
         Remove locally stored files as they have been already processed.
         """)
 
-    return Step(cleanup_local, 'cleanup_local', upstream_step.priority_weight + 10)
+    return Step(cleanup_local, cleanup_local.task_id, upstream_step.priority_weight + 10)

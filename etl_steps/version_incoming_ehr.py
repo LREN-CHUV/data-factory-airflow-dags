@@ -69,4 +69,5 @@ def version_incoming_ehr_pipeline_step(dag, upstream_step, output_folder=None, m
     The folder %s is versioned as a local Git repository.
     """ % (output_folder, output_folder))
 
-    return Step(version_incoming_ehr_pipeline, 'version_incoming_ehr_pipeline', upstream_step.priority_weight + 10)
+    return Step(version_incoming_ehr_pipeline, version_incoming_ehr_pipeline.task_id,
+                upstream_step.priority_weight + 10)

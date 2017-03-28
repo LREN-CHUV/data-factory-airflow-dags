@@ -26,4 +26,4 @@ def trigger_ehr(dag, upstream_step, dataset):
     Trigger EHR pipelines.
     """)
 
-    return Step(trigger_ehr_step, 'trigger_ehr_step', upstream_step.priority_weight + 10)
+    return Step(trigger_ehr_step, trigger_ehr_step.task_id, upstream_step.priority_weight + 10)

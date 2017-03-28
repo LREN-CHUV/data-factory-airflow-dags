@@ -160,5 +160,5 @@ def neuro_morphometric_atlas_pipeline_step(dag, upstream_step,
             Depends on: __%s__
             """ % (spm_function, output_folder, backup_folder, upstream_step.task_id))
 
-    return Step(neuro_morphometric_atlas_pipeline, 'neuro_morphometric_atlas_pipeline',
+    return Step(neuro_morphometric_atlas_pipeline, neuro_morphometric_atlas_pipeline.task_id,
                 upstream_step.priority_weight + 10)

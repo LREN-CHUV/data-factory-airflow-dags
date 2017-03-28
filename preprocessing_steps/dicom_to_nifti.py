@@ -125,4 +125,4 @@ def dicom_to_nifti_pipeline_step(dag, upstream_step,
     Depends on: __%s__
     """ % (spm_function, output_folder, backup_folder, upstream_step.task_id))
 
-    return Step(dicom_to_nifti_pipeline, 'dicom_to_nifti_pipeline', upstream_step.priority_weight + 10)
+    return Step(dicom_to_nifti_pipeline, dicom_to_nifti_pipeline.task_id, upstream_step.priority_weight + 10)

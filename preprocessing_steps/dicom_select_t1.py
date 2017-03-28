@@ -111,4 +111,4 @@ def dicom_select_t1_pipeline_step(dag, upstream_step,
         Depends on: __%s__
         """ % (spm_function, output_folder, upstream_step.task_id))
 
-    return Step(dicom_select_t1_pipeline, 'dicom_select_T1_pipeline', upstream_step.priority_weight + 10)
+    return Step(dicom_select_t1_pipeline, dicom_select_t1_pipeline.task_id, upstream_step.priority_weight + 10)

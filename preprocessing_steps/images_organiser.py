@@ -97,4 +97,4 @@ def images_organiser_pipeline_step(dag, upstream_step, dataset_config, dataset_t
         Depends on: __%s__
         """ % (docker_image, local_folder, upstream_step.task_id))
 
-    return Step(images_organiser_pipeline, 'images_organiser_pipeline', upstream_step.priority_weight + 10)
+    return Step(images_organiser_pipeline, images_organiser_pipeline.task_id, upstream_step.priority_weight + 10)

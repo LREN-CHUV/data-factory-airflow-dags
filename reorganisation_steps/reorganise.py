@@ -96,4 +96,4 @@ def reorganise_pipeline_step(dag, upstream_step, dataset_config, dataset_type, o
         Depends on: __%s__
         """ % (docker_image, local_folder, upstream_step.task_id))
 
-    return Step(reorganise_pipeline, 'reorganise_pipeline', upstream_step.priority_weight + 10)
+    return Step(reorganise_pipeline, reorganise_pipeline.task_id, upstream_step.priority_weight + 10)

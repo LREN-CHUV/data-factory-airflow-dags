@@ -90,4 +90,4 @@ def images_selection_pipeline_step(dag, upstream_step, dataset_config=None, loca
         Depends on: __%s__
         """ % (local_folder, upstream_step.task_id))
 
-    return Step(images_selection_pipeline, 'images_selection_pipeline', upstream_step.priority_weight + 10)
+    return Step(images_selection_pipeline, images_selection_pipeline.task_id, upstream_step.priority_weight + 10)
