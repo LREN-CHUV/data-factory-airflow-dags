@@ -78,8 +78,8 @@ def dicom_to_nifti_pipeline_step(dag, upstream_step,
 
     def arguments_fn(folder, session_id, **kwargs):
         """
-          Prepare the arguments for conversion pipeline from DICOM to Nifti format.
-          It converts all files located in the folder 'folder'
+        Prepare the arguments for conversion pipeline from DICOM to Nifti format.
+        It converts all files located in the folder 'folder'
         """
         parent_data_folder = os.path.abspath(folder + '/..')
 
