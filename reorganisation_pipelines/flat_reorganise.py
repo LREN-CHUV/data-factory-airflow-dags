@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta, time
 from textwrap import dedent
 from airflow import DAG
-from airflow_scan_folder.operators import ScanFolderOperator
+from airflow_scan_folder.operators.scan_folder_operator import ScanFlatFolderOperator
 
 
 def flat_reorganisation_dag(dataset, folder, email_errors_to, trigger_dag_id):
@@ -30,7 +30,7 @@ def flat_reorganisation_dag(dataset, folder, email_errors_to, trigger_dag_id):
               default_args=default_args,
               schedule_interval='@once')
 
-    scan_dirs = ScanFolderOperator(
+    scan_dirs = ScanFlatFolderOperator(
         task_id='scan_dirs',
         folder=folder,
         trigger_dag_id=trigger_dag_id,
