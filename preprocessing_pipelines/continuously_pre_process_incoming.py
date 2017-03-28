@@ -25,7 +25,7 @@ from airflow_scan_folder.operators.common import extract_context_from_session_pa
 from airflow_scan_folder.operators.common import session_folder_trigger_dagrun
 from airflow_scan_folder.operators.common import default_build_daily_folder_path_callable
 
-from . import lren_accept_folder, lren_build_daily_folder_path_callable
+from preprocessing_pipelines import lren_accept_folder, lren_build_daily_folder_path_callable
 
 
 def continuously_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):

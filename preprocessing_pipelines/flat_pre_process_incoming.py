@@ -20,7 +20,7 @@ from airflow_scan_folder.operators import ScanFlatFolderOperator
 from airflow_scan_folder.operators.common import extract_context_from_session_path
 from airflow_scan_folder.operators.common import session_folder_trigger_dagrun
 
-from . import lren_accept_folder
+from preprocessing_pipelines import lren_accept_folder
 
 
 def flat_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):
