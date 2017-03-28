@@ -44,7 +44,7 @@ def mpm_maps_pipeline_cfg(dag, upstream_step, preprocessing_section, step_sectio
     default_config(step_section, 'PROTOCOLS_DEFINITION_FILE',
                    configuration.get(preprocessing_section, 'PROTOCOLS_DEFINITION_FILE'))
 
-    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
+    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG').split(',').strip()
     pipeline_path = configuration.get(step_section, 'PIPELINE_PATH')
     misc_library_path = configuration.get(step_section, 'MISC_LIBRARY_PATH')
     spm_function = configuration.get(step_section, 'SPM_FUNCTION')
@@ -63,7 +63,7 @@ def mpm_maps_pipeline_cfg(dag, upstream_step, preprocessing_section, step_sectio
 
 
 def mpm_maps_pipeline_step(dag, upstream_step,
-                           dataset_config='',
+                           dataset_config=list,
                            spm_function='Preproc_mpm_maps',
                            pipeline_path=None,
                            misc_library_path=None,

@@ -46,7 +46,7 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream_step, preprocessing_section, step_
                    configuration.get(preprocessing_section, 'PROTOCOLS_DEFINITION_FILE'))
     default_config(step_section, 'DCM2NII_PROGRAM', configuration.get(step_section, 'PIPELINE_PATH') + '/dcm2nii')
 
-    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
+    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG').split(',').strip()
     pipeline_path = configuration.get(step_section, 'PIPELINE_PATH')
     misc_library_path = configuration.get(step_section, 'MISC_LIBRARY_PATH')
     spm_function = configuration.get(step_section, 'SPM_FUNCTION')
@@ -67,7 +67,7 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream_step, preprocessing_section, step_
 
 
 def dicom_to_nifti_pipeline_step(dag, upstream_step,
-                                 dataset_config='',
+                                 dataset_config=list,
                                  spm_function='DCM2NII_LREN',
                                  pipeline_path=None,
                                  misc_library_path=None,
