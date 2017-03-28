@@ -10,8 +10,8 @@ from common_steps.prepare_pipeline import prepare_pipeline
 from common_steps.cleanup_local import cleanup_local_cfg
 from reorganisation_steps.copy_all_to_local import copy_all_to_local_cfg
 from reorganisation_steps.reorganise import reorganise_cfg
-from reorganisation_steps.trigger_preprocessing import trigger_preprocessing
-from reorganisation_steps.trigger_ehr import trigger_ehr
+from reorganisation_steps.trigger_preprocessing import trigger_preprocessing_pipeline_step
+from reorganisation_steps.trigger_ehr import trigger_ehr_pipeline_step
 
 
 preparation_steps = ['copy_all_to_local']
@@ -59,13 +59,11 @@ def reorganise_dag(dataset, section, email_errors_to, max_active_runs, reorganis
     upstream_step.priority_weight = cleanup_step.priority_weight
 
     if 'trigger_preprocessing' in reorganisation_pipelines:
-        upstream_step = trigger_preprocessing(dag, upstream_step, dataset)
+        upstream_step = trigger_preprocessing_pipeline_step(dag, upstream_step, dataset)
     # endif
 
     if 'trigger_ehr' in reorganisation_pipelines:
-        upstream_step = trigger_ehr(dag, upstream_step, dataset)
+        trigger_ehr_pipeline_step(dag, upstream_step, dataset)
     # endif
-
-    # notify_success(dag, upstream_step)
 
     return dag
