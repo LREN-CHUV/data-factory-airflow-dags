@@ -30,7 +30,7 @@ def cleanup_all_local_cfg(dag, upstream_step, step_section=None):
 def cleanup_all_local_step(dag, upstream_step, cleanup_folder):
 
     cleanup_local_cmd = dedent("""
-            rm -rf {{ params["cleanup_folder"] }}
+            rm -rf {{ params["cleanup_folder"] }}/*
         """)
 
     cleanup_all_local = BashOperator(
