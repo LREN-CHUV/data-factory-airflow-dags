@@ -103,8 +103,8 @@ def neuro_morphometric_atlas_pipeline_step(dag, upstream_step,
                                            mpm_maps_pipeline_path=None):
 
     def arguments_fn(folder, session_id, **kwargs):
-        """
-        Prepare the arguments for the pipeline that selects T1 files from DICOM.
+        """Prepare the arguments for the pipeline that selects T1 files from DICOM.
+
         It selects all T1 files located in the folder 'folder'
         """
         parent_data_folder = os.path.abspath(folder + '/..')

@@ -38,8 +38,8 @@ def images_selection_pipeline_cfg(dag, upstream_step, preprocessing_section, ste
 def images_selection_pipeline_step(dag, upstream_step, dataset_config=None, local_folder=None, csv_path=None):
 
     def images_selection_fn(folder, **kwargs):
-        """
-        Selects files from DICOM/NIFTI that match criterion in CSV file.
+        """Selects files from DICOM/NIFTI that match criterion in CSV file.
+
         It selects all files located in the folder 'folder' matching criterion in CSV file
         """
         import csv

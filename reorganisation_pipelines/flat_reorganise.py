@@ -1,8 +1,4 @@
-"""
-
-Reorganise folders in order to match the pre-processing pipelines requirements.
-
-"""
+"""Reorganise folders in order to match the pre-processing pipelines requirements."""
 
 from datetime import datetime, timedelta, time
 from textwrap import dedent

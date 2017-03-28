@@ -72,8 +72,8 @@ def mpm_maps_pipeline_step(dag, upstream_step,
                            protocols_definition_file=None):
 
     def arguments_fn(folder, session_id, pipeline_params_config_file='Preproc_mpm_maps_pipeline_config.txt', **kwargs):
-        """
-        Prepare the arguments for the pipeline that selects T1 files from DICOM.
+        """Prepare the arguments for the pipeline that selects T1 files from DICOM.
+
         It selects all T1 files located in the folder 'folder'
         """
         parent_data_folder = os.path.abspath(folder + '/..')

@@ -18,7 +18,7 @@ from common_steps import Step
 
 def prepare_pipeline(dag, upstream_step, include_spm_facts=True):
 
-    prepare_pipeline = PreparePipelineOperator(
+    prepare_pipeline_op = PreparePipelineOperator(
         task_id='prepare_pipeline',
         include_spm_facts=include_spm_facts,
         priority_weight=upstream_step.priority_weight,
@@ -26,9 +26,9 @@ def prepare_pipeline(dag, upstream_step, include_spm_facts=True):
         dag=dag
     )
 
-    prepare_pipeline.set_upstream(upstream_step.task)
+    prepare_pipeline_op.set_upstream(upstream_step.task)
 
-    prepare_pipeline.doc_md = dedent("""\
+    prepare_pipeline_op.doc_md = dedent("""\
     # Prepare pipeline
 
     Add information used by the other pipeline operators downstream.
@@ -36,4 +36,4 @@ def prepare_pipeline(dag, upstream_step, include_spm_facts=True):
     This includes dataset and folder to process, information to help tracking provenance.
     """)
 
-    return Step(prepare_pipeline, 'prepare_pipeline', upstream_step.priority_weight + 10)
+    return Step(prepare_pipeline_op, prepare_pipeline_op.task_id, upstream_step.priority_weight + 10)

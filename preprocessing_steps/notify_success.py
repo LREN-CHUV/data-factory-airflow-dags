@@ -19,7 +19,7 @@ from common_steps import Step
 
 def notify_success(dag, upstream_step):
 
-    notify_success = TriggerDagRunOperator(
+    notify_success_pipeline = TriggerDagRunOperator(
         task_id='notify_success',
         trigger_dag_id='mri_notify_successful_processing',
         python_callable=pipeline_trigger(upstream_step.task_id),
@@ -27,12 +27,12 @@ def notify_success(dag, upstream_step):
         dag=dag
     )
 
-    notify_success.set_upstream(upstream_step.task)
+    notify_success_pipeline.set_upstream(upstream_step.task)
 
-    notify_success.doc_md = dedent("""\
+    notify_success_pipeline.doc_md = dedent("""\
     # Notify successful processing
 
     Notify successful processing of this MRI scan session.
     """)
 
-    return Step(notify_success, 'notify_success', upstream_step.priority_weight + 10)
+    return Step(notify_success_pipeline, notify_success_pipeline.task_id, upstream_step.priority_weight + 10)
