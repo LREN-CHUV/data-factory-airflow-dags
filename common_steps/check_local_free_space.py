@@ -16,6 +16,7 @@ from datetime import timedelta
 from textwrap import dedent
 
 from airflow import configuration
+from airflow.exceptions import AirflowConfigException
 from airflow_freespace.operators import FreeSpaceSensor
 
 from common_steps import Step
@@ -25,9 +26,15 @@ def check_local_free_space_cfg(dag, upstream_step, pipeline_section, step_sectio
     min_free_space = configuration.getfloat(pipeline_section, 'MIN_FREE_SPACE')
     local_folder = None
     for step_section in step_sections:
-        local_folder = configuration.get(step_section, "OUTPUT_FOLDER")
-        if local_folder:
-            break
+        try:
+            local_folder = configuration.get(step_section, "OUTPUT_FOLDER")
+            if local_folder:
+                break
+        except AirflowConfigException:
+            pass
+
+    if not local_folder:
+        raise new AirflowConfigException('No output folder defined in sections %s' % ','.join(step_sections))
 
     return check_local_free_space_step(dag, upstream_step, min_free_space, local_folder)
 
