@@ -6,7 +6,7 @@ from airflow import DAG
 from airflow_scan_folder.operators.scan_folder_operator import ScanFlatFolderOperator
 
 
-def flat_reorganisation_dag(dataset, folder, email_errors_to, trigger_dag_id):
+def flat_reorganisation_dag(dataset, folder, email_errors_to, trigger_dag_id, depth=1):
 
     start = datetime.utcnow()
     start = datetime.combine(start.date(), time(start.hour, 0))
@@ -35,6 +35,7 @@ def flat_reorganisation_dag(dataset, folder, email_errors_to, trigger_dag_id):
         folder=folder,
         trigger_dag_id=trigger_dag_id,
         dataset=dataset,
+        depth=depth,
         execution_timeout=timedelta(minutes=30),
         dag=dag)
 

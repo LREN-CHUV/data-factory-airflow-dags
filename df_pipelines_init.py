@@ -42,7 +42,10 @@ register_dag(mri_notify_successful_processing_dag())
 
 def register_reorganisation_dags(dataset, dataset_section):
     reorganisation_section = dataset_section + ':reorganisation'
+    default_config(reorganisation_section, 'INPUT_FOLDER_DEPTH', '1')
+
     reorganisation_input_folder = configuration.get(reorganisation_section, 'INPUT_FOLDER')
+    depth = int(configuration.get(reorganisation_section, 'INPUT_FOLDER_DEPTH'))
     max_active_runs = int(configuration.get(reorganisation_section, 'MAX_ACTIVE_RUNS'))
     reorganisation_pipelines = configuration.get(reorganisation_section, 'PIPELINES').split(',')
 
@@ -54,6 +57,7 @@ def register_reorganisation_dags(dataset, dataset_section):
     register_dag(flat_reorganisation_dag(
         dataset=dataset,
         folder=reorganisation_input_folder,
+        depth=depth,
         email_errors_to=email_errors_to,
         trigger_dag_id=reorganisation_dag_id))
 

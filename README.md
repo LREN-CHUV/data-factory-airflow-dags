@@ -37,6 +37,7 @@ Requirements:
 
 * For each dataset, configure the [data-factory:&lt;dataset&gt;:reorganise] section if you need to reorganise an input folder containing only files or folders that will be split into several folders, one per visit for example:
     * INPUT_FOLDER: Folder containing the original imaging data to process. This data should have been already anonymised by a tool
+    * INPUT_FOLDER_DEPTH: depth of folders to explore while scanning the original imaging data to process.
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised, values are defined below in the preprocessing section.
     * MAX_ACTIVE_RUNS: maximum number of reorganisation tasks in parallel
     * PIPELINES: List of pipelines to execute. Values are
