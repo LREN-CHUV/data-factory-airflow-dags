@@ -72,10 +72,7 @@ Requirements:
       * flat: input folder contains a set of sub-folders each containing a scan to process.
     * PIPELINES: List of pipelines to execute. Values are
       * copy_to_local: if used, input data are first copied to a local folder to speed-up processing.
-      * dicom_organiser: TODO - still there? reorganise DICOM files in a scan folder for the following pipelines.
-      * dicom_select_T1: select only T1 weighted images
       * dicom_to_nifti: convert all DICOM files to Nifti format.
-      * nifti_organiser: TODO - still there?
       * mpm_maps: computes the Multiparametric Maps (MPMs) and brain segmentation in different tissue maps.
       * neuro_morphometric_atlas: computes an individual Atlas based on the NeuroMorphometrics Atlas.
       * export_features: exports neuroimaging features stored in CSV files to the I2B2 database
@@ -85,24 +82,6 @@ Requirements:
 * If copy_to_local is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:copy_to_local] section:
     * OUTPUT_FOLDER: destination folder for the local copy
 
-* If dicom_organiser is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_organiser] section:
-    * OUTPUT_FOLDER: destination folder for the organised images
-    * OUTPUT_FOLDER_STRUCTURE: folder hierarchy (e.g. '#PatientID/#StudyID/#SeriesDescription/#SeriesNumber')
-    * DOCKER_IMAGE: Docker image of the hierarchizer program
-    * DOCKER_INPUT_DIR: Input directory inside the Docker container. Default to '/input_folder'
-    * DOCKER_OUTPUT_DIR: Output directory inside the Docker container. Default to '/output_folder'
-
-* If dicom_selection is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_selection] section:
-    * OUTPUT_FOLDER: destination folder for the selected images
-    * IMAGES_SELECTION_CSV_PATH: path to the CSV file containing the list of selected images (PatientID | ImageID).
-
-* If dicom_select_T1 is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_select_T1] section:
-    * OUTPUT_FOLDER: destination folder for the selected T1 images
-    * SPM_FUNCTION: SPM function called. Default to 'selectT1'
-    * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to PIPELINES_PATH + '/SelectT1_Pipeline'
-    * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
-    * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner. For PPMI data, SelectT1 requires a custom Protocols_definition_PPMI.txt file.
-
 * If dicom_to_nifti is used or required (when DICOM images are used as input), configure the [data-factory:&lt;dataset&gt;:preprocessing:dicom_to_nifti] section:
     * OUTPUT_FOLDER: destination folder for the Nifti images
     * BACKUP_FOLDER: backup folder for the Nitfi images
@@ -111,17 +90,6 @@ Requirements:
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner. Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * DCM2NII_PROGRAM: Path to DCM2NII program. Default to PIPELINE_PATH + '/dcm2nii'
-
-* If nifti_organiser is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:nifti_organiser] section:
-    * OUTPUT_FOLDER: destination folder for the organised images
-    * OUTPUT_FOLDER_STRUCTURE: folder hierarchy (e.g. '#PatientID/#StudyID/#SeriesDescription/#SeriesNumber')
-    * DOCKER_IMAGE: Docker image of the hierarchizer program
-    * DOCKER_INPUT_DIR: Input directory inside the Docker container. Default to '/input_folder'
-    * DOCKER_OUTPUT_DIR: Output directory inside the Docker container. Default to '/output_folder'
-
-* If nifti_selection is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:nifti_selection] section:
-    * OUTPUT_FOLDER: destination folder for the selected images
-    * CSV_PATH: path to the CSV file containing the list of selected images (PatientID | ImageID).
 
 * If mpm_maps is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:mpm_maps] section:
     * OUTPUT_FOLDER: destination folder for the MPMs and brain segmentation

@@ -19,16 +19,15 @@ from preprocessing_steps.register_local import register_local_cfg
 
 
 shared_preparation_steps = ['copy_to_local']
-dicom_preparation_steps = ['dicom_organiser', 'dicom_to_nitfi']
-nifti_preparation_steps = ['nifti_organiser']
+dicom_preparation_steps = ['dicom_to_nitfi']
 preprocessing_steps = ['mpm_maps', 'neuro_morphometric_atlas']
 finalisation_steps = ['export_features', 'catalog_to_i2b2']
 
 steps_with_file_outputs = shared_preparation_steps + dicom_preparation_steps + \
-    nifti_preparation_steps + preprocessing_steps
+    preprocessing_steps
 
 all_preprocessing_steps = shared_preparation_steps + dicom_preparation_steps + \
-    nifti_preparation_steps + preprocessing_steps + finalisation_steps
+    preprocessing_steps + finalisation_steps
 
 
 def pre_process_images_dag(dataset, section, email_errors_to, max_active_runs, preprocessing_pipelines=''):

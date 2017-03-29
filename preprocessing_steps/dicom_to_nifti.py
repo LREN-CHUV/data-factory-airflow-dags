@@ -9,7 +9,7 @@ Configuration variables used:
 * :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
     * PIPELINES_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
-* :preprocessing:dicom_select_T1 section
+* :preprocessing:dicom_to_nifti section
     * OUTPUT_FOLDER: destination folder for the Nitfi images
     * BACKUP_FOLDER: backup folder for the Nitfi images
     * SPM_FUNCTION: SPM function called. Default to 'DCM2NII_LREN'
