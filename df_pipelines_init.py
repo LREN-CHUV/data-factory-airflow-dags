@@ -116,9 +116,10 @@ def register_ehr_dags(dataset, dataset_section, email_errors_to):
                 dataset=dataset, folder=ehr_input_folder, depth=ehr_input_folder_depth,
                 email_errors_to=email_errors_to,
                 trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower()))
-    register_dag(ehr_to_i2b2_dag(dataset=dataset, section=ehr_section,
-                                 email_errors_to=email_errors_to,
-                                 max_active_runs=max_active_runs))
+        register_dag(ehr_to_i2b2_dag(dataset=dataset, section=ehr_section,
+                                     email_errors_to=email_errors_to,
+                                     max_active_runs=max_active_runs))
+    # endif
 
 
 def init_pipelines():
