@@ -69,29 +69,30 @@ def register_preprocessing_dags(dataset, dataset_section, email_errors_to):
     max_active_runs = int(configuration.get(preprocessing_section, 'MAX_ACTIVE_RUNS'))
     logging.info("Create pipelines for dataset %s using scannners %s and pipelines %s",
                  dataset_label, preprocessing_scanners, preprocessing_pipelines)
-    pre_process_images_dag_id = register_dag(pre_process_images_dag(dataset=dataset,
-                                                                    section=preprocessing_section,
-                                                                    email_errors_to=email_errors_to,
-                                                                    max_active_runs=max_active_runs,
-                                                                    preprocessing_pipelines=preprocessing_pipelines))
-    if 'continuous' in preprocessing_scanners:
-        register_dag(continuously_preprocess_incoming_dag(
-            dataset=dataset,
-            folder=preprocessing_input_folder,
-            email_errors_to=email_errors_to,
-            trigger_dag_id=pre_process_images_dag_id))
-    if 'daily' in preprocessing_scanners:
-        register_dag(daily_preprocess_incoming_dag(
-            dataset=dataset,
-            folder=preprocessing_input_folder,
-            email_errors_to=email_errors_to,
-            trigger_dag_id=pre_process_images_dag_id))
-    if 'flat' in preprocessing_scanners:
-        register_dag(flat_preprocess_incoming_dag(
-            dataset=dataset,
-            folder=preprocessing_input_folder,
-            email_errors_to=email_errors_to,
-            trigger_dag_id=pre_process_images_dag_id))
+
+    if preprocessing_pipelines and len(preprocessing_pipelines) > 0 and preprocessing_pipelines[0] != '':
+        pre_process_images_dag_id = register_dag(
+            pre_process_images_dag(dataset=dataset, section=preprocessing_section, email_errors_to=email_errors_to,
+                                   max_active_runs=max_active_runs, preprocessing_pipelines=preprocessing_pipelines))
+        if 'continuous' in preprocessing_scanners:
+            register_dag(continuously_preprocess_incoming_dag(
+                dataset=dataset,
+                folder=preprocessing_input_folder,
+                email_errors_to=email_errors_to,
+                trigger_dag_id=pre_process_images_dag_id))
+        if 'daily' in preprocessing_scanners:
+            register_dag(daily_preprocess_incoming_dag(
+                dataset=dataset,
+                folder=preprocessing_input_folder,
+                email_errors_to=email_errors_to,
+                trigger_dag_id=pre_process_images_dag_id))
+        if 'flat' in preprocessing_scanners:
+            register_dag(flat_preprocess_incoming_dag(
+                dataset=dataset,
+                folder=preprocessing_input_folder,
+                email_errors_to=email_errors_to,
+                trigger_dag_id=pre_process_images_dag_id))
+    # endif
 
 
 def register_ehr_dags(dataset, dataset_section, email_errors_to):
@@ -105,20 +106,20 @@ def register_ehr_dags(dataset, dataset_section, email_errors_to):
         ehr_scanners = ehr_scanners.split(',')
         ehr_input_folder = configuration.get(ehr_section, 'INPUT_FOLDER')
 
+        ehr_to_i2b2_dag_id = register_dag(ehr_to_i2b2_dag(dataset=dataset, section=ehr_section,
+                                                          email_errors_to=email_errors_to,
+                                                          max_active_runs=max_active_runs))
         if 'daily' in ehr_scanners:
             register_dag(daily_ehr_incoming_dag(
                 dataset=dataset, folder=ehr_input_folder, email_errors_to=email_errors_to,
-                trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower()))
+                trigger_dag_id=ehr_to_i2b2_dag_id))
 
         if 'flat' in ehr_scanners:
             ehr_input_folder_depth = int(configuration.get(ehr_section, 'INPUT_FOLDER_DEPTH'))
             register_dag(flat_ehr_incoming_dag(
                 dataset=dataset, folder=ehr_input_folder, depth=ehr_input_folder_depth,
                 email_errors_to=email_errors_to,
-                trigger_dag_id='%s_ehr_to_i2b2' % dataset.lower()))
-        register_dag(ehr_to_i2b2_dag(dataset=dataset, section=ehr_section,
-                                     email_errors_to=email_errors_to,
-                                     max_active_runs=max_active_runs))
+                trigger_dag_id=ehr_to_i2b2_dag_id))
     # endif
 
 
