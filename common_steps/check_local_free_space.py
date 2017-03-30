@@ -11,6 +11,7 @@ Configuration variables used:
 
 """
 
+import logging
 
 from datetime import timedelta
 from textwrap import dedent
@@ -26,6 +27,7 @@ def check_local_free_space_cfg(dag, upstream_step, pipeline_section, step_sectio
     min_free_space = configuration.getfloat(pipeline_section, 'MIN_FREE_SPACE')
     local_folder = None
     for step_section in step_sections:
+        logging.info("Check folder in %s", step_section)
         try:
             local_folder = configuration.get(step_section, "OUTPUT_FOLDER")
             if local_folder:
@@ -34,7 +36,7 @@ def check_local_free_space_cfg(dag, upstream_step, pipeline_section, step_sectio
             pass
 
     if not local_folder:
-        raise AirflowConfigException('No output folder defined in sections %s' % ','.join(step_sections))
+        raise AirflowConfigException('No output folder defined in sections %s' % (','.join(step_sections)))
 
     return check_local_free_space_step(dag, upstream_step, min_free_space, local_folder)
 
