@@ -52,8 +52,8 @@ testing:
   unit_testing: []
 
 release_management:
-  current_version: 0.8.8
-  current_code_release: https://github.com/HBPMedical/data-factory-airflow-dags/archive/0.8.8.zip
+  current_version: 0.8.9
+  current_code_release: https://github.com/HBPMedical/data-factory-airflow-dags/archive/0.8.9.zip
   release_script: 'publish.sh'
 
 continuous_integration: []
