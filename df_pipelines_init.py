@@ -38,17 +38,19 @@ def register_reorganisation_dags(dataset, dataset_section, email_errors_to):
     max_active_runs = int(configuration.get(reorganisation_section, 'MAX_ACTIVE_RUNS'))
     reorganisation_pipelines = configuration.get(reorganisation_section, 'PIPELINES').split(',')
 
-    reorganisation_dag_id = register_dag(reorganise_dag(dataset=dataset,
-                                                        section=reorganisation_section,
-                                                        email_errors_to=email_errors_to,
-                                                        max_active_runs=max_active_runs,
-                                                        reorganisation_pipelines=reorganisation_pipelines))
-    register_dag(flat_reorganisation_dag(
-        dataset=dataset,
-        folder=reorganisation_input_folder,
-        depth=depth,
-        email_errors_to=email_errors_to,
-        trigger_dag_id=reorganisation_dag_id))
+    if reorganisation_pipelines:
+        reorganisation_dag_id = register_dag(reorganise_dag(dataset=dataset,
+                                                            section=reorganisation_section,
+                                                            email_errors_to=email_errors_to,
+                                                            max_active_runs=max_active_runs,
+                                                            reorganisation_pipelines=reorganisation_pipelines))
+        register_dag(flat_reorganisation_dag(
+            dataset=dataset,
+            folder=reorganisation_input_folder,
+            depth=depth,
+            email_errors_to=email_errors_to,
+            trigger_dag_id=reorganisation_dag_id))
+    # endif
 
 
 def register_preprocessing_dags(dataset, dataset_section, email_errors_to):
