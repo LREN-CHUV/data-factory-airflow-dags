@@ -38,7 +38,7 @@ def register_reorganisation_dags(dataset, dataset_section, email_errors_to):
     max_active_runs = int(configuration.get(reorganisation_section, 'MAX_ACTIVE_RUNS'))
     reorganisation_pipelines = configuration.get(reorganisation_section, 'PIPELINES').split(',')
 
-    if reorganisation_pipelines and len(reorganisation_pipelines) > 0:
+    if reorganisation_pipelines and len(reorganisation_pipelines) > 0 and reorganisation_pipelines[0] != '':
         reorganisation_dag_id = register_dag(reorganise_dag(dataset=dataset,
                                                             section=reorganisation_section,
                                                             email_errors_to=email_errors_to,
