@@ -29,7 +29,7 @@ def register_dag(dag):
     return dag_id
 
 
-def register_reorganisation_dags():
+def register_reorganisation_dags(dataset, dataset_section, email_errors_to):
     reorganisation_section = dataset_section + ':reorganisation'
     default_config(reorganisation_section, 'INPUT_FOLDER_DEPTH', '1')
 
@@ -51,7 +51,7 @@ def register_reorganisation_dags():
         trigger_dag_id=reorganisation_dag_id))
 
 
-def register_preprocessing_dags():
+def register_preprocessing_dags(dataset, dataset_section, email_errors_to):
     dataset_label = configuration.get(dataset_section, 'DATASET_LABEL')
     preprocessing_section = dataset_section + ':preprocessing'
     # Set the default configuration for the preprocessing of the dataset
@@ -92,7 +92,7 @@ def register_preprocessing_dags():
             trigger_dag_id=pre_process_images_dag_id))
 
 
-def register_ehr_dags():
+def register_ehr_dags(dataset, dataset_section, email_errors_to):
     ehr_section = dataset_section + ':ehr'
     # Set the default configuration for the preprocessing of the dataset
     default_config(ehr_section, 'SCANNERS', '')
@@ -119,19 +119,20 @@ def register_ehr_dags():
                                  max_active_runs=max_active_runs))
 
 
-default_config('mipmap', 'DB_CONFIG_FILE', '/dev/null')
+def init_pipelines():
+    default_config('mipmap', 'DB_CONFIG_FILE', '/dev/null')
+    dataset_sections = configuration.get('data-factory', 'DATASETS')
+    email_errors_to = configuration.get('data-factory', 'EMAIL_ERRORS_TO')
+    register_dag(mri_notify_failed_processing_dag())
+    register_dag(mri_notify_skipped_processing_dag())
+    register_dag(mri_notify_successful_processing_dag())
 
-dataset_sections = configuration.get('data-factory', 'DATASETS')
-email_errors_to = configuration.get('data-factory', 'EMAIL_ERRORS_TO')
-mipmap_db_config_file = configuration.get('mipmap', 'DB_CONFIG_FILE')
+    for dataset in dataset_sections.split(','):
+        dataset_section = 'data-factory:%s' % dataset
 
-register_dag(mri_notify_failed_processing_dag())
-register_dag(mri_notify_skipped_processing_dag())
-register_dag(mri_notify_successful_processing_dag())
+        register_reorganisation_dags(dataset, dataset_section, email_errors_to)
+        register_preprocessing_dags(dataset, dataset_section, email_errors_to)
+        register_ehr_dags(dataset, dataset_section, email_errors_to)
 
-for dataset in dataset_sections.split(','):
-    dataset_section = 'data-factory:%s' % dataset
 
-    register_reorganisation_dags()
-    register_preprocessing_dags()
-    register_ehr_dags()
+init_pipelines()
