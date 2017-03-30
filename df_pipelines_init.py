@@ -29,18 +29,7 @@ def register_dag(dag):
     return dag_id
 
 
-default_config('mipmap', 'DB_CONFIG_FILE', '/dev/null')
-
-dataset_sections = configuration.get('data-factory', 'DATASETS')
-email_errors_to = configuration.get('data-factory', 'EMAIL_ERRORS_TO')
-mipmap_db_config_file = configuration.get('mipmap', 'DB_CONFIG_FILE')
-
-register_dag(mri_notify_failed_processing_dag())
-register_dag(mri_notify_skipped_processing_dag())
-register_dag(mri_notify_successful_processing_dag())
-
-
-def register_reorganisation_dags(dataset, dataset_section):
+def register_reorganisation_dags():
     reorganisation_section = dataset_section + ':reorganisation'
     default_config(reorganisation_section, 'INPUT_FOLDER_DEPTH', '1')
 
@@ -62,7 +51,7 @@ def register_reorganisation_dags(dataset, dataset_section):
         trigger_dag_id=reorganisation_dag_id))
 
 
-def register_preprocessing_dags(dataset, dataset_section):
+def register_preprocessing_dags():
     dataset_label = configuration.get(dataset_section, 'DATASET_LABEL')
     preprocessing_section = dataset_section + ':preprocessing'
     # Set the default configuration for the preprocessing of the dataset
@@ -103,7 +92,7 @@ def register_preprocessing_dags(dataset, dataset_section):
             trigger_dag_id=pre_process_images_dag_id))
 
 
-def register_ehr_dags(dataset, dataset_section):
+def register_ehr_dags():
     ehr_section = dataset_section + ':ehr'
     # Set the default configuration for the preprocessing of the dataset
     default_config(ehr_section, 'SCANNERS', '')
@@ -130,9 +119,19 @@ def register_ehr_dags(dataset, dataset_section):
                                  max_active_runs=max_active_runs))
 
 
+default_config('mipmap', 'DB_CONFIG_FILE', '/dev/null')
+
+dataset_sections = configuration.get('data-factory', 'DATASETS')
+email_errors_to = configuration.get('data-factory', 'EMAIL_ERRORS_TO')
+mipmap_db_config_file = configuration.get('mipmap', 'DB_CONFIG_FILE')
+
+register_dag(mri_notify_failed_processing_dag())
+register_dag(mri_notify_skipped_processing_dag())
+register_dag(mri_notify_successful_processing_dag())
+
 for dataset in dataset_sections.split(','):
     dataset_section = 'data-factory:%s' % dataset
 
-    register_reorganisation_dags(dataset, dataset_section)
-    register_preprocessing_dags(dataset, dataset_section)
-    register_ehr_dags(dataset, dataset_section)
+    register_reorganisation_dags()
+    register_preprocessing_dags()
+    register_ehr_dags()

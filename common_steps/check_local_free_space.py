@@ -34,7 +34,7 @@ def check_local_free_space_cfg(dag, upstream_step, pipeline_section, step_sectio
             pass
 
     if not local_folder:
-        raise new AirflowConfigException('No output folder defined in sections %s' % ','.join(step_sections))
+        raise AirflowConfigException('No output folder defined in sections %s' % ','.join(step_sections))
 
     return check_local_free_space_step(dag, upstream_step, min_free_space, local_folder)
 
