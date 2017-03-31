@@ -41,7 +41,7 @@ def mri_notify_skipped_processing_dag():
              + '{% if dag_run.conf["task_id"] %} at stage {{ dag_run.conf["task_id"] }}{% endif %}\n'
              + '> Scan {% if dag_run.conf["scan_date"] %}'
              + 'done on {{ dag_run.conf["scan_date"].strftime("%Y-%m-%d") }} {% endif %}'
-             + 'for participant {{ dag_run.conf["participant_id"] | default("?") }}',
+             + 'for participant {{ dag_run.conf["participant_id"] | default("?", yes) }}',
         icon_url='https://raw.githubusercontent.com/airbnb/airflow/master/airflow/www/static/pin_100.png',
         dag=dag
     )

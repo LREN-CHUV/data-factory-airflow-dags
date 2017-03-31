@@ -41,7 +41,7 @@ def mri_notify_failed_processing_dag():
              + '{% if dag_run.conf["task_id"] %} at stage {{ dag_run.conf["task_id"] }}{% endif %}`\n'
              + '> Scan {% if dag_run.conf["scan_date"] %}'
              + 'done on {{ dag_run.conf["scan_date"].strftime("%Y-%m-%d") }} {% endif %}'
-             + 'for participant {{ dag_run.conf["participant_id"] | default("?") }}\n'
+             + 'for participant {{ dag_run.conf["participant_id"] | default("?", yes) }}\n'
              + '> Output:\n'
              + '> ```\n\n{{ dag_run.conf["spm_output"] | default("?") }}\n\n```\n'
              + '> Errors:\n'

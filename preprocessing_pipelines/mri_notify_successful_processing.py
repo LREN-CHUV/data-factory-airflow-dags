@@ -40,7 +40,7 @@ def mri_notify_successful_processing_dag():
              + 'Processed scan session *{{ dag_run.conf["session_id"] }}*\n'
              + '> Scan {% if dag_run.conf["scan_date"] %}'
              + 'done on {{ dag_run.conf["scan_date"].strftime("%Y-%m-%d") }} {% endif %}'
-             + 'for participant {{ dag_run.conf["participant_id"] | default("?") }}',
+             + 'for participant {{ dag_run.conf["participant_id"] | default("?", yes) }}',
         icon_url='https://raw.githubusercontent.com/airbnb/airflow/master/airflow/www/static/pin_100.png',
         dag=dag
     )
