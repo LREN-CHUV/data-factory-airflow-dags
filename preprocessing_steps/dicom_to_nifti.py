@@ -67,7 +67,7 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream_step, preprocessing_section, step_
 
 
 def dicom_to_nifti_pipeline_step(dag, upstream_step,
-                                 dataset_config=list,
+                                 dataset_config=None,
                                  spm_function='DCM2NII_LREN',
                                  pipeline_path=None,
                                  misc_library_path=None,
@@ -75,6 +75,9 @@ def dicom_to_nifti_pipeline_step(dag, upstream_step,
                                  backup_folder=None,
                                  protocols_definition_file=None,
                                  dcm2nii_program=None):
+
+    if dataset_config is None:
+        dataset_config = []
 
     def arguments_fn(folder, session_id, **kwargs):
         """Prepare the arguments for conversion pipeline from DICOM to Nifti format.

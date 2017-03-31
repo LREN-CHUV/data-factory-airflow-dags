@@ -63,13 +63,16 @@ def mpm_maps_pipeline_cfg(dag, upstream_step, preprocessing_section, step_sectio
 
 
 def mpm_maps_pipeline_step(dag, upstream_step,
-                           dataset_config=list,
+                           dataset_config=None,
                            spm_function='Preproc_mpm_maps',
                            pipeline_path=None,
                            misc_library_path=None,
                            output_folder=None,
                            backup_folder=None,
                            protocols_definition_file=None):
+
+    if dataset_config is None:
+        dataset_config = []
 
     def arguments_fn(folder, session_id, pipeline_params_config_file='Preproc_mpm_maps_pipeline_config.txt', **kwargs):
         """Prepare the arguments for the pipeline that selects T1 files from DICOM.
