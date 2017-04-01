@@ -37,8 +37,10 @@ def copy_to_local_cfg(dag, upstream_step, preprocessing_section, step_section):
 def copy_to_local_step(dag, upstream_step, min_free_space, output_folder, dataset_config):
 
     copy_to_local_cmd = dedent("""
-        used="$(df -h /home | grep '/' | grep -Po '[^ ]*(?=%)')"
-        if (( 101 - used < {{ params['min_free_space']|float * 100 }} )); then
+        set -e
+        used="$(df -h $AIRFLOW_OUTPUT_DIR/ | grep '/' | grep -Po '[^ ]*(?=%)')"
+        is_full=$(echo "101 - used < {{ params['min_free_space']|float * 100 }}" | bc)
+        if [ "$is_full" == 1 ]; then
           echo "Not enough space left, cannot continue"
           exit 1
         fi
