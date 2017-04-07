@@ -4,13 +4,14 @@ from datetime import datetime, timedelta, time
 from textwrap import dedent
 from airflow import DAG
 from os.path import basename
+from re import fullmatch
 from airflow_scan_folder.operators.scan_folder_operator import ScanFlatFolderOperator
 
 
 ACCEPTED_FOLDERS = ['IMAGES']
 
 
-def flat_reorganisation_dag(dataset, folder, email_errors_to, trigger_dag_id, depth=1):
+def flat_reorganisation_dag(dataset, folder, email_errors_to, trigger_dag_id, depth=1, folder_filter="*"):
 
     start = datetime.utcnow()
     start = datetime.combine(start.date(), time(start.hour, 0))
@@ -41,7 +42,7 @@ def flat_reorganisation_dag(dataset, folder, email_errors_to, trigger_dag_id, de
         dataset=dataset,
         depth=depth,
         execution_timeout=timedelta(minutes=30),
-        accept_folder_callable=lambda path: basename(path) in ACCEPTED_FOLDERS,
+        accept_folder_callable=lambda path: fullmatch(folder_filter, basename(path)),
         dag=dag)
 
     scan_dirs.doc_md = dedent("""\

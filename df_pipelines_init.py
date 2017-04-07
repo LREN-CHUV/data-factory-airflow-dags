@@ -35,6 +35,7 @@ def register_reorganisation_dags(dataset, dataset_section, email_errors_to):
 
     reorganisation_input_folder = configuration.get(reorganisation_section, 'INPUT_FOLDER')
     depth = int(configuration.get(reorganisation_section, 'INPUT_FOLDER_DEPTH'))
+    folder_filter = configuration.get(reorganisation_section, 'FOLDER_FILTER')
     max_active_runs = int(configuration.get(reorganisation_section, 'MAX_ACTIVE_RUNS'))
     reorganisation_pipelines = configuration.get(reorganisation_section, 'PIPELINES').split(',')
 
@@ -49,7 +50,8 @@ def register_reorganisation_dags(dataset, dataset_section, email_errors_to):
             folder=reorganisation_input_folder,
             depth=depth,
             email_errors_to=email_errors_to,
-            trigger_dag_id=reorganisation_dag_id))
+            trigger_dag_id=reorganisation_dag_id,
+            folder_filter=folder_filter))
     # endif
 
 
