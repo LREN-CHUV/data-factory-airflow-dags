@@ -37,22 +37,33 @@ To see this project in action, go to the [demo of MIP Data Factory](https://gith
     * DATASET_LABEL: Name of the dataset
 
 
-* For each dataset, configure the [data-factory:&lt;dataset&gt;:reorganise] section if you need to reorganise an input folder containing only files or folders that will be split into several folders, one per visit for example:
+* For each dataset, configure the [data-factory:&lt;dataset&gt;:reorganisation] section if you need to reorganise an input folder containing only files or folders that will be split into several folders, one per visit for example:
     * INPUT_FOLDER: Folder containing the original imaging data to process. This data should have been already anonymised by a tool
     * INPUT_FOLDER_DEPTH: depth of folders to explore while scanning the original imaging data to process.
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised, values are defined below in the preprocessing section.
     * MAX_ACTIVE_RUNS: maximum number of reorganisation tasks in parallel
+    * FOLDER_FILTER: regex that describes acceptable folder names. Folders that does not fully match it will be discarded.
     * PIPELINES: List of pipelines to execute. Values are
-      * copy_to_local: if used, input data are first copied to a local folder to speed-up processing.
-      * dicom_reorganise: TODO
-      * nifti_reorganise: TODO
+      * copy_all_to_local: if used, input data are first copied to a local folder to speed-up processing.
+      * dicom_reorganise:
+        * output_folder: output folder that will contain the reorganised data.
+        * output_folder_structure: description of the desired folder organisation. E.g. '#PatientID/#StudyID/#SeriesDescription/#SeriesNumber'
+        * docker_image: organiser docker image.
+        * docker_input_dir: docker input volume for the organiser (path inside the container).
+        * docker_output_dir: docker output volume for the organiser (path inside the container).
+      * nifti_reorganise:
+        * output_folder: output folder that will contain the reorganised data.
+        * output_folder_structure: description of the desired folder organisation. E.g. '#PatientID/#StudyID/#SeriesDescription/#SeriesNumber'
+        * docker_image: organiser docker image.
+        * docker_input_dir: docker input volume for the organiser (path inside the container).
+        * docker_output_dir: docker output volume for the organiser (path inside the container).
       * trigger_preprocessing: scan the current folder and triggers preprocessing of images on each folder discovered
       * trigger_ehr: scan the current folder and triggers importation of EHR data on each folder discovered
 
-* If trigger_preprocessing is used, configure the [data-factory:&lt;dataset&gt;:reorganise:trigger_preprocessing] section:
+* If trigger_preprocessing is used, configure the [data-factory:&lt;dataset&gt;:reorganisation:trigger_preprocessing] section:
     * DEPTH: depth of folders to explore when triggering importation of EHR data
 
-* If trigger_ehr is used, configure the [data-factory:&lt;dataset&gt;:reorganise:trigger_ehr] section:
+* If trigger_ehr is used, configure the [data-factory:&lt;dataset&gt;:reorganisation:trigger_ehr] section:
     * DEPTH: depth of folders to explore when triggering preprocessing
 
 * For each dataset, now configure the [data-factory:&lt;dataset&gt;:preprocessing] section:
