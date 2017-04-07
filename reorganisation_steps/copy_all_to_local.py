@@ -54,6 +54,7 @@ def copy_all_to_local_step(dag, upstream_step, min_free_space, output_folder, da
         priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=3),
         dataset_config=dataset_config,
+        organised_folder=False,
         dag=dag
     )
 
