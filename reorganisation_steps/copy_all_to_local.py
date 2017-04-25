@@ -37,8 +37,10 @@ def copy_all_to_local_cfg(dag, upstream_step, reorganisation_section, step_secti
 def copy_all_to_local_step(dag, upstream_step, min_free_space, output_folder, dataset_config):
 
     copy_all_to_local_cmd = dedent("""
-        used="$(df -h /home | grep '/' | grep -Po '[^ ]*(?=%)')"
-        if (( 101 - used < {{ params['min_free_space']|float * 100 }} )); then
+        set -e
+        used="$(df -h $AIRFLOW_OUTPUT_DIR/ | grep '/' | grep -Po '[^ ]*(?=%)')"
+        is_full=$(echo "101 - used < {{ params['min_free_space']|float * 100 }}" | bc)
+        if [ "$is_full" == 1 ]; then
           echo "Not enough space left, cannot continue"
           exit 1
         fi
@@ -49,7 +51,7 @@ def copy_all_to_local_step(dag, upstream_step, min_free_space, output_folder, da
         task_id='copy_all_to_local',
         bash_command=copy_all_to_local_cmd,
         params={'min_free_space': min_free_space},
-        output_folder_callable=lambda **kwargs: output_folder,
+        output_folder_callable=lambda relative_context_path, **kwargs: output_folder + '/' + relative_context_path,
         parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(hours=3),
