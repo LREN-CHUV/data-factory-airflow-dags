@@ -38,6 +38,7 @@ def copy_to_local_step(dag, upstream_step, min_free_space, output_folder, datase
 
     copy_to_local_cmd = dedent("""
         set -e
+        mkdir -p $AIRFLOW_OUTPUT_DIR/
         used="$(df -h $AIRFLOW_OUTPUT_DIR/ | grep '/' | grep -Po '[^ ]*(?=%)')"
         is_full=$(echo "101 - used < {{ params['min_free_space']|float * 100 }}" | bc)
         if [ "$is_full" == 1 ]; then
