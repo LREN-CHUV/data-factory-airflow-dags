@@ -75,7 +75,7 @@ def reorganise_pipeline_step(dag, upstream_step, dataset_config, dataset_type, o
         execution_timeout=timedelta(hours=24),
         on_failure_trigger_dag_id='mri_notify_failed_processing',
         dataset_config=dataset_config,
-        organised_folder=False,
+        organised_folder=True,
         dag=dag,
         image=docker_image,
         command=command,
