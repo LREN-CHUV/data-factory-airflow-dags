@@ -22,7 +22,7 @@ from common_steps import Step, default_config
 def register_local_cfg(dag, upstream_step, preprocessing_section):
     default_config(preprocessing_section, 'INPUT_CONFIG', '')
 
-    dataset_config = configuration.get(preprocessing_section, 'INPUT_CONFIG')
+    dataset_config = [flag.strip() for flag in configuration.get(preprocessing_section, 'INPUT_CONFIG').split(',')]
 
     return register_local_step(dag, upstream_step, dataset_config)
 

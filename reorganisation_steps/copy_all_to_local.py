@@ -27,7 +27,7 @@ from common_steps import Step, default_config
 def copy_all_to_local_cfg(dag, upstream_step, reorganisation_section, step_section):
     default_config(reorganisation_section, 'INPUT_CONFIG', '')
 
-    dataset_config = configuration.get(reorganisation_section, 'INPUT_CONFIG')
+    dataset_config = [flag.strip() for flag in configuration.get(reorganisation_section, 'INPUT_CONFIG').split(',')]
     min_free_space = configuration.getfloat(reorganisation_section, 'MIN_FREE_SPACE')
     output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
 

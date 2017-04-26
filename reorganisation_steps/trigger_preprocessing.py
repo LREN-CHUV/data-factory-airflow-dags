@@ -15,7 +15,7 @@ def trigger_preprocessing_pipeline_cfg(dag, upstream_step, dataset, section, ste
     default_config(section, 'INPUT_CONFIG', '')
     default_config(step_section, 'DEPTH', '1')
 
-    dataset_config = configuration.get(section, 'INPUT_CONFIG')
+    dataset_config = [flag.strip() for flag in configuration.get(section, 'INPUT_CONFIG').split(',')]
     depth = int(configuration.get(step_section, 'DEPTH'))
 
     return trigger_preprocessing_pipeline_step(dag, upstream_step, dataset=dataset,

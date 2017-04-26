@@ -34,7 +34,7 @@ def reorganise_cfg(dag, upstream_step, reorganisation_section, step_section):
     default_config(step_section, "DOCKER_INPUT_DIR", "/input_folder")
     default_config(step_section, "DOCKER_OUTPUT_DIR", "/output_folder")
 
-    dataset_config = configuration.get(reorganisation_section, 'INPUT_CONFIG')
+    dataset_config = [flag.strip() for flag in configuration.get(reorganisation_section, 'INPUT_CONFIG').split(',')]
     output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
     output_folder_structure = configuration.get(step_section, 'OUTPUT_FOLDER_STRUCTURE')
     docker_image = configuration.get(step_section, 'DOCKER_IMAGE')
