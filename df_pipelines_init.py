@@ -20,6 +20,7 @@ from etl_pipelines.ehr_to_i2b2 import ehr_to_i2b2_dag
 from reorganisation_pipelines.flat_reorganise import flat_reorganisation_dag
 from reorganisation_pipelines.reorganise import reorganise_dag
 from metadata_pipelines.import_metadata import import_metadata_dag
+from metadata_pipelines.flat_metadata import flat_metadata_dag
 
 
 def register_dag(dag):
@@ -106,11 +107,16 @@ def register_metadata_dags(dataset, dataset_section, email_errors_to):
     metadata_pipelines = configuration.get(metadata_section, 'PIPELINES').split(',')
 
     if metadata_pipelines and len(metadata_pipelines) > 0 and metadata_pipelines[0] != '':
-        register_dag(import_metadata_dag(dataset=dataset,
-                                         section=metadata_section,
-                                         email_errors_to=email_errors_to,
-                                         max_active_runs=max_active_runs,
-                                         metadata_pipelines=metadata_pipelines))
+        metadata_dag_id = register_dag(import_metadata_dag(dataset=dataset,
+                                                           section=metadata_section,
+                                                           email_errors_to=email_errors_to,
+                                                           max_active_runs=max_active_runs,
+                                                           metadata_pipelines=metadata_pipelines))
+        register_dag(flat_metadata_dag(
+            dataset=dataset,
+            folder=None,
+            email_errors_to=email_errors_to,
+            trigger_dag_id=metadata_dag_id))
         # endif
 
 
