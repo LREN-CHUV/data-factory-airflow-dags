@@ -19,6 +19,7 @@ Configuration variables used:
 
 
 import re
+import json
 
 from datetime import timedelta
 from textwrap import dedent
@@ -72,6 +73,7 @@ def reorganise_pipeline_step(
     reorganise_pipeline = DockerPipelineOperator(
         task_id='reorganise_pipeline',
         output_folder_callable=lambda **kwargs: output_folder,
+        xcom_extra_callable=lambda **kwargs: json.dumps({'meta_output_folder': meta_output_folder}),
         pool='io_intensive',
         parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
