@@ -11,15 +11,12 @@ from airflow_scan_folder.operators.common import session_folder_trigger_dagrun
 from common_steps import Step, default_config
 
 
-def trigger_metadata_pipeline_cfg(dag, upstream_step, dataset, section, step_section):
+def trigger_metadata_pipeline_cfg(dag, upstream_step, dataset, section):
     default_config(section, 'INPUT_CONFIG', '')
-    default_config(step_section, 'DEPTH', '1')
 
     dataset_config = [flag.strip() for flag in configuration.get(section, 'INPUT_CONFIG').split(',')]
-    depth = int(configuration.get(step_section, 'DEPTH'))
 
-    return trigger_metadata_pipeline_step(dag, upstream_step, dataset=dataset, dataset_config=dataset_config,
-                                          depth=depth)
+    return trigger_metadata_pipeline_step(dag, upstream_step, dataset=dataset, dataset_config=dataset_config)
 
 
 def trigger_metadata_pipeline_step(dag, upstream_step, dataset, dataset_config, depth=1):

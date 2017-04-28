@@ -17,7 +17,7 @@ from reorganisation_steps.trigger_metadata import trigger_metadata_pipeline_cfg
 
 preparation_steps = ['copy_all_to_local']
 reorganisation_steps = ['dicom_reorganise', 'nifti_reorganise']
-finalisation_steps = ['trigger_preprocessing', 'trigger_ehr']
+finalisation_steps = ['trigger_preprocessing', 'trigger_metadata', 'trigger_ehr']
 
 steps_with_file_outputs = preparation_steps + reorganisation_steps
 
@@ -66,8 +66,7 @@ def reorganise_dag(dataset, section, email_errors_to, max_active_runs,
     # endif
 
     if 'trigger_metadata' in reorganisation_pipelines:
-        upstream_step = trigger_metadata_pipeline_cfg(dag, upstream_step, dataset, section,
-                                                      section + ':trigger_metadata')
+        upstream_step = trigger_metadata_pipeline_cfg(dag, upstream_step, dataset, section)
     # endif
 
     if 'trigger_ehr' in reorganisation_pipelines:
