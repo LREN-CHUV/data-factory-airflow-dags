@@ -12,6 +12,7 @@ from reorganisation_steps.copy_all_to_local import copy_all_to_local_cfg
 from reorganisation_steps.reorganise import reorganise_cfg
 from reorganisation_steps.trigger_ehr import trigger_ehr_pipeline_cfg
 from reorganisation_steps.trigger_preprocessing import trigger_preprocessing_pipeline_cfg
+from reorganisation_steps.trigger_metadata import trigger_metadata_pipeline_cfg
 
 
 preparation_steps = ['copy_all_to_local']
@@ -62,6 +63,11 @@ def reorganise_dag(dataset, section, email_errors_to, max_active_runs,
     if 'trigger_preprocessing' in reorganisation_pipelines:
         upstream_step = trigger_preprocessing_pipeline_cfg(dag, upstream_step, dataset,
                                                            section, section + ':trigger_preprocessing')
+    # endif
+
+    if 'trigger_metadata' in reorganisation_pipelines:
+        upstream_step = trigger_metadata_pipeline_cfg(dag, upstream_step, dataset, section,
+                                                      section + ':trigger_metadata')
     # endif
 
     if 'trigger_ehr' in reorganisation_pipelines:

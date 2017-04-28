@@ -19,6 +19,7 @@ from etl_pipelines.flat_ehr_incoming import flat_ehr_incoming_dag
 from etl_pipelines.ehr_to_i2b2 import ehr_to_i2b2_dag
 from reorganisation_pipelines.flat_reorganise import flat_reorganisation_dag
 from reorganisation_pipelines.reorganise import reorganise_dag
+from metadata_pipelines.import_metadata import import_metadata_dag
 
 
 def register_dag(dag):
@@ -97,6 +98,22 @@ def register_preprocessing_dags(dataset, dataset_section, email_errors_to):
     # endif
 
 
+def register_metadata_dags(dataset, dataset_section, email_errors_to):
+    metadata_section = dataset_section + ':metadata'
+    default_config(metadata_section, 'INPUT_FOLDER_DEPTH', '1')
+
+    max_active_runs = int(configuration.get(metadata_section, 'MAX_ACTIVE_RUNS'))
+    metadata_pipelines = configuration.get(metadata_section, 'PIPELINES').split(',')
+
+    if metadata_pipelines and len(metadata_pipelines) > 0 and metadata_pipelines[0] != '':
+        register_dag(import_metadata_dag(dataset=dataset,
+                                         section=metadata_section,
+                                         email_errors_to=email_errors_to,
+                                         max_active_runs=max_active_runs,
+                                         metadata_pipelines=metadata_pipelines))
+        # endif
+
+
 def register_ehr_dags(dataset, dataset_section, email_errors_to):
     ehr_section = dataset_section + ':ehr'
     # Set the default configuration for the preprocessing of the dataset
@@ -138,6 +155,7 @@ def init_pipelines():
 
         register_reorganisation_dags(dataset, dataset_section, email_errors_to)
         register_preprocessing_dags(dataset, dataset_section, email_errors_to)
+        register_metadata_dags(dataset, dataset_section, email_errors_to)
         register_ehr_dags(dataset, dataset_section, email_errors_to)
 
 
