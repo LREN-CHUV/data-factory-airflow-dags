@@ -61,12 +61,11 @@ def reorganise_dag(dataset, section, email_errors_to, max_active_runs,
     upstream_step.priority_weight = cleanup_step.priority_weight
 
     if 'trigger_preprocessing' in reorganisation_pipelines:
-        upstream_step = trigger_preprocessing_pipeline_cfg(dag, upstream_step, dataset,
-                                                           section, section + ':trigger_preprocessing')
+        trigger_preprocessing_pipeline_cfg(dag, upstream_step, dataset, section, section + ':trigger_preprocessing')
     # endif
 
     if 'trigger_metadata' in reorganisation_pipelines:
-        upstream_step = trigger_metadata_pipeline_cfg(dag, upstream_step, dataset, section)
+        trigger_metadata_pipeline_cfg(dag, upstream_step, dataset, section)
     # endif
 
     if 'trigger_ehr' in reorganisation_pipelines:

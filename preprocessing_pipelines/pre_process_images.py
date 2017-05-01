@@ -69,9 +69,7 @@ def pre_process_images_dag(dataset, section, email_errors_to, max_active_runs, p
     # endif
 
     if dicom_to_nifti:
-
         upstream_step = dicom_to_nifti_pipeline_cfg(dag, upstream_step, section, section + ':dicom_to_nifti')
-
         if copy_to_local:
             copy_step = cleanup_local_cfg(dag, upstream_step, section + ':copy_to_local')
             upstream_step.priority_weight = copy_step.priority_weight
