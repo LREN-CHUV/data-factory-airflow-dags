@@ -9,7 +9,7 @@ from common_steps.prepare_pipeline import prepare_pipeline
 from metadata_steps.metadata_to_i2b2 import metadata_to_i2b2_pipeline_cfg
 
 
-def import_metadata_dag(dataset, section, email_errors_to, max_active_runs, metadata_pipelines=''):
+def import_metadata_dag(dataset, section, email_errors_to, max_active_runs):
 
     # Define the DAG
 
@@ -32,10 +32,7 @@ def import_metadata_dag(dataset, section, email_errors_to, max_active_runs, meta
         schedule_interval=None,
         max_active_runs=max_active_runs)
 
-    upstream_step = prepare_pipeline(dag, initial_step, True)
-
-    if 'metadata_to_i2b2' in metadata_pipelines:
-        metadata_to_i2b2_pipeline_cfg(dag, upstream_step, section)
-    # endif
+    upstream_step = prepare_pipeline(dag, initial_step, False)
+    metadata_to_i2b2_pipeline_cfg(dag, upstream_step, section)
 
     return dag
