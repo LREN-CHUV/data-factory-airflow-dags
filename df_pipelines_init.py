@@ -106,7 +106,7 @@ def register_metadata_dags(dataset, dataset_section, email_errors_to):
     max_active_runs = int(configuration.get(metadata_section, 'MAX_ACTIVE_RUNS'))
 
     metadata_dag_id = register_dag(import_metadata_dag(dataset=dataset,
-                                                       section=metadata_section,
+                                                       section='data-factory',
                                                        email_errors_to=email_errors_to,
                                                        max_active_runs=max_active_runs))
     register_dag(flat_metadata_dag(
