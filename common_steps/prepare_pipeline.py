@@ -26,7 +26,8 @@ def prepare_pipeline(dag, upstream_step, include_spm_facts=True):
         dag=dag
     )
 
-    prepare_pipeline_op.set_upstream(upstream_step.task)
+    if upstream_step.task:
+        prepare_pipeline_op.set_upstream(upstream_step.task)
 
     prepare_pipeline_op.doc_md = dedent("""\
     # Prepare pipeline
