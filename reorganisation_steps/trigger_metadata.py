@@ -1,35 +1,27 @@
 from datetime import timedelta
 from textwrap import dedent
 
-from airflow import configuration
-
 from airflow_scan_folder.operators import ScanFlatFolderPipelineOperator
 
-from airflow_scan_folder.operators.common import extract_context_from_session_path
-from airflow_scan_folder.operators.common import session_folder_trigger_dagrun
+from airflow_scan_folder.operators.common import default_extract_context
+from airflow_scan_folder.operators.common import default_trigger_dagrun
 
-from common_steps import Step, default_config
+from common_steps import Step
 
 
 def trigger_metadata_pipeline_cfg(dag, upstream_step, dataset, section):
-    default_config(section, 'INPUT_CONFIG', '')
-
-    dataset_config = [flag.strip() for flag in configuration.get(section, 'INPUT_CONFIG').split(',')]
-
-    return trigger_metadata_pipeline_step(dag, upstream_step, dataset=dataset, dataset_config=dataset_config)
+    return trigger_metadata_pipeline_step(dag, upstream_step, dataset=dataset)
 
 
-def trigger_metadata_pipeline_step(dag, upstream_step, dataset, dataset_config, depth=1):
+def trigger_metadata_pipeline_step(dag, upstream_step, dataset):
 
     trigger_dag_id = '%s_import_metadata' % dataset.lower().replace(" ", "_")
 
     trigger_metadata_pipeline = ScanFlatFolderPipelineOperator(
         task_id='trigger_metadata_pipeline',
         trigger_dag_id=trigger_dag_id,
-        trigger_dag_run_callable=session_folder_trigger_dagrun,
-        extract_context_callable=extract_context_from_session_path,
-        depth=depth,
-        dataset_config=dataset_config,
+        trigger_dag_run_callable=default_trigger_dagrun,
+        extract_context_callable=default_extract_context,
         parent_task=upstream_step.task_id,
         execution_timeout=timedelta(minutes=30),
         priority_weight=999,
@@ -44,5 +36,4 @@ def trigger_metadata_pipeline_step(dag, upstream_step, dataset, dataset_config, 
     Trigger metadata pipelines.
     """)
 
-    return Step(trigger_metadata_pipeline, trigger_metadata_pipeline.task_id,
-                upstream_step.priority_weight + 10)
+    return Step(trigger_metadata_pipeline, trigger_metadata_pipeline.task_id, upstream_step.priority_weight + 10)

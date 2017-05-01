@@ -102,22 +102,18 @@ def register_preprocessing_dags(dataset, dataset_section, email_errors_to):
 def register_metadata_dags(dataset, dataset_section, email_errors_to):
     metadata_section = dataset_section + ':metadata'
     default_config(metadata_section, 'INPUT_FOLDER_DEPTH', '1')
-
+    metadata_input_folder = configuration.get(metadata_section, 'INPUT_FOLDER')
     max_active_runs = int(configuration.get(metadata_section, 'MAX_ACTIVE_RUNS'))
-    metadata_pipelines = configuration.get(metadata_section, 'PIPELINES').split(',')
 
-    if metadata_pipelines and len(metadata_pipelines) > 0 and metadata_pipelines[0] != '':
-        metadata_dag_id = register_dag(import_metadata_dag(dataset=dataset,
-                                                           section=metadata_section,
-                                                           email_errors_to=email_errors_to,
-                                                           max_active_runs=max_active_runs,
-                                                           metadata_pipelines=metadata_pipelines))
-        register_dag(flat_metadata_dag(
-            dataset=dataset,
-            folder=None,
-            email_errors_to=email_errors_to,
-            trigger_dag_id=metadata_dag_id))
-        # endif
+    metadata_dag_id = register_dag(import_metadata_dag(dataset=dataset,
+                                                       section=metadata_section,
+                                                       email_errors_to=email_errors_to,
+                                                       max_active_runs=max_active_runs))
+    register_dag(flat_metadata_dag(
+        dataset=dataset,
+        folder=metadata_input_folder,
+        email_errors_to=email_errors_to,
+        trigger_dag_id=metadata_dag_id))
 
 
 def register_ehr_dags(dataset, dataset_section, email_errors_to):
