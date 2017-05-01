@@ -22,6 +22,7 @@ def trigger_metadata_pipeline_step(dag, upstream_step, dataset):
         trigger_dag_id=trigger_dag_id,
         trigger_dag_run_callable=default_trigger_dagrun,
         extract_context_callable=default_extract_context,
+        source_folder_param='metadata_folder',
         parent_task=upstream_step.task_id,
         execution_timeout=timedelta(minutes=30),
         priority_weight=999,
