@@ -59,7 +59,8 @@ def copy_to_local_step(dag, upstream_step, min_free_space, output_folder, datase
         execution_timeout=timedelta(hours=3),
         on_failure_trigger_dag_id='mri_notify_failed_processing',
         dataset_config=dataset_config,
-        dag=dag
+        dag=dag,
+        organised_folder=False
     )
 
     if upstream_step.task:

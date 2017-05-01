@@ -30,7 +30,8 @@ def trigger_ehr_pipeline_step(dag, upstream_step, dataset, dataset_config, depth
         dataset_config=dataset_config,
         parent_task=upstream_step.task_id,
         priority_weight=999,
-        dag=dag
+        dag=dag,
+        organised_folder=False
     )
 
     trigger_ehr_pipeline.set_upstream(upstream_step.task)

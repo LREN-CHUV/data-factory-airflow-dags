@@ -44,7 +44,8 @@ def map_ehr_to_i2b2_pipeline_step(dag, upstream_step, docker_image=''):
         priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(minutes=60),
         on_failure_trigger_dag_id='mri_notify_failed_processing',
-        dag=dag
+        dag=dag,
+        organised_folder=False
     )
 
     if upstream_step.task:

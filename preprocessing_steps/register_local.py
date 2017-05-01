@@ -42,7 +42,8 @@ def register_local_step(dag, upstream_step, dataset_config):
         execution_timeout=timedelta(hours=3),
         on_failure_trigger_dag_id='mri_notify_failed_processing',
         dataset_config=dataset_config,
-        dag=dag
+        dag=dag,
+        organised_folder=True
     )
 
     if upstream_step.task:

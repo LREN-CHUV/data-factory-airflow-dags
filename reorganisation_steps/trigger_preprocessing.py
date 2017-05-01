@@ -37,7 +37,9 @@ def trigger_preprocessing_pipeline_step(dag, upstream_step, dataset, dataset_con
         parent_task=upstream_step.task_id,
         execution_timeout=timedelta(minutes=30),
         priority_weight=999,
-        dag=dag)
+        dag=dag,
+        organised_folder=False
+    )
 
     trigger_preprocessing_pipeline.set_upstream(upstream_step.task)
 

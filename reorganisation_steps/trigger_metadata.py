@@ -9,7 +9,7 @@ from airflow_scan_folder.operators.common import default_trigger_dagrun
 from common_steps import Step
 
 
-def trigger_metadata_pipeline_cfg(dag, upstream_step, dataset, section):
+def trigger_metadata_pipeline_cfg(dag, upstream_step, dataset):
     return trigger_metadata_pipeline_step(dag, upstream_step, dataset=dataset)
 
 
@@ -26,7 +26,8 @@ def trigger_metadata_pipeline_step(dag, upstream_step, dataset):
         execution_timeout=timedelta(minutes=30),
         priority_weight=999,
         dag=dag,
-        organised_folder=False)
+        organised_folder=False
+    )
 
     trigger_metadata_pipeline.set_upstream(upstream_step.task)
 

@@ -133,7 +133,8 @@ def neuro_morphometric_atlas_pipeline_step(dag, upstream_step,
         on_skip_trigger_dag_id='mri_notify_skipped_processing',
         on_failure_trigger_dag_id='mri_notify_failed_processing',
         dataset_config=dataset_config,
-        dag=dag
+        dag=dag,
+        organised_folder=True
     )
     neuro_morphometric_atlas_pipeline.set_upstream(upstream_step.task)
 

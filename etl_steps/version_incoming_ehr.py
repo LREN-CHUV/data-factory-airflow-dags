@@ -55,7 +55,8 @@ def version_incoming_ehr_pipeline_step(dag, upstream_step, output_folder=None, m
         priority_weight=upstream_step.priority_weight,
         execution_timeout=timedelta(minutes=30),
         on_failure_trigger_dag_id='mri_notify_failed_processing',
-        dag=dag
+        dag=dag,
+        organised_folder=False
     )
 
     if upstream_step.task:
