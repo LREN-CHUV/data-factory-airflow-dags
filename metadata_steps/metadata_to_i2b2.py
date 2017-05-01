@@ -11,6 +11,8 @@ Configuration variables used:
 
 """
 
+import logging
+
 from datetime import timedelta
 from textwrap import dedent
 
@@ -31,6 +33,7 @@ def metadata_to_i2b2_pipeline_cfg(dag, upstream_step, data_factory_section):
 def metadata_to_i2b2_pipeline_step(dag, upstream_step, i2b2_conn):
 
     def metadata_to_i2b2_fn(folder, dataset, **kwargs):
+        logging.info("Launching metadata import from %s", folder)
         meta_files_import.folder2db(folder, i2b2_conn, dataset)
         return "ok"
 
