@@ -35,7 +35,7 @@ def metadata_to_i2b2_pipeline_step(dag, upstream_step, i2b2_conn):
         return "ok"
 
     metadata_to_i2b2_pipeline = PythonPipelineOperator(
-        task_id='features_to_i2b2_pipeline',
+        task_id='metadata_to_i2b2_pipeline',
         python_callable=metadata_to_i2b2_fn,
         pool='io_intensive',
         parent_task=upstream_step.task_id,
