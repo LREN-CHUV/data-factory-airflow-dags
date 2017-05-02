@@ -65,7 +65,7 @@ def reorganise_dag(dataset, section, email_errors_to, max_active_runs,
     # endif
 
     if 'trigger_metadata' in reorganisation_pipelines:
-        trigger_metadata_pipeline_cfg(dag, upstream_step, dataset)
+        trigger_metadata_pipeline_cfg(dag, upstream_step, dataset, section + ':trigger_metadata')
     # endif
 
     if 'trigger_ehr' in reorganisation_pipelines:
