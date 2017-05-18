@@ -16,10 +16,10 @@ Configuration variables used:
 
 * :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
-    * PIPELINES_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
+    * PIPELINE_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
 * :preprocessing:mpm_maps section
     * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline.
-      Default to PIPELINES_PATH + '/MPMs_Pipeline'
+      Default to PIPELINE_PATH + '/MPMs_Pipeline'
 * :preprocessing:neuro_morphometric_atlas section
     * OUTPUT_FOLDER: destination folder for the Atlas File, the volumes of the Morphometric Atlas structures (*.txt),
       the csv file containing the volume, and globals plus Multiparametric Maps (R2*, R1, MT, PD) for each structure
@@ -29,7 +29,7 @@ Configuration variables used:
       defined in the Subject Atlas.
     * SPM_FUNCTION: SPM function called. Default to 'NeuroMorphometric_pipeline'
     * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline.
-      Default to PIPELINES_PATH + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
+      Default to PIPELINE_PATH + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines.
       Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner.
@@ -51,10 +51,10 @@ from common_steps import Step, default_config
 
 def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
     default_config(preprocessing_section, 'INPUT_CONFIG', '')
-    default_config(preprocessing_section, 'PIPELINES_PATH', '.')
+    default_config(preprocessing_section, 'PIPELINE_PATH', '.')
     default_config(step_section, 'SPM_FUNCTION', 'NeuroMorphometric_pipeline')
     default_config(step_section, 'PIPELINE_PATH', configuration.get(
-        preprocessing_section, 'PIPELINES_PATH') + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label')
+        preprocessing_section, 'PIPELINE_PATH') + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label')
     default_config(step_section, 'MISC_LIBRARY_PATH', configuration.get(preprocessing_section, 'MISC_LIBRARY_PATH'))
     default_config(step_section, 'PROTOCOLS_DEFINITION_FILE',
                    configuration.get(preprocessing_section, 'PROTOCOLS_DEFINITION_FILE'))
@@ -62,7 +62,7 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
                    configuration.get('spm', 'SPM_DIR') + '/tpm/nwTPM_sl3.nii')
     mpm_maps_section = preprocessing_section + ':mpm_maps'
     default_config(mpm_maps_section, 'PIPELINE_PATH', configuration.get(
-        preprocessing_section, 'PIPELINES_PATH') + '/MPMs_Pipeline')
+        preprocessing_section, 'PIPELINE_PATH') + '/MPMs_Pipeline')
 
     dataset_config = [flag.strip() for flag in configuration.get(preprocessing_section, 'INPUT_CONFIG').split(',')]
     pipeline_path = configuration.get(step_section, 'PIPELINE_PATH')
