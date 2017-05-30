@@ -59,7 +59,7 @@ def pre_process_images_dag(dataset, section, email_errors_to, max_active_runs, p
     upstream_step = prepare_pipeline(dag, upstream_step, True)
 
     copy_to_local = 'copy_to_local' in preprocessing_pipelines
-    dicom_to_nifti = 'dicom_to_nitfi' in preprocessing_pipelines or bool(
+    dicom_to_nifti = 'dicom_to_nifti' in preprocessing_pipelines or bool(
         set(preprocessing_pipelines).intersection(set(dicom_preparation_steps)))
 
     if copy_to_local:
