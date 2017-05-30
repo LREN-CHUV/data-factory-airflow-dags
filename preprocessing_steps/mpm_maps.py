@@ -9,13 +9,13 @@ Configuration variables used:
 
 * :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
-    * PIPELINE_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
+    * PIPELINES_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
 * :preprocessing:mpm_maps section
     * OUTPUT_FOLDER: destination folder for the MPMs and brain segmentation
     * BACKUP_FOLDER: backup folder for the MPMs and brain segmentation
     * SPM_FUNCTION: SPM function called. Default to 'Preproc_mpm_maps'
     * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline.
-      Default to PIPELINE_PATH + '/MPMs_Pipeline'
+      Default to PIPELINES_PATH + '/MPMs_Pipeline'
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines.
       Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner.
@@ -36,10 +36,10 @@ from common_steps import Step, default_config
 
 def mpm_maps_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
     default_config(preprocessing_section, 'INPUT_CONFIG', '')
-    default_config(preprocessing_section, 'PIPELINE_PATH', '.')
+    default_config(preprocessing_section, 'PIPELINES_PATH', '.')
     default_config(step_section, 'SPM_FUNCTION', 'Preproc_mpm_maps')
     default_config(step_section, 'PIPELINE_PATH', configuration.get(
-        preprocessing_section, 'PIPELINE_PATH') + '/MPMs_Pipeline')
+        preprocessing_section, 'PIPELINES_PATH') + '/MPMs_Pipeline')
     default_config(step_section, 'MISC_LIBRARY_PATH', configuration.get(preprocessing_section, 'MISC_LIBRARY_PATH'))
     default_config(step_section, 'PROTOCOLS_DEFINITION_FILE',
                    configuration.get(preprocessing_section, 'PROTOCOLS_DEFINITION_FILE'))

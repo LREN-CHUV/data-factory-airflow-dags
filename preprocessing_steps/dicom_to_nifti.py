@@ -8,13 +8,13 @@ Configuration variables used:
 
 * :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
-    * PIPELINE_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
+    * PIPELINES_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
 * :preprocessing:dicom_to_nifti section
     * OUTPUT_FOLDER: destination folder for the Nitfi images
     * BACKUP_FOLDER: backup folder for the Nitfi images
     * SPM_FUNCTION: SPM function called. Default to 'DCM2NII_LREN'
     * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline.
-      Default to PIPELINE_PATH + '/Nifti_Conversion_Pipeline'
+      Default to PIPELINES_PATH + '/Nifti_Conversion_Pipeline'
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines.
       Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner.
@@ -37,10 +37,10 @@ from common_steps import Step, default_config
 
 def dicom_to_nifti_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
     default_config(preprocessing_section, 'INPUT_CONFIG', '')
-    default_config(preprocessing_section, 'PIPELINE_PATH', '.')
+    default_config(preprocessing_section, 'PIPELINES_PATH', '.')
     default_config(step_section, 'SPM_FUNCTION', 'DCM2NII_LREN')
     default_config(step_section, 'PIPELINE_PATH', configuration.get(
-        preprocessing_section, 'PIPELINE_PATH') + '/Nifti_Conversion_Pipeline')
+        preprocessing_section, 'PIPELINES_PATH') + '/Nifti_Conversion_Pipeline')
     default_config(step_section, 'MISC_LIBRARY_PATH', configuration.get(preprocessing_section, 'MISC_LIBRARY_PATH'))
     default_config(step_section, 'PROTOCOLS_DEFINITION_FILE',
                    configuration.get(preprocessing_section, 'PROTOCOLS_DEFINITION_FILE'))
