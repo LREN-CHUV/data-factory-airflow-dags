@@ -54,12 +54,14 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
     default_config(preprocessing_section, 'PIPELINES_PATH', '.')
     default_config(step_section, 'SPM_FUNCTION', 'NeuroMorphometric_pipeline')
     default_config(step_section, 'PIPELINE_PATH', configuration.get(
-        preprocessing_section, 'PIPELINES_PATH') + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label')
-    default_config(step_section, 'MISC_LIBRARY_PATH', configuration.get(preprocessing_section, 'MISC_LIBRARY_PATH'))
+        preprocessing_section, 'PIPELINES_PATH') + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label',
+                   fill_empty=True)
+    default_config(step_section, 'MISC_LIBRARY_PATH', configuration.get(
+        preprocessing_section, 'MISC_LIBRARY_PATH'), fill_empty=True)
     default_config(step_section, 'PROTOCOLS_DEFINITION_FILE',
-                   configuration.get(preprocessing_section, 'PROTOCOLS_DEFINITION_FILE'))
+                   configuration.get(preprocessing_section, 'PROTOCOLS_DEFINITION_FILE'), fill_empty=True)
     default_config(step_section, 'TPM_TEMPLATE',
-                   configuration.get('spm', 'SPM_DIR') + '/tpm/nwTPM_sl3.nii')
+                   configuration.get('spm', 'SPM_DIR') + '/tpm/TPM.nii')
     mpm_maps_section = preprocessing_section + ':mpm_maps'
     default_config(mpm_maps_section, 'PIPELINE_PATH', configuration.get(
         preprocessing_section, 'PIPELINES_PATH') + '/MPMs_Pipeline')

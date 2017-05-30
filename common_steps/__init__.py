@@ -4,8 +4,10 @@
 from airflow import configuration
 
 
-def default_config(section, key, value):
+def default_config(section, key, value, fill_empty=False):
     if not configuration.has_option(section, key):
+        configuration.set(section, key, value)
+    if fill_empty and not configuration.get(section, key):
         configuration.set(section, key, value)
 
 
