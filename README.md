@@ -99,16 +99,16 @@ To see this project in action, go to the [demo of MIP Data Factory](https://gith
     * OUTPUT_FOLDER: destination folder for the Nifti images
     * BACKUP_FOLDER: backup folder for the Nitfi images
     * SPM_FUNCTION: SPM function called. Default to 'DCM2NII_LREN'
-    * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to PIPELINES_PATH + '/Nifti_Conversion_Pipeline'
+    * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to [data-factory:&lt;dataset&gt;:preprocessing]PIPELINES_PATH + '/Nifti_Conversion_Pipeline'
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner. Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
-    * DCM2NII_PROGRAM: Path to DCM2NII program. Default to PIPELINE_PATH + '/dcm2nii'
+    * DCM2NII_PROGRAM: Path to DCM2NII program. Default to [data-factory:&lt;dataset&gt;:preprocessing]PIPELINES_PATH + '/dcm2nii'
 
 * If mpm_maps is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:mpm_maps] section:
     * OUTPUT_FOLDER: destination folder for the MPMs and brain segmentation
     * BACKUP_FOLDER: backup folder for the MPMs and brain segmentation
     * SPM_FUNCTION: SPM function called. Default to 'Preproc_mpm_maps'
-    * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to PIPELINES_PATH + '/MPMs_Pipeline'
+    * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to [data-factory:&lt;dataset&gt;:preprocessing]PIPELINES_PATH + '/MPMs_Pipeline'
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner. Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
 
@@ -116,7 +116,7 @@ To see this project in action, go to the [demo of MIP Data Factory](https://gith
     * OUTPUT_FOLDER: destination folder for the Atlas File, the volumes of the Morphometric Atlas structures (.txt), the csv file containing the volume, and globals plus Multiparametric Maps (R2*, R1, MT, PD) for each structure defined in the Subject Atlas.
     * BACKUP_FOLDER: backup folder for the Atlas File, the volumes of the Morphometric Atlas structures (.txt), the csv file containing the volume, and globals plus Multiparametric Maps (R2*, R1, MT, PD) for each structure defined in the Subject Atlas.
     * SPM_FUNCTION: SPM function called. Default to 'NeuroMorphometric_pipeline'
-    * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to PIPELINES_PATH + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
+    * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to [data-factory:&lt;dataset&gt;:preprocessing]PIPELINES_PATH + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label'
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner. Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * TPM_TEMPLATE: Path to the the template used for segmentation step in case the image is not segmented. Default to SPM_DIR + 'tpm/nwTPM_sl3.nii'
