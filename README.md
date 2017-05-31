@@ -67,7 +67,7 @@ To see this project in action, go to the [demo of MIP Data Factory](https://gith
     * DEPTH: depth of folders to explore when triggering preprocessing
 
 * For each dataset, now configure the [data-factory:&lt;dataset&gt;:preprocessing] section:
-    * INPUT_FOLDER: Folder containing the original imaging data to process. This data should have been already anonymised by a tool
+    * INPUT_FOLDER: Folder containing the original imaging data to process. This data should have been already anonymised by a tool. Not required when the reorganisation pipelines have been used before.
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised, values are
       * boost: (optional) When enabled, we consider that all the files from a same folder share the same meta-data. The processing is (about 2 times) faster. This option is enabled by default.
       * session_id_by_patient: Rarely, a data set might use study IDs which are unique by patient (not for the whole study). E.g.: LREN data. In such a case, you have to enable this flag. This will use PatientID + StudyID as a session ID.
