@@ -82,7 +82,7 @@ To see this project in action, go to the [demo of MIP Data Factory](https://gith
     * SCANNERS: List of methods describing how the preprocessing data folder is scanned for new work, values are
       * continuous: input folder is scanned frequently for new data. Sub-folders should contain a .ready file to indicate that processing can be performed on that folder.
       * daily: input folder contains a sub-folder for the year, this folder contains daily sub-folders for each day of the year (format yyyyMMdd). Those daily sub-folders in turn contain the folders for each scan to process.
-      * flat: input folder contains a set of sub-folders each containing a scan to process.
+      * once: input folder contains a set of sub-folders each containing a scan to process.
     * PIPELINES: List of pipelines to execute. Values are
       * copy_to_local: if used, input data are first copied to a local folder to speed-up processing.
       * dicom_to_nifti: convert all DICOM files to Nifti format.
@@ -123,11 +123,11 @@ To see this project in action, go to the [demo of MIP Data Factory](https://gith
 
 * For each dataset, now configure the [data-factory:&lt;dataset&gt;:ehr] section:
     * INPUT_FOLDER: Folder containing the original EHR data to process. This data should have been already anonymised by a tool
-    * INPUT_FOLDER_DEPTH: When a flat scanner is used, indicates the depth of folders to traverse before reaching EHR data. Default to 1.
+    * INPUT_FOLDER_DEPTH: When a once scanner is used, indicates the depth of folders to traverse before reaching EHR data. Default to 1.
     * MIN_FREE_SPACE: minimum percentage of free space available on local disk
     * SCANNERS: List of methods describing how the EHR data folder is scanned for new work, values are
       * daily: input folder contains a sub-folder for the year, this folder contains daily sub-folders for each day of the year (format yyyyMMdd). Those daily sub-folders in turn contain the EHR files in CSV format to process.
-      * flat: input folder contains the EHR files in CSV format to process.
+      * once: input folder contains the EHR files in CSV format to process.
     * PIPELINES: List of pipelines to execute. Values are
       * map_ehr_to_i2b2: .
 
@@ -164,7 +164,7 @@ misc_library_path = /opt/airflow-scripts/mri-preprocessing-pipeline/Miscellaneou
 pipelines = dicom_to_nifti,mpm_maps,neuro_morphometric_atlas,export_features,catalog_to_i2b2
 pipelines_path = /opt/airflow-scripts/mri-preprocessing-pipeline/Pipelines
 protocols_definition_file = /opt/airflow-scripts/mri-preprocessing-pipeline/Protocols_definition.txt
-scanners = flat
+scanners = once
 [data-factory:main:preprocessing:copy_to_local]
 output_folder = /data/incoming
 [data-factory:main:preprocessing:dicom_to_nifti]
@@ -196,7 +196,7 @@ input_folder_depth = 0
 max_active_runs = 30
 min_free_space = 0.3
 pipelines =
-scanners = flat
+scanners = once
 [data-factory:main:ehr:map_ehr_to_i2b2]
 docker_image = hbpmip/mipmap-demo-ehr-to-i2b2:0.1
 [data-factory:main:ehr:version_incoming_ehr]

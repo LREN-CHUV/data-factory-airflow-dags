@@ -91,7 +91,7 @@ def register_preprocessing_dags(dataset, dataset_section, email_errors_to):
                 folder=preprocessing_input_folder,
                 email_errors_to=email_errors_to,
                 trigger_dag_id=pre_process_images_dag_id))
-        if 'flat' in preprocessing_scanners:
+        if 'once' in preprocessing_scanners:
             register_dag(pre_process_scan_input_folder_dag(
                 dataset=dataset,
                 folder=preprocessing_input_folder,
@@ -137,7 +137,7 @@ def register_ehr_dags(dataset, dataset_section, email_errors_to):
                 dataset=dataset, folder=ehr_input_folder, email_errors_to=email_errors_to,
                 trigger_dag_id=ehr_to_i2b2_dag_id))
 
-        if 'flat' in ehr_scanners:
+        if 'once' in ehr_scanners:
             ehr_input_folder_depth = int(configuration.get(ehr_section, 'INPUT_FOLDER_DEPTH'))
             register_dag(ehr_scan_input_folder_dag(
                 dataset=dataset, folder=ehr_input_folder, depth=ehr_input_folder_depth,
