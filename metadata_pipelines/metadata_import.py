@@ -9,11 +9,11 @@ from common_steps.prepare_pipeline import prepare_pipeline
 from metadata_steps.metadata_to_i2b2 import metadata_to_i2b2_pipeline_cfg
 
 
-def import_metadata_dag(dataset, section, email_errors_to, max_active_runs):
+def metadata_import_dag(dataset, section, email_errors_to, max_active_runs):
 
     # Define the DAG
 
-    dag_name = '%s_import_metadata' % dataset.lower().replace(" ", "_")
+    dag_name = '%s_metadata_import' % dataset.lower().replace(" ", "_")
 
     default_args = {
         'owner': 'airflow',

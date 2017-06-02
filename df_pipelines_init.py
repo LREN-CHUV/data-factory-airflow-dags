@@ -17,10 +17,10 @@ from preprocessing_pipelines.pre_process_images import pre_process_images_dag
 from etl_pipelines.daily_ehr_incoming import daily_ehr_incoming_dag
 from etl_pipelines.flat_ehr_incoming import flat_ehr_incoming_dag
 from etl_pipelines.ehr_to_i2b2 import ehr_to_i2b2_dag
-from reorganisation_pipelines.flat_reorganise import flat_reorganisation_dag
-from reorganisation_pipelines.reorganise import reorganise_dag
-from metadata_pipelines.import_metadata import import_metadata_dag
-from metadata_pipelines.flat_metadata import flat_metadata_dag
+from reorganisation_pipelines.flat_reorganise import reorganisation_scan_folder_dag
+from reorganisation_pipelines.reorganise_files import reorganise_files_dag
+from metadata_pipelines.metadata_import import metadata_import_dag
+from metadata_pipelines.metadata_scan_folder import metadata_scan_folder_dag
 
 
 def register_dag(dag):
@@ -42,12 +42,12 @@ def register_reorganisation_dags(dataset, dataset_section, email_errors_to):
     reorganisation_pipelines = configuration.get(reorganisation_section, 'PIPELINES').split(',')
 
     if reorganisation_pipelines and len(reorganisation_pipelines) > 0 and reorganisation_pipelines[0] != '':
-        reorganisation_dag_id = register_dag(reorganise_dag(dataset=dataset,
-                                                            section=reorganisation_section,
-                                                            email_errors_to=email_errors_to,
-                                                            max_active_runs=max_active_runs,
-                                                            reorganisation_pipelines=reorganisation_pipelines))
-        register_dag(flat_reorganisation_dag(
+        reorganisation_dag_id = register_dag(reorganise_files_dag(dataset=dataset,
+                                                                  section=reorganisation_section,
+                                                                  email_errors_to=email_errors_to,
+                                                                  max_active_runs=max_active_runs,
+                                                                  reorganisation_pipelines=reorganisation_pipelines))
+        register_dag(reorganisation_scan_folder_dag(
             dataset=dataset,
             folder=reorganisation_input_folder,
             depth=depth,
@@ -105,15 +105,16 @@ def register_metadata_dags(dataset, dataset_section, email_errors_to):
     metadata_input_folder = configuration.get(metadata_section, 'INPUT_FOLDER')
     max_active_runs = int(configuration.get(metadata_section, 'MAX_ACTIVE_RUNS'))
 
-    metadata_dag_id = register_dag(import_metadata_dag(dataset=dataset,
-                                                       section='data-factory',
-                                                       email_errors_to=email_errors_to,
-                                                       max_active_runs=max_active_runs))
-    register_dag(flat_metadata_dag(
-        dataset=dataset,
-        folder=metadata_input_folder,
-        email_errors_to=email_errors_to,
-        trigger_dag_id=metadata_dag_id))
+    if metadata_input_folder != '':
+        metadata_dag_id = register_dag(metadata_import_dag(dataset=dataset,
+                                                           section='data-factory',
+                                                           email_errors_to=email_errors_to,
+                                                           max_active_runs=max_active_runs))
+        register_dag(metadata_scan_folder_dag(
+            dataset=dataset,
+            folder=metadata_input_folder,
+            email_errors_to=email_errors_to,
+            trigger_dag_id=metadata_dag_id))
 
 
 def register_ehr_dags(dataset, dataset_section, email_errors_to):

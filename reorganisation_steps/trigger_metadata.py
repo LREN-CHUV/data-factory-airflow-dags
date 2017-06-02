@@ -17,7 +17,7 @@ def trigger_metadata_pipeline_cfg(dag, upstream_step, dataset, step_section):
 
 def trigger_metadata_pipeline_step(dag, upstream_step, dataset, depth=0):
 
-    trigger_dag_id = '%s_import_metadata' % dataset.lower().replace(" ", "_")
+    trigger_dag_id = '%s_metadata_import' % dataset.lower().replace(" ", "_")
 
     trigger_metadata_pipeline = ScanFlatFolderPipelineOperator(
         task_id='trigger_metadata_pipeline',

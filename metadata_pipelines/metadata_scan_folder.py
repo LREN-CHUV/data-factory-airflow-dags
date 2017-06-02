@@ -9,12 +9,12 @@ from airflow_scan_folder.operators.common import default_accept_folder
 from airflow_scan_folder.operators.common import default_trigger_dagrun
 
 
-def flat_metadata_dag(dataset, folder, email_errors_to, trigger_dag_id):
+def metadata_scan_folder_dag(dataset, folder, email_errors_to, trigger_dag_id):
 
     start = datetime.utcnow()
     start = datetime.combine(start.date(), time(start.hour, 0))
 
-    dag_name = '%s_flat_metadata' % dataset.lower().replace(" ", "_")
+    dag_name = '%s_metadata_scan_folder' % dataset.lower().replace(" ", "_")
 
     # Define the DAG
 

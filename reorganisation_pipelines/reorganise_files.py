@@ -1,4 +1,4 @@
-"""Reorganise files in oder to match the pre-processing pipelines requirements"""
+"""Reorganise files in order to match the pre-processing pipelines requirements"""
 
 from datetime import datetime, timedelta
 
@@ -22,12 +22,12 @@ finalisation_steps = ['trigger_preprocessing', 'trigger_metadata', 'trigger_ehr'
 steps_with_file_outputs = preparation_steps + reorganisation_steps
 
 
-def reorganise_dag(dataset, section, email_errors_to, max_active_runs,
-                   reorganisation_pipelines=''):
+def reorganise_files_dag(dataset, section, email_errors_to, max_active_runs,
+                         reorganisation_pipelines=''):
 
     # Define the DAG
 
-    dag_name = '%s_reorganise' % dataset.lower().replace(" ", "_")
+    dag_name = '%s_reorganise_files' % dataset.lower().replace(" ", "_")
 
     default_args = {
         'owner': 'airflow',
