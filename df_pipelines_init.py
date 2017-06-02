@@ -10,14 +10,15 @@ from common_steps import default_config
 from preprocessing_pipelines.mri_notify_failed_processing import mri_notify_failed_processing_dag
 from preprocessing_pipelines.mri_notify_skipped_processing import mri_notify_skipped_processing_dag
 from preprocessing_pipelines.mri_notify_successful_processing import mri_notify_successful_processing_dag
-from preprocessing_pipelines.continuously_pre_process_incoming import continuously_preprocess_incoming_dag
-from preprocessing_pipelines.daily_pre_process_incoming import daily_preprocess_incoming_dag
-from preprocessing_pipelines.flat_pre_process_incoming import flat_preprocess_incoming_dag
+from preprocessing_pipelines.pre_process_continuously_scan_input_folder \
+    import pre_process_continuously_scan_input_folder_dag
+from preprocessing_pipelines.pre_process_daily_scan_input_folder import pre_process_daily_scan_input_folder_dag
+from preprocessing_pipelines.pre_process_scan_input_folder import pre_process_scan_input_folder_dag
 from preprocessing_pipelines.pre_process_images import pre_process_images_dag
-from etl_pipelines.daily_ehr_incoming import daily_ehr_incoming_dag
-from etl_pipelines.flat_ehr_incoming import flat_ehr_incoming_dag
+from etl_pipelines.ehr_daily_scan_input_folder import ehr_daily_scan_input_folder_dag
+from etl_pipelines.ehr_scan_input_folder import ehr_scan_input_folder_dag
 from etl_pipelines.ehr_to_i2b2 import ehr_to_i2b2_dag
-from reorganisation_pipelines.flat_reorganise import reorganisation_scan_folder_dag
+from reorganisation_pipelines.reorganisation_scan_input_folder import reorganisation_scan_input_folder_dag
 from reorganisation_pipelines.reorganise_files import reorganise_files_dag
 from metadata_pipelines.metadata_import import metadata_import_dag
 from metadata_pipelines.metadata_scan_folder import metadata_scan_folder_dag
@@ -47,7 +48,7 @@ def register_reorganisation_dags(dataset, dataset_section, email_errors_to):
                                                                   email_errors_to=email_errors_to,
                                                                   max_active_runs=max_active_runs,
                                                                   reorganisation_pipelines=reorganisation_pipelines))
-        register_dag(reorganisation_scan_folder_dag(
+        register_dag(reorganisation_scan_input_folder_dag(
             dataset=dataset,
             folder=reorganisation_input_folder,
             depth=depth,
@@ -79,19 +80,19 @@ def register_preprocessing_dags(dataset, dataset_section, email_errors_to):
             pre_process_images_dag(dataset=dataset, section=preprocessing_section, email_errors_to=email_errors_to,
                                    max_active_runs=max_active_runs, preprocessing_pipelines=preprocessing_pipelines))
         if 'continuous' in preprocessing_scanners:
-            register_dag(continuously_preprocess_incoming_dag(
+            register_dag(pre_process_continuously_scan_input_folder_dag(
                 dataset=dataset,
                 folder=preprocessing_input_folder,
                 email_errors_to=email_errors_to,
                 trigger_dag_id=pre_process_images_dag_id))
         if 'daily' in preprocessing_scanners:
-            register_dag(daily_preprocess_incoming_dag(
+            register_dag(pre_process_daily_scan_input_folder_dag(
                 dataset=dataset,
                 folder=preprocessing_input_folder,
                 email_errors_to=email_errors_to,
                 trigger_dag_id=pre_process_images_dag_id))
         if 'flat' in preprocessing_scanners:
-            register_dag(flat_preprocess_incoming_dag(
+            register_dag(pre_process_scan_input_folder_dag(
                 dataset=dataset,
                 folder=preprocessing_input_folder,
                 email_errors_to=email_errors_to,
@@ -132,13 +133,13 @@ def register_ehr_dags(dataset, dataset_section, email_errors_to):
                                                           email_errors_to=email_errors_to,
                                                           max_active_runs=max_active_runs))
         if 'daily' in ehr_scanners:
-            register_dag(daily_ehr_incoming_dag(
+            register_dag(ehr_daily_scan_input_folder_dag(
                 dataset=dataset, folder=ehr_input_folder, email_errors_to=email_errors_to,
                 trigger_dag_id=ehr_to_i2b2_dag_id))
 
         if 'flat' in ehr_scanners:
             ehr_input_folder_depth = int(configuration.get(ehr_section, 'INPUT_FOLDER_DEPTH'))
-            register_dag(flat_ehr_incoming_dag(
+            register_dag(ehr_scan_input_folder_dag(
                 dataset=dataset, folder=ehr_input_folder, depth=ehr_input_folder_depth,
                 email_errors_to=email_errors_to,
                 trigger_dag_id=ehr_to_i2b2_dag_id))

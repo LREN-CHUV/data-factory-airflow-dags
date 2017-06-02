@@ -13,7 +13,8 @@ We assume that Dicom files are already processed by the hierarchize.sh script wi
               _ gre_field_mapping_1acq_rl
               _ localizer
 
-We are looking for the presence of the .ready marker file indicating that pre-processing of an MRI session is complete.
+We are looking for the presence of the .ready marker file indicating that pre-processing of an MRI session is complete,
+or a date folder with a date older than today.
 
 """
 
@@ -28,13 +29,13 @@ from airflow_scan_folder.operators.common import default_build_daily_folder_path
 from preprocessing_pipelines import lren_accept_folder, lren_build_daily_folder_path_callable
 
 
-def continuously_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):
-    # Param folder to scan for new incoming session folders containing DICOM images.
+def pre_process_daily_scan_input_folder_dag(dataset, folder, email_errors_to, trigger_dag_id):
+    # Folder to scan for new incoming session folders containing DICOM images.
 
     start = datetime.utcnow()
     start = datetime.combine(start.date(), time(start.hour, 0))
 
-    dag_name = '%s_mri_continuously_pre_process_incoming' % dataset.lower().replace(" ", "_")
+    dag_name = '%s_pre_process_daily_scan_input_folder' % dataset.lower().replace(" ", "_")
 
     # Define the DAG
 
@@ -49,10 +50,10 @@ def continuously_preprocess_incoming_dag(dataset, folder, email_errors_to, trigg
         'email_on_retry': True
     }
 
-    # Run the DAG every 10 minutes
+    # Run the DAG daily
     dag = DAG(dag_id=dag_name,
               default_args=default_args,
-              schedule_interval='0 */10 * * *')
+              schedule_interval='@daily')
 
     accept_folder_fn = None
     build_daily_folder_path_callable = default_build_daily_folder_path_callable
@@ -61,8 +62,8 @@ def continuously_preprocess_incoming_dag(dataset, folder, email_errors_to, trigg
         accept_folder_fn = lren_accept_folder
         build_daily_folder_path_callable = lren_build_daily_folder_path_callable
 
-    scan_ready_dirs = ScanDailyFolderOperator(
-        task_id='scan_dirs_ready_for_preprocessing',
+    scan_dirs = ScanDailyFolderOperator(
+        task_id='scan_dirs',
         dataset=dataset,
         folder=folder,
         trigger_dag_id=trigger_dag_id,
@@ -71,17 +72,17 @@ def continuously_preprocess_incoming_dag(dataset, folder, email_errors_to, trigg
         accept_folder_callable=accept_folder_fn,
         build_daily_folder_path_callable=build_daily_folder_path_callable,
         look_for_ready_marker_file=default_look_for_ready_marker_file,
-        execution_timeout=timedelta(minutes=10),
+        execution_timeout=timedelta(minutes=30),
         dag=dag)
 
-    scan_ready_dirs.doc_md = dedent("""\
-    # Scan directories ready for processing
+    scan_dirs.doc_md = dedent("""\
+    # Scan directories for processing
 
     Scan the session folders located inside folder %s (defined by variable __preprocessing_data_folder__) and organised
     by daily folders.
 
-    It looks for the presence of a .ready marker file to mark that session folder as ready for processing, but it
-    will skip it if contains the marker file .processing indicating that processing has already started.
+    Daily folders older than today are always processed, and today's folder content is skipped unless a .ready marker
+    file is found.
     """ % folder)
 
     return dag

@@ -12,6 +12,7 @@ from airflow_spm.operators import SpmOperator
 from airflow_freespace.operators import FreeSpaceSensor
 from airflow import configuration
 
+from preprocessing_pipelines.pre_process_images import steps_with_file_outputs
 
 # constants
 
@@ -115,12 +116,17 @@ for dataset in dataset_sections.split(','):
     dataset_name = configuration.get(dataset_section, 'DATASET_LABEL')
     min_free_space_local_folder = configuration.getfloat(
         dataset_section + ':preprocessing', 'MIN_FREE_SPACE')
-    dicom_local_folder = configuration.get(
-        dataset_section + ':preprocessing:copy_to_local', 'OUTPUT_FOLDER')
+    local_folder = '/'
+    for section in steps_with_file_outputs:
+        try:
+            local_folder = configuration.get(dataset_section + ':preprocessing:' + section, 'OUTPUT_FOLDER')
+            break
+        except Exception:
+            pass
 
     check_free_space = FreeSpaceSensor(
         task_id='%s_check_free_space' % dataset_name.lower().replace(" ", "_"),
-        path=dicom_local_folder,
+        path=local_folder,
         free_disk_threshold=min_free_space_local_folder,
         retry_delay=timedelta(hours=1),
         retries=24 * 7,

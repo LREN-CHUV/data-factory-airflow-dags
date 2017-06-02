@@ -18,10 +18,10 @@ or a date folder with a date older than today.
 from datetime import datetime, timedelta, time
 from textwrap import dedent
 from airflow import DAG
-from airflow_scan_folder.operators import ScanFlatFolderOperator
+from airflow_scan_folder.operators import ScanDailyFolderOperator
 
 
-def flat_ehr_incoming_dag(dataset, folder, depth, email_errors_to, trigger_dag_id):
+def ehr_daily_scan_input_folder_dag(dataset, folder, email_errors_to, trigger_dag_id):
     # Folder to scan for new incoming daily EHR-extract folders containing CSV files and other kinds of clinical data.
 
     # Define the DAG
@@ -29,7 +29,7 @@ def flat_ehr_incoming_dag(dataset, folder, depth, email_errors_to, trigger_dag_i
     start = datetime.utcnow()
     start = datetime.combine(start.date(), time(start.hour, 0))
 
-    dag_name = '%s_mri_flat_etl_incoming' % dataset.lower().replace(" ", "_")
+    dag_name = '%s_ehr_daily_scan_input_folder' % dataset.lower().replace(" ", "_")
 
     default_args = {
         'owner': 'airflow',
@@ -44,12 +44,11 @@ def flat_ehr_incoming_dag(dataset, folder, depth, email_errors_to, trigger_dag_i
 
     dag = DAG(dag_id=dag_name,
               default_args=default_args,
-              schedule_interval='@once')
+              schedule_interval='@daily')
 
-    scan_dirs = ScanFlatFolderOperator(
+    scan_dirs = ScanDailyFolderOperator(
         task_id='scan_dirs',
         folder=folder,
-        depth=depth,
         trigger_dag_id=trigger_dag_id,
         execution_timeout=timedelta(minutes=30),
         dataset=dataset,
@@ -58,8 +57,10 @@ def flat_ehr_incoming_dag(dataset, folder, depth, email_errors_to, trigger_dag_i
     scan_dirs.doc_md = dedent("""\
     # Scan directories for processing
 
-    Scan the folders located inside folder %s (defined by variable __ehr_data_folder__), up to a depth of %s.
+    Scan the daily folders located inside folder %s (defined by variable __ehr_data_folder__).
 
-    """ % (folder, depth))
+    Daily folders older than today are always processed, and today's folder content is skipped unless a .ready marker
+    file is found.
+    """ % folder)
 
     return dag

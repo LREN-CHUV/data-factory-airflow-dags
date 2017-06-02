@@ -8,12 +8,13 @@ from re import fullmatch
 from airflow_scan_folder.operators.scan_folder_operator import ScanFlatFolderOperator
 
 
-def reorganisation_scan_folder_dag(dataset, folder, email_errors_to, trigger_dag_id, depth=1, folder_filter=".*"):
+def reorganisation_scan_input_folder_dag(dataset, folder, email_errors_to, trigger_dag_id,
+                                         depth=1, folder_filter=".*"):
 
     start = datetime.utcnow()
     start = datetime.combine(start.date(), time(start.hour, 0))
 
-    dag_name = '%s_reorganisation_scan_folder' % dataset.lower().replace(" ", "_")
+    dag_name = '%s_reorganisation_scan_input_folder' % dataset.lower().replace(" ", "_")
 
     # Define the DAG
 

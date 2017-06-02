@@ -32,7 +32,7 @@ def metadata_files_to_i2b2_dag(dataset, section, email_errors_to, max_active_run
 
     # Define the DAG
 
-    dag_name = '%s_metadata_files_to' % dataset.lower().replace(" ", "_")
+    dag_name = '%s_metadata_files_to_i2b2' % dataset.lower().replace(" ", "_")
 
     default_args = {
         'owner': 'airflow',

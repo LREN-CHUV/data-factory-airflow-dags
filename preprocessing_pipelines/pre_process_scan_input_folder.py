@@ -23,13 +23,13 @@ from airflow_scan_folder.operators.common import session_folder_trigger_dagrun
 from preprocessing_pipelines import lren_accept_folder
 
 
-def flat_preprocess_incoming_dag(dataset, folder, email_errors_to, trigger_dag_id):
+def pre_process_scan_input_folder_dag(dataset, folder, email_errors_to, trigger_dag_id):
     # Folder to scan for new incoming session folders containing DICOM images.
 
     start = datetime.utcnow()
     start = datetime.combine(start.date(), time(start.hour, 0))
 
-    dag_name = '%s_mri_flat_pre_process_incoming' % dataset.lower().replace(" ", "_")
+    dag_name = '%s_pre_process_scan_input_folder' % dataset.lower().replace(" ", "_")
 
     # Define the DAG
 
