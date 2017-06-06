@@ -157,10 +157,13 @@ def init_pipelines():
     for dataset in dataset_sections.split(','):
         dataset_section = 'data-factory:%s' % dataset
 
-        register_reorganisation_dags(dataset, dataset_section, email_errors_to)
+        if configuration.has_option(dataset_section + ':reorganisation', 'INPUT_FOLDER'):
+            register_reorganisation_dags(dataset, dataset_section, email_errors_to)
         register_preprocessing_dags(dataset, dataset_section, email_errors_to)
-        register_metadata_dags(dataset, dataset_section, email_errors_to)
-        register_ehr_dags(dataset, dataset_section, email_errors_to)
+        if configuration.has_option(dataset_section + ':metadata', 'INPUT_FOLDER'):
+            register_metadata_dags(dataset, dataset_section, email_errors_to)
+        if configuration.has_option(dataset_section + ':ehr', 'SCANNERS'):
+            register_ehr_dags(dataset, dataset_section, email_errors_to)
 
 
 init_pipelines()
