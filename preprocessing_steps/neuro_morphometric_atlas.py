@@ -45,7 +45,6 @@ from datetime import timedelta
 from textwrap import dedent
 
 from airflow import configuration
-from airflow.configuration import AirflowConfigException
 from airflow_spm.operators import SpmPipelineOperator
 from common_steps import Step, default_config
 
@@ -77,7 +76,7 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
     tpm_template = configuration.get(step_section, 'TPM_TEMPLATE')
     try:
         mpm_maps_pipeline_path = configuration.get(mpm_maps_section, 'PIPELINE_PATH')
-    except AirflowConfigException:
+    except Exception:
         mpm_maps_pipeline_path = configuration.get(preprocessing_section, 'PIPELINES_PATH') + '/MPMs_Pipeline'
 
     # check that file exists if absolute path
