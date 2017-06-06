@@ -18,7 +18,7 @@ from airflow_pipeline.operators import DockerPipelineOperator
 from common_steps import Step
 
 
-def map_ehr_to_i2b2_pipeline_cfg(dag, upstream_step, etl_section, step_section):
+def map_ehr_to_i2b2_pipeline_cfg(dag, upstream_step, ehr_section, step_section):
     docker_image = configuration.get(step_section, 'DOCKER_IMAGE')
 
     return map_ehr_to_i2b2_pipeline_step(dag, upstream_step, docker_image)

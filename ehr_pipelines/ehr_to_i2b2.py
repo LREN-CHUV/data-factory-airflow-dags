@@ -22,8 +22,8 @@ from common_steps import initial_step
 from common_steps.check_local_free_space import check_local_free_space_cfg
 from common_steps.prepare_pipeline import prepare_pipeline
 
-from etl_steps.map_ehr_to_i2b2 import map_ehr_to_i2b2_pipeline_cfg
-from etl_steps.version_incoming_ehr import version_incoming_ehr_pipeline_cfg
+from ehr_steps.map_ehr_to_i2b2 import map_ehr_to_i2b2_pipeline_cfg
+from ehr_steps.version_incoming_ehr import version_incoming_ehr_pipeline_cfg
 
 
 steps_with_file_outputs = ['version_incoming_ehr']

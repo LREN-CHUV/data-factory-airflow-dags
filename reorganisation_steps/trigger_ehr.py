@@ -21,7 +21,7 @@ def trigger_ehr_pipeline_cfg(dag, upstream_step, dataset, section, step_section)
 
 def trigger_ehr_pipeline_step(dag, upstream_step, dataset, dataset_config, depth=1):
 
-    trigger_dag_id = '%s_mri_flat_etl_incoming' % dataset.lower().replace(" ", "_")
+    trigger_dag_id = '%s_mri_flat_ehr_incoming' % dataset.lower().replace(" ", "_")
 
     trigger_ehr_pipeline = ScanFlatFolderPipelineOperator(
         task_id="trigger_ehr_pipeline",
