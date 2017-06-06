@@ -45,6 +45,7 @@ from datetime import timedelta
 from textwrap import dedent
 
 from airflow import configuration
+from airflow.configuration import AirflowConfigException
 from airflow_spm.operators import SpmPipelineOperator
 from common_steps import Step, default_config
 
@@ -55,7 +56,7 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
     default_config(step_section, 'SPM_FUNCTION', 'NeuroMorphometric_pipeline')
     default_config(step_section, 'PIPELINE_PATH', configuration.get(
         preprocessing_section, 'PIPELINES_PATH') + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label',
-                   fill_empty=True)
+        fill_empty=True)
     default_config(step_section, 'MISC_LIBRARY_PATH', configuration.get(
         preprocessing_section, 'MISC_LIBRARY_PATH'), fill_empty=True)
     default_config(step_section, 'PROTOCOLS_DEFINITION_FILE',
@@ -74,7 +75,10 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
     backup_folder = configuration.get(step_section, 'BACKUP_FOLDER')
     protocols_definition_file = configuration.get(step_section, 'PROTOCOLS_DEFINITION_FILE')
     tpm_template = configuration.get(step_section, 'TPM_TEMPLATE')
-    mpm_maps_pipeline_path = configuration.get(mpm_maps_section, 'PIPELINE_PATH')
+    try:
+        mpm_maps_pipeline_path = configuration.get(mpm_maps_section, 'PIPELINE_PATH')
+    except AirflowConfigException:
+        mpm_maps_pipeline_path = configuration.get(preprocessing_section, 'PIPELINES_PATH') + '/MPMs_Pipeline'
 
     # check that file exists if absolute path
     if len(tpm_template) > 0 and tpm_template[0] is '/':
