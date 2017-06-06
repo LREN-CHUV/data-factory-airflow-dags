@@ -63,8 +63,12 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
     default_config(step_section, 'TPM_TEMPLATE',
                    configuration.get('spm', 'SPM_DIR') + '/tpm/TPM.nii')
     mpm_maps_section = preprocessing_section + ':mpm_maps'
-    default_config(mpm_maps_section, 'PIPELINE_PATH', configuration.get(
-        preprocessing_section, 'PIPELINES_PATH') + '/MPMs_Pipeline')
+    try:
+        default_config(mpm_maps_section, 'PIPELINE_PATH', configuration.get(
+            preprocessing_section, 'PIPELINES_PATH') + '/MPMs_Pipeline')
+    except Exception:
+        # No need to do anything
+        pass
 
     dataset_config = [flag.strip() for flag in configuration.get(preprocessing_section, 'INPUT_CONFIG').split(',')]
     pipeline_path = configuration.get(step_section, 'PIPELINE_PATH')
