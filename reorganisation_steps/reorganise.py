@@ -73,6 +73,7 @@ def reorganise_pipeline_step(
         task_id='reorganise_%s_pipeline' % dataset_type,
         output_folder_callable=lambda **kwargs: output_folder,
         metadata_folder_callable=lambda **kwargs: meta_output_folder,
+        cleanup_output_folder=False,
         pool='io_intensive',
         parent_task=upstream_step.task_id,
         priority_weight=upstream_step.priority_weight,
