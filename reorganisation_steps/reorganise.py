@@ -70,7 +70,7 @@ def reorganise_pipeline_step(
     command = "%s %s %s" % (incoming_dataset_param, type_of_images_param, structure_param)
 
     reorganise_pipeline = DockerPipelineOperator(
-        task_id='reorganise_%s_pipeline' % dataset_type,
+        task_id='reorganise_%s_pipeline' % dataset_type.lower(),
         output_folder_callable=lambda **kwargs: output_folder,
         metadata_folder_callable=lambda **kwargs: meta_output_folder,
         cleanup_output_folder=False,
