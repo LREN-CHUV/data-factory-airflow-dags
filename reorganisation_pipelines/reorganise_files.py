@@ -8,14 +8,14 @@ from common_steps import initial_step
 from common_steps.check_local_free_space import check_local_free_space_cfg
 from common_steps.prepare_pipeline import prepare_pipeline
 from reorganisation_steps.cleanup_all_local import cleanup_all_local_cfg
-from reorganisation_steps.copy_all_to_local import copy_all_to_local_cfg
+from reorganisation_steps.copy_to_local import copy_to_local_cfg
 from reorganisation_steps.reorganise import reorganise_cfg
 from reorganisation_steps.trigger_ehr import trigger_ehr_pipeline_cfg
 from reorganisation_steps.trigger_preprocessing import trigger_preprocessing_pipeline_cfg
 from reorganisation_steps.trigger_metadata import trigger_metadata_pipeline_cfg
 
 
-preparation_steps = ['copy_all_to_local']
+preparation_steps = ['copy_to_local']
 reorganisation_steps = ['dicom_reorganise', 'nifti_reorganise']
 finalisation_steps = ['trigger_preprocessing', 'trigger_metadata', 'trigger_ehr']
 
@@ -51,8 +51,8 @@ def reorganise_files_dag(dataset, section, email_errors_to, max_active_runs,
 
     upstream_step = prepare_pipeline(dag, upstream_step, True)
 
-    if 'copy_all_to_local' in reorganisation_pipelines:
-        upstream_step = copy_all_to_local_cfg(dag, upstream_step, section, section + ':copy_all_to_local')
+    if 'copy_to_local' in reorganisation_pipelines:
+        upstream_step = copy_to_local_cfg(dag, upstream_step, section, section + ':copy_to_local')
 
     if 'dicom_reorganise' in reorganisation_pipelines:
         upstream_step = reorganise_cfg(dag, upstream_step, section, section + ':dicom_reorganise')
@@ -60,8 +60,8 @@ def reorganise_files_dag(dataset, section, email_errors_to, max_active_runs,
         upstream_step = reorganise_cfg(dag, upstream_step, section, section + ':nifti_reorganise')
 
     # Cleanup step is used only to remove DICOM files or Nifti files copied locally.
-    if 'copy_all_to_local' in reorganisation_pipelines:
-        cleanup_step = cleanup_all_local_cfg(dag, upstream_step, section + ':copy_all_to_local')
+    if 'copy_to_local' in reorganisation_pipelines:
+        cleanup_step = cleanup_all_local_cfg(dag, upstream_step, section + ':copy_to_local')
         upstream_step.priority_weight = cleanup_step.priority_weight
 
     if 'trigger_preprocessing' in reorganisation_pipelines:

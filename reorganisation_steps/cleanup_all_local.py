@@ -2,11 +2,11 @@
 
 Reorganisation step: cleanup all local data.
 
-Cleanup the local data (for the whole data-set) created during copy_all_to_local step.
+Cleanup the local data (for the whole data-set) created during copy_to_local step.
 
 Configuration variables used:
 
-* :reorganisation:copy_all_to_local section
+* :reorganisation:copy_to_local section
     * OUTPUT_FOLDER: destination folder for the local copy
 
 """

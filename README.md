@@ -44,7 +44,7 @@ To see this project in action, go to the [demo of MIP Data Factory](https://gith
     * MAX_ACTIVE_RUNS: maximum number of reorganisation tasks in parallel
     * FOLDER_FILTER: regex that describes acceptable folder names. Folders that does not fully match it will be discarded.
     * PIPELINES: List of pipelines to execute. Values are
-      * copy_all_to_local: if used, input data are first copied to a local folder to speed-up processing.
+      * copy_to_local: if used, input data are first copied to a local folder to speed-up processing.
       * dicom_reorganise:
         * output_folder: output folder that will contain the reorganised data.
         * output_folder_structure: description of the desired folder organisation. E.g. '#PatientID/#StudyID/#SeriesDescription/#SeriesNumber'
@@ -207,7 +207,7 @@ input_folder = /data/demo
 max_active_runs = 30
 min_free_space = 0.3
 pipelines = dicom_reorganise,trigger_preprocessing
-[data-factory:main:reorganisation:copy_all_to_local]
+[data-factory:main:reorganisation:copy_to_local]
 output_folder = /data/all_incoming
 [data-factory:main:reorganisation:dicom_reorganise]
 docker_image = hbpmip/hierarchizer:1.1.1
