@@ -44,6 +44,7 @@ def mpm_maps_pipeline_cfg(dag, upstream_step, preprocessing_section, step_sectio
         preprocessing_section, 'MISC_LIBRARY_PATH'), fill_empty=True)
     default_config(step_section, 'PROTOCOLS_DEFINITION_FILE',
                    configuration.get(preprocessing_section, 'PROTOCOLS_DEFINITION_FILE'), fill_empty=True)
+    default_config(step_section, 'BACKUP_FOLDER', '')
 
     dataset_config = [flag.strip() for flag in configuration.get(preprocessing_section, 'INPUT_CONFIG').split(',')]
     pipeline_path = configuration.get(step_section, 'PIPELINE_PATH')

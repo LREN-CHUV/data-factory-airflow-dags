@@ -62,6 +62,7 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
                    configuration.get(preprocessing_section, 'PROTOCOLS_DEFINITION_FILE'), fill_empty=True)
     default_config(step_section, 'TPM_TEMPLATE',
                    configuration.get('spm', 'SPM_DIR') + '/tpm/TPM.nii')
+    default_config(step_section, 'BACKUP_FOLDER', '')
     mpm_maps_section = preprocessing_section + ':mpm_maps'
     try:
         default_config(mpm_maps_section, 'PIPELINE_PATH', configuration.get(
