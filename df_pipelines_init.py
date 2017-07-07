@@ -34,7 +34,7 @@ def register_dag(dag):
 
 def register_reorganisation_dags(dataset, dataset_section, email_errors_to):
     reorganisation_section = dataset_section + ':reorganisation'
-    default_config(reorganisation_section, 'INPUT_FOLDER_DEPTH', '1')
+    default_config(reorganisation_section, 'INPUT_FOLDER_DEPTH', '0')
 
     reorganisation_input_folder = configuration.get(reorganisation_section, 'INPUT_FOLDER')
     depth = int(configuration.get(reorganisation_section, 'INPUT_FOLDER_DEPTH'))
