@@ -33,11 +33,13 @@ def reorganise_cfg(dag, upstream_step, reorganisation_section, step_section):
     default_config(reorganisation_section, 'INPUT_CONFIG', '')
     default_config(step_section, "DOCKER_INPUT_DIR", "/input_folder")
     default_config(step_section, "DOCKER_OUTPUT_DIR", "/output_folder")
+    default_config(step_section, "ALLOWED_FIELD_VALUES", '')
 
     dataset_config = [flag.strip() for flag in configuration.get(reorganisation_section, 'INPUT_CONFIG').split(',')]
     output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
     meta_output_folder = configuration.get(step_section, 'META_OUTPUT_FOLDER')
     output_folder_structure = configuration.get(step_section, 'OUTPUT_FOLDER_STRUCTURE')
+    allowed_field_values = configuration.get(step_section, 'ALLOWED_FIELD_VALUES')
     docker_image = configuration.get(step_section, 'DOCKER_IMAGE')
     docker_input_dir = configuration.get(step_section, 'DOCKER_INPUT_DIR')
     docker_output_dir = configuration.get(step_section, 'DOCKER_OUTPUT_DIR')
@@ -51,6 +53,7 @@ def reorganise_cfg(dag, upstream_step, reorganisation_section, step_section):
                                     output_folder_structure=output_folder_structure,
                                     output_folder=output_folder,
                                     meta_output_folder=meta_output_folder,
+                                    allowed_field_values=allowed_field_values,
                                     docker_image=docker_image,
                                     docker_input_dir=docker_input_dir,
                                     docker_output_dir=docker_output_dir,
@@ -59,6 +62,7 @@ def reorganise_cfg(dag, upstream_step, reorganisation_section, step_section):
 
 def reorganise_pipeline_step(
         dag, upstream_step, dataset_config, dataset_type, output_folder_structure, output_folder, meta_output_folder,
+        allowed_field_values=None,
         docker_image='hbpmip/hierarchizer:latest',
         docker_input_dir='/input_folder',
         docker_output_dir='/output_folder',
@@ -67,7 +71,8 @@ def reorganise_pipeline_step(
     incoming_dataset_param = "{{ dag_run.conf['dataset'] }}"
     type_of_images_param = "--type " + dataset_type
     structure_param = "--output_folder_organisation " + output_folder_structure
-    command = "%s %s %s" % (incoming_dataset_param, type_of_images_param, structure_param)
+    allowed_field_values = ("--allowed_field_values " + allowed_field_values) if allowed_field_values else ""
+    command = "%s %s %s %s" % (incoming_dataset_param, type_of_images_param, structure_param, allowed_field_values)
 
     reorganise_pipeline = DockerPipelineOperator(
         task_id='reorganise_%s_pipeline' % dataset_type.lower(),

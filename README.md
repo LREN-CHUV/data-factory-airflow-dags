@@ -51,6 +51,7 @@ To see this project in action, go to the [demo of MIP Data Factory](https://gith
         * docker_image: organiser docker image.
         * docker_input_dir: docker input volume for the organiser (path inside the container).
         * docker_output_dir: docker output volume for the organiser (path inside the container).
+        * allowed_field_values: list of fields with restricted set of values used to filter out unwanted images, e.g. FIELD=VALUE1,VALUE2,VALUE3 [FIELD2=VALUE1,VALUE2 ...]
       * nifti_reorganise:
         * output_folder: output folder that will contain the reorganised data.
         * output_folder_structure: description of the desired folder organisation. E.g. '#PatientID/#StudyID/#SeriesDescription/#SeriesNumber'
