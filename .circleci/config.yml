@@ -1,0 +1,21 @@
+---
+
+version: 2
+jobs:
+  build:
+    working_directory: ~/src
+    docker:
+      - image: hbpmip/docker-compose-for-ci:17.06-0
+    environment:
+       - CIRCLECI: true
+    steps:
+      #- setup_remote_docker
+      - checkout
+      - run:
+          name: "Validate code quality"
+          command: |
+            pre-commit run --all-files
+      #- run:
+      #    name: "Test the project"
+      #    command: |
+      #      PATH=$PATH:/$HOME/.captain/bin/ ./tests/test.sh
