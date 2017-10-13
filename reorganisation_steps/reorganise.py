@@ -69,9 +69,9 @@ def reorganise_pipeline_step(
         docker_user='root'):
 
     incoming_dataset_param = "{{ dag_run.conf['dataset'] }}"
-    type_of_images_param = "--type " + dataset_type
-    structure_param = "--output_folder_organisation " + output_folder_structure
-    allowed_field_values = ("--allowed_field_values " + allowed_field_values) if allowed_field_values else ""
+    type_of_images_param = "--type '" + dataset_type + "'"
+    structure_param = "--output_folder_organisation '" + output_folder_structure + "'"
+    allowed_field_values = ("--allowed_field_values '" + allowed_field_values + "'") if allowed_field_values else ""
     command = "%s %s %s %s" % (incoming_dataset_param, type_of_images_param, structure_param, allowed_field_values)
 
     reorganise_pipeline = DockerPipelineOperator(
