@@ -2,32 +2,9 @@
 
 set -e
 
-get_script_dir () {
-     SOURCE="${BASH_SOURCE[0]}"
-
-     while [ -h "$SOURCE" ]; do
-          DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-          SOURCE="$( readlink "$SOURCE" )"
-          [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
-     done
-     cd -P "$( dirname "$SOURCE" )"
-     pwd
-}
-
-WORKSPACE=$(get_script_dir)
-
-if pgrep -lf sshuttle > /dev/null ; then
-  echo "sshuttle detected. Please close this program as it messes with networking and prevents builds inside Docker to work"
-  exit 1
-fi
-
-if groups $USER | grep &>/dev/null '\bdocker\b'; then
-  CAPTAIN="captain"
-else
-  CAPTAIN="sudo captain"
-fi
-
 count=$(git status --porcelain | wc -l)
+
+# shellcheck disable=SC2086
 if test $count -gt 0; then
   git status
   echo "Not all files have been committed in Git. Release aborted"
@@ -48,13 +25,14 @@ select_part() {
           ;;
       *)
           read -p "Version > " version
-          bumpversion --new-version=$version all
+          bumpversion --new-version="$version" all
           ;;
   esac
 }
 
 git pull --tags
 # Look for a version tag in Git. If not found, ask the user to provide one
+# shellcheck disable=SC2046
 [ $(git tag --points-at HEAD | wc -l) == 1 ] || (
   latest_version=$(bumpversion --dry-run --list patch | grep current_version | sed -r s,"^.*=",, || echo '0.0.1')
   echo
@@ -80,6 +58,20 @@ updated_version=$(bumpversion --dry-run --list patch | grep current_version | se
 
 git push
 git push --tags
+
+get_script_dir () {
+     SOURCE="${BASH_SOURCE[0]}"
+
+     while [ -h "$SOURCE" ]; do
+          DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+          SOURCE="$( readlink "$SOURCE" )"
+          [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+     done
+     cd -P "$( dirname "$SOURCE" )"
+     pwd
+}
+
+WORKSPACE=$(get_script_dir)
 
 # Notify on slack
 sed "s/USER/${USER^}/" $WORKSPACE/slack.json > $WORKSPACE/.slack.json
