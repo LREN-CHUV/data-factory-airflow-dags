@@ -9,6 +9,7 @@ Configuration variables used:
 * :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
     * PIPELINES_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
+    * MATLAB_USER: Run Matlab as specified user.
 * :preprocessing:dicom_to_nifti section
     * OUTPUT_FOLDER: destination folder for the Nitfi images
     * BACKUP_FOLDER: backup folder for the Nitfi images
@@ -20,7 +21,6 @@ Configuration variables used:
     * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner.
       Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * DCM2NII_PROGRAM: Path to DCM2NII program. Default to PIPELINE_PATH + '/dcm2nii'
-    * MATLAB_USER: Run Matlab as specified user
 
 """
 
@@ -39,6 +39,7 @@ from common_steps import Step, default_config
 def dicom_to_nifti_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
     default_config(preprocessing_section, 'INPUT_CONFIG', '')
     default_config(preprocessing_section, 'PIPELINES_PATH', '.')
+    default_config(preprocessing_section, 'MATLAB_USER', 'airflow')
     default_config(step_section, 'SPM_FUNCTION', 'DCM2NII_LREN')
     default_config(step_section, 'PIPELINE_PATH', configuration.get(
         preprocessing_section, 'PIPELINES_PATH') + '/Nifti_Conversion_Pipeline', fill_empty=True)
@@ -50,6 +51,7 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream_step, preprocessing_section, step_
     default_config(step_section, 'BACKUP_FOLDER', '')
 
     dataset_config = [flag.strip() for flag in configuration.get(preprocessing_section, 'INPUT_CONFIG').split(',')]
+    matlab_user = configuration.get(preprocessing_section, 'MATLAB_USER')
     pipeline_path = configuration.get(step_section, 'PIPELINE_PATH')
     misc_library_path = configuration.get(step_section, 'MISC_LIBRARY_PATH')
     spm_function = configuration.get(step_section, 'SPM_FUNCTION')
@@ -57,7 +59,6 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream_step, preprocessing_section, step_
     backup_folder = configuration.get(step_section, 'BACKUP_FOLDER')
     protocols_definition_file = configuration.get(step_section, 'PROTOCOLS_DEFINITION_FILE')
     dcm2nii_program = configuration.get(step_section, 'DCM2NII_PROGRAM')
-    user = configuration.get(step_section, 'MATLAB_USER')
 
     return dicom_to_nifti_pipeline_step(dag, upstream_step,
                                         dataset_config=dataset_config,
@@ -68,7 +69,7 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream_step, preprocessing_section, step_
                                         backup_folder=backup_folder,
                                         protocols_definition_file=protocols_definition_file,
                                         dcm2nii_program=dcm2nii_program,
-                                        user=user)
+                                        user=matlab_user)
 
 
 def dicom_to_nifti_pipeline_step(dag, upstream_step,

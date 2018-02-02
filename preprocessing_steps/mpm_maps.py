@@ -10,6 +10,7 @@ Configuration variables used:
 * :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
     * PIPELINES_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
+    * MATLAB_USER: Run Matlab as specified user
 * :preprocessing:mpm_maps section
     * OUTPUT_FOLDER: destination folder for the MPMs and brain segmentation
     * BACKUP_FOLDER: backup folder for the MPMs and brain segmentation
@@ -20,7 +21,6 @@ Configuration variables used:
       Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner.
       Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
-    * MATLAB_USER: Run Matlab as specified user
 
 """
 
@@ -38,6 +38,7 @@ from common_steps import Step, default_config
 def mpm_maps_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
     default_config(preprocessing_section, 'INPUT_CONFIG', '')
     default_config(preprocessing_section, 'PIPELINES_PATH', '.')
+    default_config(preprocessing_section, 'MATLAB_USER', 'airflow')
     default_config(step_section, 'SPM_FUNCTION', 'Preproc_mpm_maps')
     default_config(step_section, 'PIPELINE_PATH', configuration.get(
         preprocessing_section, 'PIPELINES_PATH') + '/MPMs_Pipeline', fill_empty=True)
@@ -48,13 +49,13 @@ def mpm_maps_pipeline_cfg(dag, upstream_step, preprocessing_section, step_sectio
     default_config(step_section, 'BACKUP_FOLDER', '')
 
     dataset_config = [flag.strip() for flag in configuration.get(preprocessing_section, 'INPUT_CONFIG').split(',')]
+    matlab_user = configuration.get(preprocessing_section, 'MATLAB_USER')
     pipeline_path = configuration.get(step_section, 'PIPELINE_PATH')
     misc_library_path = configuration.get(step_section, 'MISC_LIBRARY_PATH')
     spm_function = configuration.get(step_section, 'SPM_FUNCTION')
     output_folder = configuration.get(step_section, 'OUTPUT_FOLDER')
     backup_folder = configuration.get(step_section, 'BACKUP_FOLDER')
     protocols_definition_file = configuration.get(step_section, 'PROTOCOLS_DEFINITION_FILE')
-    user = configuration.get(step_section, 'MATLAB_USER')
 
     return mpm_maps_pipeline_step(dag, upstream_step,
                                   dataset_config=dataset_config,
@@ -64,7 +65,7 @@ def mpm_maps_pipeline_cfg(dag, upstream_step, preprocessing_section, step_sectio
                                   output_folder=output_folder,
                                   backup_folder=backup_folder,
                                   protocols_definition_file=protocols_definition_file,
-                                  user=user)
+                                  user=matlab_user)
 
 
 def mpm_maps_pipeline_step(dag, upstream_step,

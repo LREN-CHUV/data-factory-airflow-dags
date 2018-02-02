@@ -17,6 +17,7 @@ Configuration variables used:
 * :preprocessing section
     * INPUT_CONFIG: List of flags defining how incoming imaging data are organised.
     * PIPELINES_PATH: Path to the root folder containing the Matlab scripts for the pipelines.
+    * MATLAB_USER: Run Matlab as specified user
 * :preprocessing:mpm_maps section
     * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline.
       Default to PIPELINES_PATH + '/MPMs_Pipeline'
@@ -36,7 +37,6 @@ Configuration variables used:
       Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * TPM_TEMPLATE: Path to the the template used for segmentation step in case the image is not segmented.
       Default to SPM_DIR + '/tpm/nwTPM_sl3.nii'
-    * MATLAB_USER: Run Matlab as specified user
 
 """
 
@@ -53,6 +53,7 @@ from common_steps import Step, default_config
 def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_section, step_section):
     default_config(preprocessing_section, 'INPUT_CONFIG', '')
     default_config(preprocessing_section, 'PIPELINES_PATH', '.')
+    default_config(preprocessing_section, 'MATLAB_USER', 'airflow')
     default_config(step_section, 'SPM_FUNCTION', 'NeuroMorphometric_pipeline')
     default_config(step_section, 'PIPELINE_PATH', configuration.get(
         preprocessing_section, 'PIPELINES_PATH') + '/NeuroMorphometric_Pipeline/NeuroMorphometric_tbx/label',
@@ -64,6 +65,7 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
     default_config(step_section, 'TPM_TEMPLATE',
                    configuration.get('spm', 'SPM_DIR') + '/tpm/TPM.nii')
     default_config(step_section, 'BACKUP_FOLDER', '')
+
     mpm_maps_section = preprocessing_section + ':mpm_maps'
     try:
         default_config(mpm_maps_section, 'PIPELINE_PATH', configuration.get(
@@ -73,6 +75,7 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
         pass
 
     dataset_config = [flag.strip() for flag in configuration.get(preprocessing_section, 'INPUT_CONFIG').split(',')]
+    matlab_user = configuration.get(preprocessing_section, 'MATLAB_USER')
     pipeline_path = configuration.get(step_section, 'PIPELINE_PATH')
     misc_library_path = configuration.get(step_section, 'MISC_LIBRARY_PATH')
     spm_function = configuration.get(step_section, 'SPM_FUNCTION')
@@ -84,7 +87,6 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
         mpm_maps_pipeline_path = configuration.get(mpm_maps_section, 'PIPELINE_PATH')
     except Exception:
         mpm_maps_pipeline_path = configuration.get(preprocessing_section, 'PIPELINES_PATH') + '/MPMs_Pipeline'
-    user = configuration.get(step_section, 'MATLAB_USER')
 
     # check that file exists if absolute path
     if len(tpm_template) > 0 and tpm_template[0] is '/':
@@ -101,7 +103,7 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
                                                   protocols_definition_file=protocols_definition_file,
                                                   tpm_template=tpm_template,
                                                   mpm_maps_pipeline_path=mpm_maps_pipeline_path,
-                                                  user=user)
+                                                  user=matlab_user)
 
 
 def neuro_morphometric_atlas_pipeline_step(dag, upstream_step,
