@@ -20,6 +20,7 @@ Configuration variables used:
     * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner.
       Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * DCM2NII_PROGRAM: Path to DCM2NII program. Default to PIPELINE_PATH + '/dcm2nii'
+    * MATLAB_USER: Run Matlab as specified user
 
 """
 
@@ -56,6 +57,7 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream_step, preprocessing_section, step_
     backup_folder = configuration.get(step_section, 'BACKUP_FOLDER')
     protocols_definition_file = configuration.get(step_section, 'PROTOCOLS_DEFINITION_FILE')
     dcm2nii_program = configuration.get(step_section, 'DCM2NII_PROGRAM')
+    user = configuration.get(step_section, 'MATLAB_USER')
 
     return dicom_to_nifti_pipeline_step(dag, upstream_step,
                                         dataset_config=dataset_config,
@@ -65,7 +67,8 @@ def dicom_to_nifti_pipeline_cfg(dag, upstream_step, preprocessing_section, step_
                                         output_folder=output_folder,
                                         backup_folder=backup_folder,
                                         protocols_definition_file=protocols_definition_file,
-                                        dcm2nii_program=dcm2nii_program)
+                                        dcm2nii_program=dcm2nii_program,
+                                        user=user)
 
 
 def dicom_to_nifti_pipeline_step(dag, upstream_step,
@@ -76,7 +79,8 @@ def dicom_to_nifti_pipeline_step(dag, upstream_step,
                                  output_folder=None,
                                  backup_folder=None,
                                  protocols_definition_file=None,
-                                 dcm2nii_program=None):
+                                 dcm2nii_program=None,
+                                 user='airflow'):
 
     if dataset_config is None:
         dataset_config = []
@@ -109,7 +113,8 @@ def dicom_to_nifti_pipeline_step(dag, upstream_step,
         on_failure_trigger_dag_id='mri_notify_failed_processing',
         dataset_config=dataset_config,
         dag=dag,
-        organised_folder=True
+        organised_folder=True,
+        run_as_user=user
     )
 
     if upstream_step.task:
