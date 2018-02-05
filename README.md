@@ -91,7 +91,6 @@ To see this project in action, go to the [demo of MIP Data Factory](https://gith
       * neuro_morphometric_atlas: computes an individual Atlas based on the NeuroMorphometrics Atlas.
       * export_features: exports neuroimaging features stored in CSV files to the I2B2 database
       * catalog_to_i2b2: exports meta-data from the data catalog to the I2B2 database.
-    * MATLAB_USER: Run Matlab as specified user
 
 
 * If copy_to_local is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:copy_to_local] section:
@@ -105,6 +104,7 @@ To see this project in action, go to the [demo of MIP Data Factory](https://gith
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner. Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * DCM2NII_PROGRAM: Path to DCM2NII program. Default to [data-factory:&lt;dataset&gt;:preprocessing]PIPELINES_PATH + '/dcm2nii'
+    * MATLAB_USER: Run Matlab as specified user
 
 * If mpm_maps is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:mpm_maps] section:
     * OUTPUT_FOLDER: destination folder for the MPMs and brain segmentation
@@ -113,6 +113,7 @@ To see this project in action, go to the [demo of MIP Data Factory](https://gith
     * PIPELINE_PATH: path to the folder containing the SPM script for this pipeline. Default to [data-factory:&lt;dataset&gt;:preprocessing]PIPELINES_PATH + '/MPMs_Pipeline'
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner. Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
+    * MATLAB_USER: Run Matlab as specified user
 
 * If neuro_morphometric_atlas is used, configure the [data-factory:&lt;dataset&gt;:preprocessing:neuro_morphometric_atlas] section:
     * OUTPUT_FOLDER: destination folder for the Atlas File, the volumes of the Morphometric Atlas structures (.txt), the csv file containing the volume, and globals plus Multiparametric Maps (R2*, R1, MT, PD) for each structure defined in the Subject Atlas.
@@ -122,6 +123,7 @@ To see this project in action, go to the [demo of MIP Data Factory](https://gith
     * MISC_LIBRARY_PATH: path to the Misc&Libraries folder for SPM pipelines. Default to MISC_LIBRARY_PATH value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * PROTOCOLS_DEFINITION_FILE: path to the Protocols definition file defining the protocols used on the scanner. Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * TPM_TEMPLATE: Path to the the template used for segmentation step in case the image is not segmented. Default to SPM_DIR + 'tpm/nwTPM_sl3.nii'
+    * MATLAB_USER: Run Matlab as specified user
 
 * For each dataset, now configure the [data-factory:&lt;dataset&gt;:ehr] section:
     * INPUT_FOLDER: Folder containing the original EHR data to process. This data should have been already anonymised by a tool
