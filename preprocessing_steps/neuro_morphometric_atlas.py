@@ -36,7 +36,6 @@ Configuration variables used:
       Default to PROTOCOLS_DEFINITION_FILE value in [data-factory:&lt;dataset&gt;:preprocessing] section.
     * TPM_TEMPLATE: Path to the the template used for segmentation step in case the image is not segmented.
       Default to SPM_DIR + '/tpm/nwTPM_sl3.nii'
-    * MATLAB_USER: Run Matlab as specified user
 
 """
 
@@ -84,7 +83,6 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
         mpm_maps_pipeline_path = configuration.get(mpm_maps_section, 'PIPELINE_PATH')
     except Exception:
         mpm_maps_pipeline_path = configuration.get(preprocessing_section, 'PIPELINES_PATH') + '/MPMs_Pipeline'
-    user = configuration.get(step_section, 'MATLAB_USER')
 
     # check that file exists if absolute path
     if len(tpm_template) > 0 and tpm_template[0] is '/':
@@ -100,8 +98,7 @@ def neuro_morphometric_atlas_pipeline_cfg(dag, upstream_step, preprocessing_sect
                                                   backup_folder=backup_folder,
                                                   protocols_definition_file=protocols_definition_file,
                                                   tpm_template=tpm_template,
-                                                  mpm_maps_pipeline_path=mpm_maps_pipeline_path,
-                                                  user=user)
+                                                  mpm_maps_pipeline_path=mpm_maps_pipeline_path)
 
 
 def neuro_morphometric_atlas_pipeline_step(dag, upstream_step,
@@ -113,8 +110,7 @@ def neuro_morphometric_atlas_pipeline_step(dag, upstream_step,
                                            backup_folder='',
                                            protocols_definition_file=None,
                                            tpm_template='nwTPM_sl3.nii',
-                                           mpm_maps_pipeline_path=None,
-                                           user='airflow'):
+                                           mpm_maps_pipeline_path=None):
 
     def arguments_fn(folder, session_id, **kwargs):
         """Prepare the arguments for the pipeline that selects T1 files from DICOM.
@@ -148,8 +144,7 @@ def neuro_morphometric_atlas_pipeline_step(dag, upstream_step,
         on_failure_trigger_dag_id='mri_notify_failed_processing',
         dataset_config=dataset_config,
         dag=dag,
-        organised_folder=True,
-        run_as_user=user
+        organised_folder=True
     )
     neuro_morphometric_atlas_pipeline.set_upstream(upstream_step.task)
 
