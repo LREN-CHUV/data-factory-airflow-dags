@@ -215,13 +215,13 @@ pipelines = dicom_reorganise,trigger_preprocessing
 [data-factory:main:reorganisation:copy_to_local]
 output_folder = /data/all_incoming
 [data-factory:main:reorganisation:dicom_reorganise]
-docker_image = hbpmip/hierarchizer:1.3.4
+docker_image = hbpmip/hierarchizer:1.3.6
 docker_input_dir = /input_folder
 docker_output_dir = /output_folder
 output_folder = /data/dicom_organised
 output_folder_structure = #PatientID/#StudyID/#SeriesDescription/#SeriesNumber
 [data-factory:main:reorganisation:nifti_reorganise]
-docker_image = hbpmip/hierarchizer:1.3.4
+docker_image = hbpmip/hierarchizer:1.3.6
 docker_input_dir = /input_folder
 docker_output_dir = /output_folder
 output_folder = /data/nifti_organised
