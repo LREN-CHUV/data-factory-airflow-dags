@@ -151,7 +151,8 @@ def neuro_morphometric_atlas_pipeline_step(dag, upstream_step,
         dataset_config=dataset_config,
         dag=dag,
         organised_folder=True,
-        run_as_user=user
+        run_as_user=user,
+        owner=user
     )
     neuro_morphometric_atlas_pipeline.set_upstream(upstream_step.task)
 
