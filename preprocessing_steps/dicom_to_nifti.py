@@ -115,8 +115,7 @@ def dicom_to_nifti_pipeline_step(dag, upstream_step,
         dataset_config=dataset_config,
         dag=dag,
         organised_folder=True,
-        run_as_user=user,
-        owner=user
+        run_as_user=user
     )
 
     if upstream_step.task:
